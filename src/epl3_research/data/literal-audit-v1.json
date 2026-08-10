@@ -1,0 +1,18 @@
+{
+  "schema": "literal-audit/v1",
+  "representations": [
+    "contiguous-hex",
+    "base64",
+    "python-byte-escape",
+    "python-bytes-fromhex",
+    "integer-byte-array",
+    "binary-or-archive"
+  ],
+  "carrier_fields": "all lengths",
+  "untyped_minimum_bytes": 8,
+  "minimum_authority": "Untyped values shorter than eight bytes are non-discriminating in the registered decoded blocks. Named carrier fields remain closed at every length.",
+  "nonclaims": [
+    "This contract does not claim detection of every mathematically possible concealed encoding.",
+    "This contract does not classify arbitrary plain text that also occurs in firmware."
+  ]
+}

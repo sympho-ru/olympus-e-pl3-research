@@ -1,0 +1,16 @@
+{
+  "schema": "epl3-source/v1",
+  "source_id": "olympus-e-pl3-body-1.6",
+  "container": {
+    "filename": "OLY_E_086_1600_0000_0000.BIN",
+    "size": 46596160,
+    "sha256": "89b70dd65c6739de1cd762777205953ee15864df73369b84815df7ed8a0eb4b1"
+  },
+  "blocks": [
+    {"index": 0, "size": 14155712, "sha256": "c291722827a5120fc06ca288b439cae82ebf597ac2cd83eba30a7f0fe6a72687"},
+    {"index": 1, "size": 23068608, "sha256": "af5a35e02304183c9e716af99b9fb619abb13f5a71e41146986bf9d833e2e20f"},
+    {"index": 2, "size": 2490304, "sha256": "ae9d7a1cc5f0d3bfeedb4dfecedc70be8a423e9bea7070cee16363fb30eaacfb"},
+    {"index": 3, "size": 6815680, "sha256": "218b6003e490efc432851e831086cf8f1237f2fde3fade4be93dd89425459941"},
+    {"index": 4, "size": 65536, "sha256": "e131370def9d69fe4484592f0cf4bc84c865162007c0cae11405a4911c8b07a2"}
+  ]
+}
