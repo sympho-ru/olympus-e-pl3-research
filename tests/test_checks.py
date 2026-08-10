@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 
 from epl3_research.checks import run_checks
@@ -12,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def make_project(root: Path, synthetic_source) -> None:
     contents = {
+        ".gitignore": ".private/\n",
         "README.md": (
             "This distribution contains no Olympus firmware image.\n"
             "This project is not endorsed by OM Digital Solutions or Olympus.\n"
@@ -64,6 +66,24 @@ def default_terms(root: Path, contents: str = "NeverPublishThisName\n") -> Path:
     return path
 
 
+def git(root: Path, *arguments: str) -> None:
+    subprocess.run(
+        ["git", "-C", str(root), *arguments],
+        check=True,
+        capture_output=True,
+    )
+
+
+def initialize_git(root: Path, *, commit: bool) -> None:
+    git(root, "init", "-q")
+    if not commit:
+        return
+    git(root, "config", "user.email", "fixture@example.invalid")
+    git(root, "config", "user.name", "Fixture Author")
+    git(root, "add", ".")
+    git(root, "commit", "-q", "-m", "fixture")
+
+
 def test_contributor_checks_validate_flat_evidence(
     tmp_path: Path, synthetic_source
 ) -> None:
@@ -79,14 +99,41 @@ def test_contributor_checks_validate_flat_evidence(
 
 def test_release_checks_flat_evidence_and_history(tmp_path: Path, synthetic_source) -> None:
     make_project(tmp_path, synthetic_source)
+    initialize_git(tmp_path, commit=True)
     default_terms(tmp_path)
     result = run_checks(tmp_path, "release", synthetic_source)
     assert result.ok
     assert result.history_scanned
 
 
+def test_release_rejects_non_git_directory(tmp_path: Path, synthetic_source) -> None:
+    make_project(tmp_path, synthetic_source)
+    default_terms(tmp_path)
+
+    result = run_checks(tmp_path, "release", synthetic_source)
+
+    assert not result.ok
+    assert not result.history_scanned
+    assert "cannot audit Git history reachable from HEAD" in result.problems
+
+
+def test_release_rejects_repository_without_head(
+    tmp_path: Path, synthetic_source
+) -> None:
+    make_project(tmp_path, synthetic_source)
+    initialize_git(tmp_path, commit=False)
+    default_terms(tmp_path)
+
+    result = run_checks(tmp_path, "release", synthetic_source)
+
+    assert not result.ok
+    assert not result.history_scanned
+    assert "cannot audit Git history reachable from HEAD" in result.problems
+
+
 def test_release_rejects_pending_incoming_files(tmp_path: Path, synthetic_source) -> None:
     make_project(tmp_path, synthetic_source)
+    initialize_git(tmp_path, commit=True)
     default_terms(tmp_path)
     incoming = tmp_path / "incoming"
     incoming.mkdir()
@@ -97,6 +144,7 @@ def test_release_rejects_pending_incoming_files(tmp_path: Path, synthetic_source
 
 def test_release_private_terms_are_fail_closed(tmp_path: Path, synthetic_source) -> None:
     make_project(tmp_path, synthetic_source)
+    initialize_git(tmp_path, commit=True)
 
     missing = run_checks(tmp_path, "release", synthetic_source)
     assert any("cannot read private-term file" in item for item in missing.problems)
@@ -115,6 +163,7 @@ def test_default_and_override_private_terms_scan_the_tree(
     tmp_path: Path, synthetic_source
 ) -> None:
     make_project(tmp_path, synthetic_source)
+    initialize_git(tmp_path, commit=True)
     default_terms(tmp_path, "NeverPublishThisName\n")
     (tmp_path / "README.md").write_text("neverpublishthisname\n", encoding="utf-8")
     default_result = run_checks(tmp_path, "release", synthetic_source)

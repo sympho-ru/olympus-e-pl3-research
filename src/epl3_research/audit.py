@@ -71,6 +71,29 @@ class AuditFinding:
         )
 
 
+class HistoryAuditError(RuntimeError):
+    """Git history reachable from HEAD could not be audited completely."""
+
+
+def _run_history_git(
+    root: Path, *arguments: str, text: bool = False
+) -> subprocess.CompletedProcess:
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(root), *arguments],
+            check=False,
+            capture_output=True,
+            text=text,
+        )
+    except OSError as error:
+        raise HistoryAuditError(
+            "cannot audit Git history reachable from HEAD"
+        ) from error
+    if result.returncode != 0:
+        raise HistoryAuditError("cannot audit Git history reachable from HEAD")
+    return result
+
+
 def load_contract() -> dict[str, object]:
     resource = files("epl3_research").joinpath("data/literal-audit-v1.json")
     return json.loads(resource.read_text(encoding="utf-8"))
@@ -455,14 +478,7 @@ def audit_git_history(
     source: VerifiedSource,
     private_terms: tuple[str, ...] = (),
 ) -> list[AuditFinding]:
-    git = subprocess.run(
-        ["git", "-C", str(root), "rev-list", "--objects", "HEAD"],
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    if git.returncode != 0:
-        return []
+    git = _run_history_git(root, "rev-list", "--objects", "HEAD", text=True)
     findings: list[AuditFinding] = []
     seen: set[str] = set()
     source_matches: dict[bytes, bool] = {}
@@ -471,19 +487,12 @@ def audit_git_history(
         if not object_path or object_id in seen:
             continue
         seen.add(object_id)
-        object_type = subprocess.run(
-            ["git", "-C", str(root), "cat-file", "-t", object_id],
-            check=True,
-            capture_output=True,
-            text=True,
+        object_type = _run_history_git(
+            root, "cat-file", "-t", object_id, text=True
         ).stdout.strip()
         if object_type != "blob":
             continue
-        value = subprocess.run(
-            ["git", "-C", str(root), "cat-file", "blob", object_id],
-            check=True,
-            capture_output=True,
-        ).stdout
+        value = _run_history_git(root, "cat-file", "blob", object_id).stdout
         virtual = f"history:{object_id}:{object_path}"
         suffix = Path(object_path).suffix.lower()
         if suffix in BINARY_SUFFIXES:

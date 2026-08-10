@@ -3,7 +3,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from .audit import audit_git_history, audit_tree, load_contract, load_private_terms
+from .audit import (
+    HistoryAuditError,
+    audit_git_history,
+    audit_tree,
+    load_contract,
+    load_private_terms,
+)
 from .contributions import ContributionError, pending_contribution_files
 from .evidence import EvidenceError, load_evidence
 from .source import VerifiedSource
@@ -159,11 +165,13 @@ def run_checks(
     history_scanned = False
     if mode == "release":
         if source is not None:
-            problems.extend(
-                finding.render()
-                for finding in audit_git_history(root, source, private_terms)
-            )
-            history_scanned = True
+            try:
+                history_findings = audit_git_history(root, source, private_terms)
+            except HistoryAuditError as error:
+                problems.append(str(error))
+            else:
+                problems.extend(finding.render() for finding in history_findings)
+                history_scanned = True
         checks += 1
 
     return CheckResult(mode, checks, tuple(problems), history_scanned)
