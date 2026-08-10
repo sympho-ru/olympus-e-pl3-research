@@ -27,7 +27,9 @@ Rows are sorted by `(block, offset, length)` and coordinates are unique.
 ```
 
 The source coordinates and digest authenticate the original bytes. `address`
-records the decoded address and `instruction` records the reviewed textual
+records the decoded runtime address as a decimal JSON integer; documentation
+may show the same value in hexadecimal. It is distinct from the decoded-block
+`offset` accepted by `source-range`. `instruction` records the reviewed textual
 decode. The digest proves the source bytes, not the interpretation; reviewers
 can reproduce the decode from their own verified image.
 
@@ -77,5 +79,6 @@ Firmware-backed checks recompute every digest from the verified image.
 their content-addressed names, scans them for prohibited payloads and private
 paths, and proves the contributor did not modify canonical evidence.
 
-Semantic annotations are intentionally outside this initial format. If added
-later, they will use a separate schema and contain only firmware terminology.
+Reviewed semantic relationships are documented separately in
+[FIRMWARE_MAP.md](FIRMWARE_MAP.md); they never add fields to the canonical
+evidence rows.

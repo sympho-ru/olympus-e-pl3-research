@@ -1,5 +1,10 @@
-This repository contains source ranges and decoded instructions of the original
-Olympus E-PL3 Body 1.6 firmware.
+# Olympus E-PL3 firmware research
+
+The goal of this project is to give the Olympus E-PL3 a second life with custom
+firmware. Reaching that goal requires a verifiable understanding of the
+original Body 1.6 firmware, so this repository publishes source ranges and
+decoded instructions that contributors can extend without redistributing
+Olympus firmware.
 
 The canonical public data is:
 - `evidence/ranges.jsonl`: verified firmware coordinates and slice hashes
@@ -8,11 +13,17 @@ The canonical public data is:
 These files are updated by the maintainer. Refer to
 [CONTRIBUTING.md](CONTRIBUTING.md) for submission and acceptance steps.
 
-See [EVIDENCE.md](EVIDENCE.md) for the exact row formats and
-[OBTAINING_FIRMWARE.md](OBTAINING_FIRMWARE.md) for the official source identity.
+## Where to start
 
-There is no public semantic annotation layer yet. It may be added separately
-after firmware-only annotations have been curated.
+- To see what is already known, read the
+  [firmware map](docs/FIRMWARE_MAP.md).
+- To reproduce the work locally, first
+  [obtain and verify the official image](docs/OBTAINING_FIRMWARE.md), then
+  follow the [analysis workflow](docs/ANALYSIS.md).
+- To extend the research, choose an open question in
+  [RESEARCH.md](docs/RESEARCH.md) and follow [CONTRIBUTING.md](CONTRIBUTING.md).
+- For the exact canonical and incoming row formats, see
+  [EVIDENCE.md](docs/EVIDENCE.md).
 
 ## Quick start
 
@@ -29,6 +40,11 @@ epl3-research check --source .private/OLY_E_086_1600_0000_0000.BIN
 `check` validates file shape, sorting, bounds, digest syntax, licensing, and
 public-tree hygiene without requiring firmware. `check --source PATH` also
 verifies the official image and recomputes every cited slice SHA-256.
+
+Ongoing MN103 analysis cross-checks instruction boundaries with GNU binutils
+and Reko. [ANALYSIS.md](docs/ANALYSIS.md) shows how to obtain the known-working
+MN103 objdump and reproduce the first mapped corridor without placing decoded
+firmware in the public tree.
 
 To verify a contribution without rechecking every canonical row:
 

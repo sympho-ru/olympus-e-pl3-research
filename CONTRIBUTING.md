@@ -4,6 +4,15 @@ The maintainer owns the two canonical files under `evidence/`. Contributors
 submit temporary, content-addressed JSONL files under `incoming/` using the
 same range or instruction row schema.
 
+See [RESEARCH.md](docs/RESEARCH.md) for open questions and suggested starting
+regions. Contributions may overlap; acceptance depends on the evidence rather
+than prior assignment.
+
+[ANALYSIS.md](docs/ANALYSIS.md) shows how to build the known-working MN103
+objdump, extract verified blocks privately, and reproduce the first mapped
+windows. [FIRMWARE_MAP.md](docs/FIRMWARE_MAP.md) states the currently
+established relationships and their unresolved bounds.
+
 ## Preparing a contribution
 
 1. Start a branch from the current target branch and keep it up to date so that
@@ -12,7 +21,7 @@ same range or instruction row schema.
 3. Keep tools, logs, notes, temporary bytes, and extraction details outside the
    public tree, normally under `.private/`.
 4. Write one or more nonempty, sorted, deduplicated JSONL files using the row
-   formats in `EVIDENCE.md`.
+   formats in [EVIDENCE.md](docs/EVIDENCE.md).
 5. Hash each exact file and use its full lowercase digest in the filename:
 
 ```sh
@@ -45,6 +54,11 @@ Open a PR that adds only the `incoming/` files. No manifest, identity record,
 method description, or public analysis log is required. A short PR description
 identifying the covered address region and decoder is useful review context but
 is not canonical evidence.
+
+When using Reko for MN103 instruction rows, use a revision containing the
+decoder fixes from [Reko PR #1370](https://github.com/uxmal/reko/pull/1370) for
+full-width `(d32,SP)` operands and PC-relative d32 `CALLS`, or independently
+cross-check those instruction boundaries.
 
 ## Maintainer verification and acceptance
 
@@ -97,3 +111,10 @@ canonical evidence.
 Do not commit firmware images, decoded blocks, byte dumps, private identifiers,
 local paths, or analysis notes. Semantic interpretations do not yet have a
 public schema and must not be inserted into evidence rows.
+
+## Contribution licensing
+
+By submitting a contribution for inclusion in this project, you agree to
+license code under [Apache-2.0](LICENSE) and authored documentation and evidence
+metadata under [CC BY 4.0](LICENSE-DOCUMENTATION). You also confirm that you
+have the right to submit the contribution under those terms.

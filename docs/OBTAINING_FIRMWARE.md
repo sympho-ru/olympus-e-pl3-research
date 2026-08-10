@@ -43,6 +43,12 @@ epl3-research source-range \
 The command prints block, offset, length, and the SHA-256 of the exact selected
 slice. It never prints or writes the selected bytes. Contributors place output
 in a sorted `incoming/ranges-<sha256>.jsonl` file as described in
-`CONTRIBUTING.md`; they never edit canonical `evidence/` files directly.
+[CONTRIBUTING.md](../CONTRIBUTING.md); they never edit canonical `evidence/`
+files directly.
 Firmware-backed checks recompute every digest so an incorrect coordinate,
 length, or hash fails closed.
+
+For local reverse engineering, `extract-blocks` writes all verified decoded
+blocks only to a private output directory and refuses to overwrite them. See
+[ANALYSIS.md](ANALYSIS.md) for the safe extraction and MN103 disassembly
+workflow. Decoded blocks and analysis windows must never be committed.

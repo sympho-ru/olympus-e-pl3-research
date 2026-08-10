@@ -13,7 +13,7 @@ from .contributions import (
     check_contribution,
 )
 from .evidence import EvidenceError
-from .source import SourceVerificationError, source_summary, verify_source
+from .source import SourceVerificationError, sha256_bytes, source_summary, verify_source
 
 
 def project_root(start: Path | None = None) -> Path:
@@ -62,6 +62,13 @@ def _parser() -> argparse.ArgumentParser:
     reference.add_argument("--offset", required=True, type=_nonnegative_int)
     reference.add_argument("--length", required=True, type=_positive_int)
 
+    extract = commands.add_parser(
+        "extract-blocks",
+        help="write verified decoded blocks to a local-private directory",
+    )
+    extract.add_argument("--image", required=True)
+    extract.add_argument("--output", required=True, type=Path)
+
     check = commands.add_parser("check", help="run structural, source-bound, or release checks")
     check.add_argument("--source", help="verified official image for source-bound checks")
     check.add_argument("--release", action="store_true", help="also reject pending contributions and audit current HEAD history")
@@ -102,6 +109,40 @@ def _print_contribution_report(prefix: str, report: ContributionReport) -> None:
     print(f"instruction decodes requiring review: {report.instruction_decodes_to_review}")
 
 
+def _extract_blocks(
+    root: Path, output: Path, blocks: tuple[bytes, ...]
+) -> list[dict[str, object]]:
+    root = root.resolve()
+    output = output.resolve()
+    private = (root / ".private").resolve()
+    if output.is_relative_to(root) and not (
+        output == private or output.is_relative_to(private)
+    ):
+        raise ValueError(
+            "decoded blocks inside the repository must be written under .private/"
+        )
+
+    targets = [output / f"block-{index}.bin" for index in range(len(blocks))]
+    existing = [target for target in targets if target.exists()]
+    if existing:
+        raise ValueError(f"refusing to overwrite decoded block: {existing[0]}")
+
+    output.mkdir(parents=True, exist_ok=True)
+    result: list[dict[str, object]] = []
+    for index, (target, block) in enumerate(zip(targets, blocks, strict=True)):
+        with target.open("xb") as stream:
+            stream.write(block)
+        result.append(
+            {
+                "block": index,
+                "file": target.name,
+                "size": len(block),
+                "sha256": sha256_bytes(block),
+            }
+        )
+    return result
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     try:
@@ -124,6 +165,15 @@ def main(argv: list[str] | None = None) -> int:
                     },
                     indent=2,
                     sort_keys=True,
+                )
+            )
+            return 0
+        if args.command == "extract-blocks":
+            source = verify_source(Path(args.image))
+            blocks = _extract_blocks(project_root(), args.output, source.blocks)
+            print(
+                json.dumps(
+                    {"blocks": blocks, "verified": True}, indent=2, sort_keys=True
                 )
             )
             return 0

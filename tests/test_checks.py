@@ -19,13 +19,21 @@ def make_project(root: Path, synthetic_source) -> None:
         "AUTHORS.md": "# Authors\n\n- Fixture Author\n",
         "LICENSE": "Apache License\nVersion 2.0\n",
         "LICENSE-DOCUMENTATION": "CC BY 4.0 evidence metadata AUTHORS.md\n",
-        "OBTAINING_FIRMWARE.md": "public fixture\n",
         "CONTRIBUTING.md": "public fixture\n",
-        "EVIDENCE.md": "public fixture\n",
         "pyproject.toml": 'license = {text = "Apache-2.0"}\n',
     }
     for name, content in contents.items():
         (root / name).write_text(content, encoding="utf-8")
+    docs = root / "docs"
+    docs.mkdir()
+    for name in (
+        "ANALYSIS.md",
+        "EVIDENCE.md",
+        "FIRMWARE_MAP.md",
+        "OBTAINING_FIRMWARE.md",
+        "RESEARCH.md",
+    ):
+        (docs / name).write_text("public fixture\n", encoding="utf-8")
     evidence = root / "evidence"
     evidence.mkdir()
     (evidence / "ranges.jsonl").write_text(

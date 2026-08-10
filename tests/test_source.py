@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from pathlib import Path
 
 import pytest
@@ -135,3 +136,85 @@ def test_source_range_cli_rejects_out_of_bounds_slice(
     )
     assert result == 2
     assert "slice outside block" in capsys.readouterr().err
+
+
+def test_extract_blocks_cli_writes_only_verified_private_blocks(
+    tmp_path: Path, synthetic_source, monkeypatch, capsys
+) -> None:
+    monkeypatch.setattr(cli, "verify_source", lambda _path: synthetic_source)
+    monkeypatch.setattr(cli, "project_root", lambda: tmp_path)
+    output = tmp_path / ".private" / "decoded"
+
+    result = cli.main(
+        [
+            "extract-blocks",
+            "--image",
+            "unused.bin",
+            "--output",
+            str(output),
+        ]
+    )
+
+    stdout = capsys.readouterr().out
+    report = json.loads(stdout)
+    assert result == 0
+    assert (output / "block-0.bin").read_bytes() == synthetic_source.blocks[0]
+    assert report == {
+        "blocks": [
+            {
+                "block": 0,
+                "file": "block-0.bin",
+                "sha256": hashlib.sha256(synthetic_source.blocks[0]).hexdigest(),
+                "size": len(synthetic_source.blocks[0]),
+            }
+        ],
+        "verified": True,
+    }
+    assert synthetic_source.blocks[0].hex() not in stdout
+
+
+def test_extract_blocks_cli_rejects_public_repository_output(
+    tmp_path: Path, synthetic_source, monkeypatch, capsys
+) -> None:
+    monkeypatch.setattr(cli, "verify_source", lambda _path: synthetic_source)
+    monkeypatch.setattr(cli, "project_root", lambda: tmp_path)
+    output = tmp_path / "decoded"
+
+    result = cli.main(
+        [
+            "extract-blocks",
+            "--image",
+            "unused.bin",
+            "--output",
+            str(output),
+        ]
+    )
+
+    assert result == 2
+    assert "must be written under .private" in capsys.readouterr().err
+    assert not output.exists()
+
+
+def test_extract_blocks_cli_never_overwrites_existing_block(
+    tmp_path: Path, synthetic_source, monkeypatch, capsys
+) -> None:
+    monkeypatch.setattr(cli, "verify_source", lambda _path: synthetic_source)
+    monkeypatch.setattr(cli, "project_root", lambda: tmp_path)
+    output = tmp_path / ".private" / "decoded"
+    output.mkdir(parents=True)
+    existing = output / "block-0.bin"
+    existing.write_bytes(b"keep me")
+
+    result = cli.main(
+        [
+            "extract-blocks",
+            "--image",
+            "unused.bin",
+            "--output",
+            str(output),
+        ]
+    )
+
+    assert result == 2
+    assert "refusing to overwrite" in capsys.readouterr().err
+    assert existing.read_bytes() == b"keep me"

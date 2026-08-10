@@ -37,9 +37,12 @@ def _project_files(root: Path) -> list[str]:
         "AUTHORS.md",
         "LICENSE",
         "LICENSE-DOCUMENTATION",
-        "OBTAINING_FIRMWARE.md",
         "CONTRIBUTING.md",
-        "EVIDENCE.md",
+        "docs/ANALYSIS.md",
+        "docs/EVIDENCE.md",
+        "docs/FIRMWARE_MAP.md",
+        "docs/OBTAINING_FIRMWARE.md",
+        "docs/RESEARCH.md",
         "pyproject.toml",
     ]
     return [f"missing required file {name}" for name in required if not (root / name).is_file()]
