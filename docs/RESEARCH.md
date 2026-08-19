@@ -5,6 +5,11 @@ Olympus E-PL3 Body 1.6 evidence. It is a research guide, not an additional
 source of truth: the canonical data remains `evidence/ranges.jsonl` and
 `evidence/instructions.jsonl`.
 
+> **Status:** The contributor research areas below are being reviewed after the
+> recent expansion of the canonical corpus. Updated starting points will follow
+> soon. Until then, confirm any proposed starting point against the canonical
+> evidence and the reviewed [firmware map](FIRMWARE_MAP.md).
+
 Research may overlap, and a well-supported negative result can still be
 useful. Contributors submit authenticated ranges and instructions through the
 workflow in [CONTRIBUTING.md](../CONTRIBUTING.md). A concise PR description may
@@ -96,9 +101,10 @@ scans without a new source of instruction-entry evidence.
 ## Characterize decoded block 4
 
 The official source registry authenticates decoded block 4 as 65,536 bytes.
-The current public evidence contains no block-4 ranges or instructions and
-does not establish whether it is code, its processor, its role, an entry point,
-or an interface to the other blocks.
+The current public evidence contains 3,115 authenticated ranges whose union
+covers the full decoded block, but no reviewed instructions. Range coverage
+alone does not establish whether it is code, its processor, its role, an entry
+point, or an interface to the other blocks.
 
 A useful result first classifies its contents from reproducible evidence, then
 identifies an architecture or one authenticated entry, control, or data
