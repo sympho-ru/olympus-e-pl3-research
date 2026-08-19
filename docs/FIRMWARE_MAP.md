@@ -16,11 +16,11 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 9,020 authenticated ranges and 36,879 reviewed MN103 instruction rows |
+| 0 | 9,236 authenticated ranges and 39,415 reviewed MN103 instruction rows |
 | 1 | No authenticated ranges or instructions yet |
 | 2 | No authenticated ranges or instructions yet |
-| 3 | 7 authenticated ranges; no reviewed instructions yet |
-| 4 | No authenticated ranges or instructions yet |
+| 3 | 21 authenticated ranges; no reviewed instructions yet |
+| 4 | 3,115 authenticated ranges covering the full 65,536-byte decoded block; no reviewed instructions yet |
 
 This is partial, non-contiguous coverage rather than a complete disassembly.
 Block offsets and runtime addresses are separate coordinates. Block 0 has more

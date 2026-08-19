@@ -53,7 +53,9 @@ interpretation; new instruction decodes remain a maintainer review item.
 Open a PR that adds only the `incoming/` files. No manifest, identity record,
 method description, or public analysis log is required. A short PR description
 identifying the covered address region and decoder is useful review context but
-is not canonical evidence.
+is not canonical evidence. The contributor commits, merge commit, and
+[`AUTHORS.md`](AUTHORS.md) preserve attribution. State a preferred public name
+or handle in the PR if it differs from the public commit and GitHub identity.
 
 When using Reko for MN103 instruction rows, use a revision containing the
 decoder fixes from [Reko PR #1370](https://github.com/uxmal/reko/pull/1370) for
@@ -62,18 +64,32 @@ cross-check those instruction boundaries.
 
 ## Maintainer verification and acceptance
 
-On a current local checkout of the PR:
+Treat every PR as untrusted. Pin its base and head commits, create an isolated
+checkout, and inspect the complete diff before running anything from it. A
+normal contribution changes only content-addressed `incoming/*.jsonl` files.
+Run tests in the trusted target checkout, then use the trusted target-branch
+installation to inspect the isolated PR checkout without importing or executing
+code from the PR:
 
 ```sh
 pytest
-epl3-research check
+epl3-research check --root "$PR_ROOT"
 epl3-research check-contribution \
-  --base origin/main \
+  --root "$PR_ROOT" \
+  --base "$BASE_SHA" \
   --source .private/OLY_E_086_1600_0000_0000.BIN
 ```
 
-Review every new instruction decode against the authenticated source slice.
-After accepting the reported additions, run:
+Review every new instruction decode against the authenticated source slice. If
+a row cannot be reproduced, remove it on the contributor branch and give the
+corrected file a fresh content-addressed name. Re-run all contributor checks on
+the exact head that will be merged.
+
+Merge the verified intake into the target branch with **Create a merge commit**.
+Do not squash: keeping the contributor commits preserves their public authorship
+and the reviewed head in repository history.
+
+On the updated target branch, accept the files that passed review:
 
 ```sh
 epl3-research accept-contribution \
@@ -86,9 +102,15 @@ Pass only files being accepted; either file type may be omitted. This command
 reverifies every selected file, performs a sorted set union into the canonical
 files, ignores exact duplicates, fails before mutation on conflicts, and
 deletes the consumed incoming files. It is intentionally a maintainer-only,
-mutating command.
+mutating command. Integrate immediately after the intake merge: release mode
+rejects unconsumed incoming files, and a pending intake is not a suitable base
+for another contribution.
 
-Then inspect the canonical diff and run:
+Update the pinned corpus count, `AUTHORS.md`, the firmware map, and any factual
+documentation affected by the accepted evidence. Keep research proposals and
+semantic interpretations separate from mechanical evidence acceptance. Inspect
+the complete integration diff, commit it, and run the final gates on that
+committed `HEAD`:
 
 ```sh
 pytest
@@ -98,9 +120,8 @@ epl3-research check --release \
   --source .private/OLY_E_086_1600_0000_0000.BIN
 ```
 
-Release mode fails if any unconsumed incoming file remains. Add the acceptance
-result to the PR branch and squash-merge it, or reproduce the same acceptance
-on a maintainer integration branch.
+Release mode fails if any unconsumed incoming file remains. Push the accepted
+integration only after all four commands pass and the working tree is clean.
 
 An exact duplicate needs no canonical change and is simply consumed. A claimed
 correction intentionally conflicts with canonical evidence: review it
