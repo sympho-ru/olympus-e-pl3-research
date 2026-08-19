@@ -53,9 +53,10 @@ interpretation; new instruction decodes remain a maintainer review item.
 Open a PR that adds only the `incoming/` files. No manifest, identity record,
 method description, or public analysis log is required. A short PR description
 identifying the covered address region and decoder is useful review context but
-is not canonical evidence. The contributor commits, merge commit, and
-[`AUTHORS.md`](AUTHORS.md) preserve attribution. State a preferred public name
-or handle in the PR if it differs from the public commit and GitHub identity.
+is not canonical evidence. Contributor commits and the merge commit preserve
+public attribution in repository history; [`AUTHORS.md`](AUTHORS.md) identifies
+the maintainer. State a preferred public name or handle in the PR if it differs
+from the public commit and GitHub identity.
 
 When using Reko for MN103 instruction rows, use a revision containing the
 decoder fixes from [Reko PR #1370](https://github.com/uxmal/reko/pull/1370) for

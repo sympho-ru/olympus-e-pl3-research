@@ -82,7 +82,8 @@ explicit maintainer review and is omitted unless essential.
 Olympus and PEN are trademarks of their respective owners. This independent
 project is not endorsed by OM Digital Solutions or Olympus.
 
-## Licensing and authorship
+## Licensing and maintenance
 
 Code is licensed under Apache-2.0. Authored documentation and evidence metadata
-are licensed under CC BY 4.0. See [AUTHORS.md](AUTHORS.md) for authorship.
+are licensed under CC BY 4.0. See [AUTHORS.md](AUTHORS.md) for maintainer credit;
+contributor authorship remains recorded in Git history.
