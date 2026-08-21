@@ -5,11 +5,6 @@ Olympus E-PL3 Body 1.6 evidence. It is a research guide, not an additional
 source of truth: the canonical data remains `evidence/ranges.jsonl` and
 `evidence/instructions.jsonl`.
 
-> **Status:** The contributor research areas below are being reviewed after the
-> recent expansion of the canonical corpus. Updated starting points will follow
-> soon. Until then, confirm any proposed starting point against the canonical
-> evidence and the reviewed [firmware map](FIRMWARE_MAP.md).
-
 Research may overlap, and a well-supported negative result can still be
 useful. Contributors submit authenticated ranges and instructions through the
 workflow in [CONTRIBUTING.md](../CONTRIBUTING.md). A concise PR description may
@@ -72,6 +67,21 @@ A useful result connects an existing boundary to an authenticated predecessor,
 successor, initialization owner, or task boundary without inferring execution
 from a raw address coincidence.
 
+The latest bounded block-0 census found no direct or full-width reference into
+initializer `0x402c0262`. Continue only from a new caller-side mapping,
+runtime-built table, another decoded block, or an authenticated ROM/RAM
+observation; repeating whole-block literal or direct-edge scans is unlikely to
+help.
+
+## Continue the resolved still-corridor dispatch
+
+The two calls at `0x40963771` and `0x409637d1` now resolve through the same
+singleton table slot to runtime `0x6ebdb422` / source offset `0x005da002`.
+For the caller-built argument, the recovered target selects tag `11780` and
+reaches `0x4089a625`. The useful next boundary is the population and runtime
+class of the list searched downstream, especially the object whose slot `+20`
+is invoked. The tag path alone is not evidence of a shutter or image effect.
+
 ## Identify the live-view frame owner
 
 The construction path beginning at `0x40ab9dbd` reaches `0x40aba041`, but no
@@ -80,8 +90,10 @@ Previous exact string-address searches did not produce an instruction-aligned
 owner reference, so another vocabulary or literal-address scan is unlikely to
 help.
 
-A useful result follows control flow, object ownership, or buffer data flow to
-one authenticated frame-producing or frame-consuming relationship.
+A useful result maps dispatch table `0x6eef8128` or `0x6eefb4a0`, or follows
+the proven `outer+132` collection into one authenticated frame-producing or
+frame-consuming relationship. The object binding and collection append are
+already established; repeating the earlier vocabulary scan is not useful.
 
 ## Resolve a read-only PTP request and response lifecycle
 
@@ -89,33 +101,47 @@ PTP handling around `0x6f3307f5` and `0x6f330905` accesses runtime data record
 `0xa07b81cc`, including its `+8` field at `0xa07b81d4`. These are runtime-memory
 addresses, not decoded-block offsets. At code address `0x6f3307fa`, the same
 32-bit record address is rendered as signed decimal `-1602518580` in the
-reviewed instruction. Parts of its initialization and use are authenticated,
-but its complete producer, owner, value semantics, response buffer ownership,
-completion status, and cleanup remain unresolved.
+reviewed instruction. Its 16-record queue producer/consumer, count, cleanup
+drain, and one bounded dynamic copy path are established. The operation
+ingress, valid-selector targets, absolute dynamic storage object, wire-level
+completion, and runtime reachability remain unresolved.
 
-A useful result establishes one of those relationships through bounded
-control flow, data flow, or ABI analysis. Do not infer a handler from a raw
-table word, and do not repeat raw CALL or return-instruction byte-pattern
-scans without a new source of instruction-entry evidence.
+A useful result now resolves one valid selector's indirect target, the
+producer of that selector, or the absolute dynamic storage object reached by
+the established 12-byte copy path. The queue owner, count semantics, cleanup
+drain, and bounded dynamic copy are already established. Do not infer
+operation names or wire completion from record layout alone.
 
-## Characterize decoded block 4
+## Resolve block 1's delegated materializer
 
-The official source registry authenticates decoded block 4 as 65,536 bytes.
-The current public evidence contains 3,115 authenticated ranges whose union
-covers the full decoded block, but no reviewed instructions. Range coverage
-alone does not establish whether it is code, its processor, its role, an entry
-point, or an interface to the other blocks.
+The 69-record block-1 layout and its three block-0 materializer paths are now
+established. One observation at delegated service `0x402e90bc`, with the
+record-0 arguments, would distinguish copy/DMA from address mapping. Broad
+rescans of block 1 are no longer the smallest useful step.
 
-A useful result first classifies its contents from reproducible evidence, then
-identifies an architecture or one authenticated entry, control, or data
-relationship if supported. Range-only contributions are valid when an
-instruction interpretation is not yet supportable.
+## Find block 2's consumer
+
+The candidate `(0x00240000, 0x43d00400)` header and exact payload geometry are
+authenticated, but no consumer proves their meaning. The next useful result is
+one bounded static or emulated path that receives the decoded block and shows
+whether those words are length/destination, source metadata, or something
+else.
+
+## Identify decoded block 4's external owner
+
+Block 4 is now classified as a flat big-endian H8-family image, and an internal
+420-byte source-to-runtime copy/call relationship is established. The open
+question is external ownership: identify the exact chip/consumer and the path
+that loads or starts the image. A raw string match in block 0 is not enough;
+the useful result must bind a fifth-body descriptor or identifier to a read,
+copy, write, or start operation.
 
 ## External evidence wanted: integrity and authentication
 
-The official image can be decoded and reconstructed byte-identically, but the
-integrity rules for a nonempty change are not fully characterized and any
-device-side firmware authentication decision remains unknown.
+The official image can be decoded and reconstructed byte-identically. A
+same-size nonempty body change can also be rescrambled and its additive tail
+checksum repaired so the supplied host parser accepts the complete container.
+That does not answer updater or device-side validation and authentication.
 
 Useful evidence would be an independently inspectable verifier, an updater or
 device validation path, technical documentation, or another reproducible
