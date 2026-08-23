@@ -16,11 +16,11 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 9,276 authenticated ranges and 39,415 reviewed MN103 instruction rows |
-| 1 | 6 authenticated ranges; no reviewed instructions yet |
-| 2 | 2 authenticated ranges; no reviewed instructions yet |
-| 3 | 21 authenticated ranges; no reviewed instructions yet |
-| 4 | 3,115 authenticated ranges covering the full 65,536-byte decoded block; no reviewed instructions yet |
+| 0 | 9,490 authenticated ranges and 39,456 reviewed MN103 instruction rows |
+| 1 | 183 authenticated ranges; no reviewed instructions yet |
+| 2 | 4 authenticated ranges; no reviewed instructions yet |
+| 3 | 34 authenticated ranges; no reviewed instructions yet |
+| 4 | 3,146 authenticated ranges covering the full 65,536-byte decoded block; no reviewed instructions yet |
 
 This is partial, non-contiguous coverage rather than a complete disassembly.
 Block offsets and runtime addresses are separate coordinates. Block 0 has more
@@ -41,6 +41,13 @@ address by adding one global load base. Use an explicit authenticated
 This establishes a shared runtime-state access and two direct control-flow
 edges. It does not yet establish the reset entry, the state’s meaning, object
 ownership, or initialization order.
+
+A separate startup control word at `0x600011d0` now has a bounded setter at
+`0x402c0707`, followed by a far return. The startup-adjacent sequence at
+`0x402c02b6..0x402c02bc` supplies `-1` and calls that setter; the same word is
+read by the branch at the front of the delegated service below `0x402c15d1`.
+This establishes one static write/read relationship, not the word's complete
+lifecycle or runtime meaning.
 
 An exhaustive block-0 census found no full-width literal or supported direct
 PC-relative edge naming initializer `0x402c0262`. The nearby early sequence
@@ -68,19 +75,29 @@ later object/list lookup and virtual dispatch remain runtime-dependent. This
 establishes a static tag-selection path, not shutter actuation, sensor
 exposure, image production, or file creation.
 
-### Live-view research corridor
+The singleton lifecycle is now bounded beyond construction and dispatch. Its
+getter, constructor, destructor body, and cleanup reset all have authenticated
+spans; the cleanup path loads and clears global `0x60358c3c`, and the
+constructor/destructor evidence uses the same table value `0x6ee69030`.
+Direct-call and literal censuses do not exclude indirect writes or prove that
+every candidate use is reachable.
 
-The reviewed corridor begins at `0x40ab9dbd` (`block 0`, offset
-`0x007f9ddd`). A direct call at `0x40ab9e73` targets `0x40aba041`. The
-authenticated containing span is:
+### Live-view object lifecycle
+
+The corridor beginning at `0x40ab9dbd` (`block 0`, offset `0x007f9ddd`) is a
+reverse-order destructor, correcting its earlier construction label. A direct
+call at `0x40ab9e73` targets `0x40aba041`. The authenticated containing span
+is:
 
 ```text
 block=0 offset=0x007f9ddd length=382
 sha256=592f4b119e2fa9efc4a4b68db11331e49a85530860a935faed3ba833eb965449
 ```
 
-The accepted evidence does not yet identify a frame-buffer owner, pixel
-format, lifetime, or display/export consumer.
+The lazy singleton accessor is at `0x40ab9cbd`; its construction path begins at
+`0x40ab9ceb`, spans 468 bytes, and has eight authenticated direct callers. The
+accepted evidence still does not identify a frame-buffer owner, pixel format,
+or display/export consumer.
 
 The downstream object relationships are narrower but now explicit. The
 singleton constructor binds `root+52 = root+276`; the embedded object at
@@ -90,9 +107,11 @@ copies the collection at `outer+132` into `outer+24` and an alias at
 `(outer+248)+24`; wrapper `0x40aba091` passes `outer+24` to collection routine
 `0x40aac8b4`, which can append the pointer to a dynamic array.
 
-Neither runtime dispatch table `0x6eef8128` nor `0x6eefb4a0` is mapped to
-static source bytes. Consequently the exact caller/class and any frame,
-display, DMA, or export effect remain unresolved.
+Runtime dispatch table `0x6eefb4a0` is now mapped to block-0 offset
+`0x008fa080`; slot `+0x10` resolves to wrapper `0x40aba091`, closing one table
+edge in the collection path. Dispatch table `0x6eef8128`, the identity between
+the provider and its returned product, and any frame, display, DMA, or export
+effect remain unresolved.
 
 ## Established PTP-adjacent record initialization
 
@@ -124,6 +143,12 @@ Therefore, on this statically decoded path, the helper zero-fills 256 bytes
 beginning at runtime address `0xa07b81cc`. This includes the `+8` address
 `0xa07b81d4` referenced elsewhere in the PTP research corridor.
 
+The helper at `0x6e70cbf5` is more general than this caller: `a0` is the
+destination, the low byte of `d0` is the fill value, and unsigned `d1` is the
+count. A bounded direct-caller census found zero-fill uses, one literal-space
+fill, and two live-`d0` variable-fill sites. The PTP initializer is therefore
+one specialization of a shared byte-fill primitive.
+
 The remaining boundary is deliberately narrow. The evidence does **not** yet
 establish:
 
@@ -136,7 +161,7 @@ The commands needed to reproduce and extend these windows are in
 [ANALYSIS.md](ANALYSIS.md). The remaining boundaries are tracked in
 [RESEARCH.md](RESEARCH.md).
 
-The same module now has three additional bounded relationships:
+Additional bounded relationships in this module include:
 
 - `0x6f330fba` appends 16-byte records to the array beginning at
   `0xa07b81cc`; `0x6f3307f5` consumes the front record and compacts the
@@ -153,9 +178,23 @@ The same module now has three additional bounded relationships:
   circular storage. Bytes 2 and 3 are not initialized by the builder. This
   proves a buffer-copy path, not USB/wire completion.
 
-Adjacent word `0xa07b82d0` has a direct setter and is later used as the
-unsigned dividend of a caller-supplied divisor. Its unit and lifecycle are
-still unknown; a completion-status meaning is unsupported.
+The five reviewed `0xbb02` literal sites now establish one bounded reply
+lifecycle: a 16-byte request layout, selector dispatch through record `+8`,
+normal FIFO compaction, an exceptional tail-pop drain, 12-byte reply packing,
+and an unsigned-halfword return. The tag's product-level name and wire-level
+completion remain unproved.
+
+Nearby routines `0x6f334b0e` and `0x6f334b37` form a two-entry static buffer
+pool. Checkout first-fit reserves one of two `0x40000`-byte backing buffers and
+returns its pointer or null; release matches that pointer and clears the
+descriptor's availability halfword. Routine `0x6f334b5e` is a separate
+stateful consumer, not another release primitive.
+
+Adjacent halfword `0xa07b82d0` is co-reset with the FIFO and is later used as
+the unsigned dividend of a caller-supplied divisor. It is not referenced by
+the reviewed append, shift, drain, or completion paths, while the FIFO has a
+separate count halfword. Its unit and lifecycle remain unknown; queue-count or
+completion-status meanings are unsupported.
 
 ## Decoded block 1 materialization
 
@@ -172,22 +211,59 @@ attribute `0x0101`, then delegates the actual service below `0x402e90bc`.
 Static evidence therefore establishes the record and request relationship but
 does not distinguish copying, DMA, or address mapping inside that service.
 
+The materialized data has two additional verified structures. One is a
+34-resource, directory-aligned UTF-16LE string-dictionary bundle with a
+matching fixed-width 34-name table and repeated `@A000@..@A0EE@` token family.
+The other is a 239-entry affine descriptor index whose back-pointers and
+reserved-zero fields reproduce, alongside 34 strictly monotonic tables.
+Per-resource runtime population, compact-family geometry, and the consumers of
+those tables remain unresolved.
+
 ## Decoded block 2 boundary
 
-Block 2 begins with candidate words `0x00240000` and `0x43d00400`; the
-candidate payload is exactly `0x240000` bytes at offset `0x3e0`. Unlike
-blocks 1 and 3, it does not use the proved `(source, length, 0, 0)` grammar,
-and no external consumer or accepted instruction literal binds the candidate
-destination. Treating the pair as `(length, destination)` remains a bounded
-structural hypothesis, not an admitted loader edge.
+Block 2 begins with candidate words `0x00240000` and `0x43d00400`. Its exact
+physical partition is now established: the 8-byte prefix, `0xff` fill through
+offset `0x3e0`, a `0x240000`-byte payload through `0x2403e0`, and trailing
+`0xff` fill through block end. The first word equals the payload length. The
+payload uses byte values `0x00..0x3f` except `0x3c`; bounded scans rejected the
+named conventional six-bit packings, compression signatures, simple
+delta/scrambling transforms, and direct text encodings.
+
+Unlike blocks 1 and 3, block 2 does not use the proved
+`(source, length, 0, 0)` grammar. No exact external copy or canonical
+instruction operand identifies a consumer, and the original container headers
+are absent from the decoded blocks. Treating `0x43d00400` as a destination or
+load base remains a structural hypothesis; computed, indirect, or
+runtime-built consumers are not excluded.
+
+## Decoded block 3 resource bundle
+
+Block 3 has an eight-entry candidate index at offsets `0x00000000..0x00000080`
+and eight contiguous prefixed records beginning at `0x000003e0`. Each record
+contains one complete, independently parsed baseline JFIF JPEG; the JPEG spans
+do not overlap, bytes after each EOI through the next record boundary are zero,
+and the remainder from `0x003949e0` through block end is zero. All non-JPEG
+nonzero bytes outside the payloads are confined to the index and 16-byte
+record prefixes.
+
+This establishes a static eight-image resource bundle and exact JPEG extents,
+not the meanings of the prefix words or address-like index fields. No accepted
+code consumer, runtime owner, or UI/compositing role has been established.
 
 ## Decoded block 4 classification
 
-The fully authenticated 65,536-byte block 4 is a flat big-endian H8-family
+The fully authenticated 65,536-byte block 4 is a flat big-endian H8-compatible
 image containing vector-like entries, code, tables, strings, and padding. Its
 startup-shaped routine copies block-4 source interval `0xe60e..0xe7b2` (420
 bytes) to runtime `0x00400650..0x004007f4` and calls the copied entry. Internal
 absolute references agree with relocation delta `0x003f2042`.
+
+A bounded consumer at `0xd316..0xd375` indexes a 70-entry dispatch table at
+`0xe898..0xe9b0`, within a larger aligned big-endian target-table region. An
+eight-byte `E. Munch` literal at block-4 offset `0x34` also occurs uniquely at
+block-0 offset `0x00338a80`, immediately before firmware-update and ID-check
+text. The byte identity and context are exact, but they do not establish a
+descriptor, transfer, owner, or start edge.
 
 This establishes an internal materialization relationship. It does not yet
 establish the exact H8 chip, external block-4 loader, hardware owner, reset

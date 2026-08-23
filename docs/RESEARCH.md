@@ -24,7 +24,7 @@ decoded firmware block and are the values accepted by `source-range`.
 | Boot reader | `0x402c0339` | `1076626233` | 0 | `0x00000359` | `mov (0x60504b24),d1` |
 | Boot sink | `0x402c093c` | `1076627772` | 0 | `0x0000095c` | `mov d1,d3` |
 | Still capture | `0x4096368d` | `1083586189` | 0 | `0x006a36ad` | `mov a0,a3` |
-| Live-view root | `0x40ab9dbd` | `1084988861` | 0 | `0x007f9ddd` | `mov a0,a2` |
+| Live-view teardown | `0x40ab9dbd` | `1084988861` | 0 | `0x007f9ddd` | `mov a0,a2` |
 | Live-view callee | `0x40aba041` | `1084989505` | 0 | `0x007fa061` | `mov 1861203104,d0` |
 | PTP path | `0x6f3307f5` | `1865615349` | 0 | `0x00d30815` | `movm [d2,d3,a2,a3],(sp)` |
 | PTP record load | `0x6f3307fa` | `1865615354` | 0 | `0x00d3081a` | `mov -1602518580,a3` |
@@ -37,7 +37,7 @@ existing reviewed instruction boundary. Useful starting areas include:
 
 - boot and startup around `0x402c02fb` and `0x402c093c`;
 - still capture around `0x4096368d`;
-- live-view construction around `0x40ab9dbd`;
+- live-view teardown around `0x40ab9dbd` and wrapper `0x40aba091`;
 - PTP handling around `0x6f3307f5`.
 
 Stop at an explicit branch, return, indirect call, or already covered
@@ -84,16 +84,20 @@ is invoked. The tag path alone is not evidence of a shutter or image effect.
 
 ## Identify the live-view frame owner
 
-The construction path beginning at `0x40ab9dbd` reaches `0x40aba041`, but no
-frame-buffer owner, format, lifetime, or display/export consumer is established.
-Previous exact string-address searches did not produce an instruction-aligned
-owner reference, so another vocabulary or literal-address scan is unlikely to
-help.
+The lazy singleton accessor at `0x40ab9cbd` constructs through `0x40ab9ceb`;
+the corridor beginning at `0x40ab9dbd` is its reverse-order destructor, not
+its constructor. Dispatch table `0x6eefb4a0` is now mapped, and slot `+0x10`
+resolves to wrapper `0x40aba091`. No frame-buffer owner, format, or
+display/export consumer is established. Previous exact string-address scans
+did not produce an instruction-aligned owner reference, so another vocabulary
+scan is unlikely to help.
 
-A useful result maps dispatch table `0x6eef8128` or `0x6eefb4a0`, or follows
-the proven `outer+132` collection into one authenticated frame-producing or
-frame-consuming relationship. The object binding and collection append are
-already established; repeating the earlier vocabulary scan is not useful.
+A useful result maps the remaining dispatch table `0x6eef8128`, proves or
+rejects identity between the provider and returned product around the mapped
+`0x6eefb4a0` edge, or follows the proven `outer+132` collection into one
+authenticated frame-producing or frame-consuming relationship. The lifecycle,
+object binding, collection append, and `0x6eefb4a0` slot are already
+established.
 
 ## Resolve a read-only PTP request and response lifecycle
 
@@ -102,39 +106,65 @@ PTP handling around `0x6f3307f5` and `0x6f330905` accesses runtime data record
 addresses, not decoded-block offsets. At code address `0x6f3307fa`, the same
 32-bit record address is rendered as signed decimal `-1602518580` in the
 reviewed instruction. Its 16-record queue producer/consumer, count, cleanup
-drain, and one bounded dynamic copy path are established. The operation
-ingress, valid-selector targets, absolute dynamic storage object, wire-level
-completion, and runtime reachability remain unresolved.
+drain, two-entry `0x40000`-byte backing-buffer pool, one bounded dynamic copy
+path, and one `0xbb02` reply lifecycle are established. Halfword
+`0xa07b82d0` is co-reset but is absent from the reviewed append, shift, drain,
+and completion paths; it is not the queue count. The operation ingress,
+product-level meaning of `0xbb02`, remaining selector targets, absolute dynamic
+storage object, wire-level completion, and runtime reachability remain
+unresolved.
 
-A useful result now resolves one valid selector's indirect target, the
-producer of that selector, or the absolute dynamic storage object reached by
-the established 12-byte copy path. The queue owner, count semantics, cleanup
-drain, and bounded dynamic copy are already established. Do not infer
-operation names or wire completion from record layout alone.
+A useful result now connects `0xbb02` to an authenticated operation ingress,
+resolves another valid selector's indirect target or producer, or identifies
+the absolute dynamic storage object reached by the established 12-byte copy
+path. Do not infer operation names or wire completion from record layout alone.
 
 ## Resolve block 1's delegated materializer
 
 The 69-record block-1 layout and its three block-0 materializer paths are now
-established. One observation at delegated service `0x402e90bc`, with the
-record-0 arguments, would distinguish copy/DMA from address mapping. Broad
-rescans of block 1 are no longer the smallest useful step.
+established. The data now also has a 34-resource UTF-16LE localization bundle,
+a matching fixed-width name table, a 239-entry affine descriptor index, and 34
+monotonic tables. One observation at delegated service `0x402e90bc`, with the
+record-0 arguments, would distinguish copy/DMA from address mapping and begin
+to connect these file-relative structures to runtime consumers. Broad rescans
+of block 1 are no longer the smallest useful step.
 
 ## Find block 2's consumer
 
-The candidate `(0x00240000, 0x43d00400)` header and exact payload geometry are
-authenticated, but no consumer proves their meaning. The next useful result is
-one bounded static or emulated path that receives the decoded block and shows
-whether those words are length/destination, source metadata, or something
-else.
+The candidate `(0x00240000, 0x43d00400)` header, `0xff` boundaries, and exact
+`0x240000`-byte low-six-bit payload geometry are authenticated. Direct text,
+conventional six-bit packing, named compression/transform signatures, exact
+cross-block copies, and canonical direct operands did not identify a consumer;
+the original container headers are absent from the decoded blocks. The next
+useful result is a bounded computed, indirect, runtime-built, or emulated path
+that receives the decoded block and establishes what the two header words and
+payload mean.
+
+## Find the block 3 resource consumer
+
+Block 3 is now structurally mapped as an eight-entry index followed by eight
+contiguous prefixed baseline-JFIF JPEG records and a zero tail. The exact JPEG
+extents and dimensions are established, but the index-field meanings and
+firmware consumer are not.
+
+A useful result binds one index entry or 16-byte record prefix to an
+authenticated block-0 read, copy, decode, or display path. Visual similarity,
+address-shaped words, or a guessed UI role without a consumer edge is not
+enough.
 
 ## Identify decoded block 4's external owner
 
-Block 4 is now classified as a flat big-endian H8-family image, and an internal
-420-byte source-to-runtime copy/call relationship is established. The open
-question is external ownership: identify the exact chip/consumer and the path
-that loads or starts the image. A raw string match in block 0 is not enough;
-the useful result must bind a fifth-body descriptor or identifier to a read,
-copy, write, or start operation.
+Block 4 is now classified as a flat big-endian H8-compatible image, with an
+internal 420-byte source-to-runtime copy/call relationship and a bounded
+70-entry dispatch consumer. Its `E. Munch` literal at block-4 offset `0x34`
+also appears uniquely at block-0 offset `0x00338a80` immediately before
+firmware-update and ID-check text. This narrows the search but still does not
+identify an external owner.
+
+A useful result follows the surrounding block-0 structure at `0x00338a80` to a
+fifth-body descriptor, read, copy, write, or start operation, or independently
+identifies the exact chip/consumer. Repeating the string match alone is not
+useful.
 
 ## External evidence wanted: integrity and authentication
 
