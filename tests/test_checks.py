@@ -179,7 +179,7 @@ def test_default_and_override_private_terms_scan_the_tree(
 
 
 def test_public_corpus_retains_the_authenticated_range_and_instruction_data() -> None:
-    assert load_evidence(ROOT) == EvidenceCounts(ranges=12857, instructions=39456)
+    assert load_evidence(ROOT) == EvidenceCounts(ranges=13981, instructions=41501)
     ranges = {
         (item["block"], item["offset"], item["length"], item["sha256"])
         for item in (
@@ -188,9 +188,12 @@ def test_public_corpus_retains_the_authenticated_range_and_instruction_data() ->
         )
     }
     assert {
+        (0, 0x000000C9, 8, "a85b65a989076dc6134715cca1c83638972f21e909dd7c809a0febf8f63a7e1c"),
         (0, 0x00820000, 30, "28df1ac852d06e22d1d9e551bf3742162a5703bd467140422e90b218f059fac4"),
         (0, 0x00B8211E, 9, "376cb97fc05688293ab81d0e3ca1e2dd8aff8ddaacbd84e9c4296f9bf256f549"),
         (0, 0x00D30841, 423, "82c827858c7edabda470589eb8917419f172967b6ef99b8dec0bed1fad869a70"),
         (0, 0x00D30A45, 88, "b0da7be4133c889bb79a3322c85ded7d9fbdd464e1fb02d532e42a8f5558240e"),
         (0, 0x00D58CE4, 64, "e6b372bff872edb26f7a95e59cf8ac20600b64a88a0bd2fe2441f5238e1c83f0"),
+        (1, 0x00000020, 16, "df65e960cbdd0c66d36ccd099ecd424dd6fddbb963390070c31acbcdf5805c59"),
+        (4, 0x0000122A, 4, "96641b39a9b61dff06ed20aaaa2005e31c193e281fc69aae5a00edfaa311cfa0"),
     }.issubset(ranges)

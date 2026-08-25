@@ -16,11 +16,11 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 9,490 authenticated ranges and 39,456 reviewed MN103 instruction rows |
-| 1 | 183 authenticated ranges; no reviewed instructions yet |
+| 0 | 10,057 authenticated ranges and 41,501 reviewed MN103 instruction rows |
+| 1 | 706 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
 | 3 | 34 authenticated ranges; no reviewed instructions yet |
-| 4 | 3,146 authenticated ranges covering the full 65,536-byte decoded block; no reviewed instructions yet |
+| 4 | 3,180 authenticated ranges covering the full 65,536-byte decoded block; no reviewed instructions yet |
 
 This is partial, non-contiguous coverage rather than a complete disassembly.
 Block offsets and runtime addresses are separate coordinates. Block 0 has more
@@ -50,17 +50,21 @@ This establishes one static write/read relationship, not the word's complete
 lifecycle or runtime meaning.
 
 An exhaustive block-0 census found no full-width literal or supported direct
-PC-relative edge naming initializer `0x402c0262`. The nearby early sequence
-ends in an indirect handoff through fixed value `0x6e6016a2`, but the supplied
-evidence does not map that target back to the initializer. This is a bounded
-block-0 negative, not proof that the owner cannot be in another block, ROM, or
-runtime-built table.
+PC-relative edge naming initializer `0x402c0262`. The nearby early sequence now
+has an authenticated local-overlay handoff: at block-0 offset `0x000000c9` /
+runtime `0x6e6000a9` it loads `0x6e6016a2` and jumps indirectly. That target is
+backed by block-0 offset `0x000016c2` and begins by clearing `d2`. This closes
+the local target mapping, but it still does not connect the handoff to reset or
+to initializer `0x402c0262`. The bounded negative does not exclude another
+block, ROM, runtime-built state, or a different block-0 address relation.
 
 ### Still-corridor singleton dispatch
 
 The indirect calls at `0x40963771` and `0x409637d1` both load slot `+4` from
 the table of the singleton stored at runtime global `0x60358c3c`. Its
-constructor installs table address `0x6ee69030`.
+constructor installs table address `0x6ee69030`. All eight table slots and the
+corresponding target source spans now have authenticated coverage; slot `+4`
+remains the slot tied directly to these two reviewed callers.
 
 A local relocation relation is established by the 27-entry table at runtime
 `0x6ee691d0` / block-0 offset `0x00867db0`: every entry's name pointer maps to
@@ -71,9 +75,11 @@ disassembly address `0x40899fe2`).
 
 For the non-null argument constructed on these caller paths, the target's
 predicate sequence selects tag `11780` and directly calls `0x4089a625`. The
-later object/list lookup and virtual dispatch remain runtime-dependent. This
-establishes a static tag-selection path, not shutter actuation, sensor
-exposure, image production, or file creation.
+accepted corridor continues through object creation and initialization,
+associates the incoming values, and appends into the searched list through
+`0x4089a73b`. The list's runtime class and later slot-`+20` dispatch remain
+runtime-dependent. This establishes a static population path, not shutter
+actuation, sensor exposure, image production, or file creation.
 
 The singleton lifecycle is now bounded beyond construction and dispatch. Its
 getter, constructor, destructor body, and cleanup reset all have authenticated
@@ -107,11 +113,15 @@ copies the collection at `outer+132` into `outer+24` and an alias at
 `(outer+248)+24`; wrapper `0x40aba091` passes `outer+24` to collection routine
 `0x40aac8b4`, which can append the pointer to a dynamic array.
 
-Runtime dispatch table `0x6eefb4a0` is now mapped to block-0 offset
+Runtime dispatch table `0x6eefb4a0` is mapped to block-0 offset
 `0x008fa080`; slot `+0x10` resolves to wrapper `0x40aba091`, closing one table
-edge in the collection path. Dispatch table `0x6eef8128`, the identity between
-the provider and its returned product, and any frame, display, DMA, or export
-effect remain unresolved.
+edge in the collection path. The 16-slot table at runtime `0x6eef8128` is now
+authenticated at block-0 offset `0x008f6d08`; slot `+0` conditionally resolves
+to `0x6edec9be`. A separate 55-entry pointer structure at runtime `0x6ee3e908`
+is authenticated at block-0 offset `0x0083d4e8`. Which slot carries the
+`outer+132` collection element, the identity between the provider and its
+returned product, and any frame, display, DMA, or export effect remain
+unresolved.
 
 ## Established PTP-adjacent record initialization
 
@@ -177,6 +187,13 @@ Additional bounded relationships in this module include:
   through `0x6e61fd8d` to `0x6e68939a`, which copies it into dynamic queued or
   circular storage. Bytes 2 and 3 are not initialized by the builder. This
   proves a buffer-copy path, not USB/wire completion.
+- Accepted coverage continues the storage corridor at `0x6e6893ae` through a
+  pointer walk rooted at table `0x8ff00004`, an owner-relative queue object,
+  an unsigned bound, and the caller-supplied 12-byte descriptor. A separate
+  authenticated 128-byte structure at block-0 offset `0x00d589f8` contains 16
+  dispatch records; its bounded selector path reaches `0x6f334bbf`. These are
+  static storage and dispatch boundaries, not an operation ingress or a
+  wire-level completion proof.
 
 The five reviewed `0xbb02` literal sites now establish one bounded reply
 lifecycle: a 16-byte request layout, selector dispatch through record `+8`,
@@ -211,13 +228,22 @@ attribute `0x0101`, then delegates the actual service below `0x402e90bc`.
 Static evidence therefore establishes the record and request relationship but
 does not distinguish copying, DMA, or address mapping inside that service.
 
+Record 0 is now bounded as source `0x42700800`, length `0x547c00`, decoded
+image offset `0x000007e0`; its common-service request remains conditional on
+`a3 == 0`. Records 2, 14, 20, 29, 34, 45, and 46 also have authenticated
+conditional materializer paths. None of these paths establishes the delegated
+service's transfer effect.
+
 The materialized data has two additional verified structures. One is a
 34-resource, directory-aligned UTF-16LE string-dictionary bundle with a
 matching fixed-width 34-name table and repeated `@A000@..@A0EE@` token family.
 The other is a 239-entry affine descriptor index whose back-pointers and
 reserved-zero fields reproduce, alongside 34 strictly monotonic tables.
-Per-resource runtime population, compact-family geometry, and the consumers of
-those tables remain unresolved.
+Canonical coverage now authenticates 523 additional block-1 directory,
+record, and localization spans, including 374 token-bearing strings across the
+34 resources and bounded repeated token families. Per-resource runtime
+population, compact-family geometry, token-to-glyph meaning, and the consumers
+of those tables remain unresolved.
 
 ## Decoded block 2 boundary
 
@@ -264,6 +290,12 @@ eight-byte `E. Munch` literal at block-4 offset `0x34` also occurs uniquely at
 block-0 offset `0x00338a80`, immediately before firmware-update and ID-check
 text. The byte identity and context are exact, but they do not establish a
 descriptor, transfer, owner, or start edge.
+
+Additional authenticated ranges cover H8-shaped handler and target windows
+from block-4 offset `0x05b8` through `0xe94c`, including the common dispatch
+target at `0x122a`. No block-4 instruction row is canonical: conflicting H8
+decodes remain unresolved, so the new coverage authenticates source structure
+without choosing instruction semantics.
 
 This establishes an internal materialization relationship. It does not yet
 establish the exact H8 chip, external block-4 loader, hardware owner, reset
