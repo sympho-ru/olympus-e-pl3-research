@@ -68,36 +68,40 @@ successor, initialization owner, or task boundary without inferring execution
 from a raw address coincidence.
 
 The latest bounded block-0 census found no direct or full-width reference into
-initializer `0x402c0262`. Continue only from a new caller-side mapping,
-runtime-built table, another decoded block, or an authenticated ROM/RAM
-observation; repeating whole-block literal or direct-edge scans is unlikely to
-help.
+initializer `0x402c0262`. The local-overlay handoff at block-0 offset `0xc9` /
+runtime `0x6e6000a9` is now mapped through its indirect target
+`0x6e6016a2`, backed by source offset `0x16c2`. The useful next result is the
+authenticated predecessor or runtime-built pointer that supplies this handoff
+and connects it to reset without treating the local overlay as a global load
+base. Repeating whole-block literal or direct-edge scans is unlikely to help.
 
 ## Continue the resolved still-corridor dispatch
 
 The two calls at `0x40963771` and `0x409637d1` now resolve through the same
 singleton table slot to runtime `0x6ebdb422` / source offset `0x005da002`.
 For the caller-built argument, the recovered target selects tag `11780` and
-reaches `0x4089a625`. The useful next boundary is the population and runtime
-class of the list searched downstream, especially the object whose slot `+20`
-is invoked. The tag path alone is not evidence of a shutter or image effect.
+reaches `0x4089a625`; accepted coverage now continues through object
+initialization, value association, and append into the searched list through
+`0x4089a73b`. The useful next boundary is the list's runtime class and the
+object whose slot `+20` is invoked. The population path is not evidence of a
+shutter or image effect.
 
 ## Identify the live-view frame owner
 
 The lazy singleton accessor at `0x40ab9cbd` constructs through `0x40ab9ceb`;
 the corridor beginning at `0x40ab9dbd` is its reverse-order destructor, not
-its constructor. Dispatch table `0x6eefb4a0` is now mapped, and slot `+0x10`
-resolves to wrapper `0x40aba091`. No frame-buffer owner, format, or
-display/export consumer is established. Previous exact string-address scans
-did not produce an instruction-aligned owner reference, so another vocabulary
-scan is unlikely to help.
+its constructor. Dispatch table `0x6eefb4a0` is mapped, with slot `+0x10`
+resolving to wrapper `0x40aba091`; the 16-slot table `0x6eef8128` is now mapped
+too, with slot `+0` conditionally resolving to `0x6edec9be`. No frame-buffer
+owner, format, or display/export consumer is established. Previous exact
+string-address scans did not produce an instruction-aligned owner reference,
+so another vocabulary scan is unlikely to help.
 
-A useful result maps the remaining dispatch table `0x6eef8128`, proves or
-rejects identity between the provider and returned product around the mapped
-`0x6eefb4a0` edge, or follows the proven `outer+132` collection into one
-authenticated frame-producing or frame-consuming relationship. The lifecycle,
-object binding, collection append, and `0x6eefb4a0` slot are already
-established.
+A useful result identifies which independently decoded slot of `0x6eef8128`
+or `0x6eefb4a0` carries the `outer+132` collection element into
+`0x4052c090` or the `0x40aac8b4` append, then follows one authenticated edge
+to a concrete frame handle. The lifecycle, object binding, collection append,
+and the two mapped tables are already established.
 
 ## Resolve a read-only PTP request and response lifecycle
 
@@ -111,23 +115,27 @@ path, and one `0xbb02` reply lifecycle are established. Halfword
 `0xa07b82d0` is co-reset but is absent from the reviewed append, shift, drain,
 and completion paths; it is not the queue count. The operation ingress,
 product-level meaning of `0xbb02`, remaining selector targets, absolute dynamic
-storage object, wire-level completion, and runtime reachability remain
-unresolved.
+storage object, callback owner behind `*(0xa07b81a0)`, wire-level completion,
+and runtime reachability remain unresolved.
 
-A useful result now connects `0xbb02` to an authenticated operation ingress,
-resolves another valid selector's indirect target or producer, or identifies
+A useful result now identifies the owner of `*(0xa07b81a0)` after the `0xbb02`
+drain and the authenticated operation ingress that supplies the selector or
+record reaching that callback. Resolving another valid selector's producer or
 the absolute dynamic storage object reached by the established 12-byte copy
-path. Do not infer operation names or wire completion from record layout alone.
+path is also useful. Do not infer operation names or wire completion from
+record layout alone.
 
 ## Resolve block 1's delegated materializer
 
 The 69-record block-1 layout and its three block-0 materializer paths are now
-established. The data now also has a 34-resource UTF-16LE localization bundle,
-a matching fixed-width name table, a 239-entry affine descriptor index, and 34
-monotonic tables. One observation at delegated service `0x402e90bc`, with the
-record-0 arguments, would distinguish copy/DMA from address mapping and begin
-to connect these file-relative structures to runtime consumers. Broad rescans
-of block 1 are no longer the smallest useful step.
+established. The data also has a 34-resource UTF-16LE localization bundle, a
+matching fixed-width name table, a 239-entry affine descriptor index, 34
+monotonic tables, and authenticated coverage for 374 token-bearing strings.
+Record 0 supplies source `0x42700800`, length `0x547c00`, decoded image offset
+`0x7e0`, and a request that remains conditional on `a3 == 0`. One observation
+at delegated service `0x402e90bc` would distinguish copy/DMA from address
+mapping and begin to connect these file-relative structures to a parser or
+renderer. Broad rescans of block 1 are no longer the smallest useful step.
 
 ## Find block 2's consumer
 
@@ -154,16 +162,20 @@ enough.
 
 ## Identify decoded block 4's external owner
 
-Block 4 is now classified as a flat big-endian H8-compatible image, with an
+Block 4 is classified as a flat big-endian H8-compatible image, with an
 internal 420-byte source-to-runtime copy/call relationship and a bounded
 70-entry dispatch consumer. Its `E. Munch` literal at block-4 offset `0x34`
 also appears uniquely at block-0 offset `0x00338a80` immediately before
-firmware-update and ID-check text. This narrows the search but still does not
-identify an external owner.
+firmware-update and ID-check text. Additional authenticated ranges reach the
+common dispatch target at offset `0x122a`, but conflicting H8 decodes mean no
+block-4 instruction semantics are canonical. This narrows the search but still
+does not identify an external owner.
 
-A useful result follows the surrounding block-0 structure at `0x00338a80` to a
-fifth-body descriptor, read, copy, write, or start operation, or independently
-identifies the exact chip/consumer. Repeating the string match alone is not
+A useful result first provides one independently reproducible H8 decode for
+the common target at offset `0x122a`, then traces the producer of selector
+`0x004003c1`. Following the surrounding block-0 structure at `0x00338a80` to a
+fifth-body descriptor, transfer, or start operation remains useful after that
+decoder boundary is established. Repeating the string match alone is not
 useful.
 
 ## External evidence wanted: integrity and authentication
@@ -184,5 +196,6 @@ authentication.
 Open questions stay here until the maintainer accepts enough evidence to
 answer or narrow them. Established relationships may then move into the small
 reviewed [firmware map](FIRMWARE_MAP.md), while the canonical JSONL remains
-firmware-only. Coordination and temporary ownership belong in GitHub issues or
-PRs, not in this file.
+firmware-only. Keep one durable frontier per established boundary rather than
+mirroring private campaign cards or live queue state. Coordination and
+temporary ownership belong in GitHub issues or PRs, not in this file.
