@@ -97,11 +97,12 @@ owner, format, or display/export consumer is established. Previous exact
 string-address scans did not produce an instruction-aligned owner reference,
 so another vocabulary scan is unlikely to help.
 
-A useful result identifies which independently decoded slot of `0x6eef8128`
-or `0x6eefb4a0` carries the `outer+132` collection element into
-`0x4052c090` or the `0x40aac8b4` append, then follows one authenticated edge
-to a concrete frame handle. The lifecycle, object binding, collection append,
-and the two mapped tables are already established.
+Accepted coverage now also ties table head `0x6ee3e908` to the bounded helper
+at `0x6eb7e2d8` and to a 12-byte temporary/three-word copy path reached through
+`0x40aac8d7`. A useful result identifies the owner of that helper's
+caller-supplied object or the destination of the three-word copy, then binds it
+to the `outer+132` collection or one concrete frame handle. The lifecycle,
+object binding, collection append, and mapped tables are already established.
 
 ## Resolve a read-only PTP request and response lifecycle
 
@@ -125,6 +126,11 @@ the absolute dynamic storage object reached by the established 12-byte copy
 path is also useful. Do not infer operation names or wire completion from
 record layout alone.
 
+The late handler at `0x6f33fb8e` now has a reviewed direct call to
+`0x6f33faec` and return, with an established incoming load mapping a selected
+vector tail into the span. The useful next step is its authenticated producer
+or runtime owner, not another isolated decode of the handler body.
+
 ## Resolve block 1's delegated materializer
 
 The 69-record block-1 layout and its three block-0 materializer paths are now
@@ -135,18 +141,23 @@ Record 0 supplies source `0x42700800`, length `0x547c00`, decoded image offset
 `0x7e0`, and a request that remains conditional on `a3 == 0`. One observation
 at delegated service `0x402e90bc` would distinguish copy/DMA from address
 mapping and begin to connect these file-relative structures to a parser or
-renderer. Broad rescans of block 1 are no longer the smallest useful step.
+renderer. Before extending that corridor statically, independently anchor
+block-0 offset `0x002577e0`, whose accepted byte slice has competing runtime
+views at `0x405177c0` and `0x40ada9f1`. Broad rescans of block 1 are no longer
+the smallest useful step.
 
 ## Find block 2's consumer
 
 The candidate `(0x00240000, 0x43d00400)` header, `0xff` boundaries, and exact
 `0x240000`-byte low-six-bit payload geometry are authenticated. Direct text,
 conventional six-bit packing, named compression/transform signatures, exact
-cross-block copies, and canonical direct operands did not identify a consumer;
-the original container headers are absent from the decoded blocks. The next
-useful result is a bounded computed, indirect, runtime-built, or emulated path
-that receives the decoded block and establishes what the two header words and
-payload mean.
+cross-block copies, and canonical direct operands did not identify a consumer.
+A new static parameter path ties selector `0x101` to
+`a0=0x43d00400`, `a1=0x43d00000`, length `0x400`, and attribute `0x101`, so
+the base plus length reproduces the second header word. It stops before the
+delegated call and does not access the payload. The next useful result follows
+that exact boundary into a proved payload read, copy, mapping, or consumer
+effect without treating the parameter equality itself as consumption.
 
 ## Find the block 3 resource consumer
 

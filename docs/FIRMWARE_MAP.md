@@ -16,11 +16,11 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 10,057 authenticated ranges and 41,501 reviewed MN103 instruction rows |
-| 1 | 706 authenticated ranges; no reviewed instructions yet |
+| 0 | 11,006 authenticated ranges and 44,125 reviewed MN103 instruction rows |
+| 1 | 748 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
 | 3 | 34 authenticated ranges; no reviewed instructions yet |
-| 4 | 3,180 authenticated ranges covering the full 65,536-byte decoded block; no reviewed instructions yet |
+| 4 | 3,209 authenticated ranges covering the full 65,536-byte decoded block; no reviewed instructions yet |
 
 This is partial, non-contiguous coverage rather than a complete disassembly.
 Block offsets and runtime addresses are separate coordinates. Block 0 has more
@@ -123,6 +123,14 @@ is authenticated at block-0 offset `0x0083d4e8`. Which slot carries the
 returned product, and any frame, display, DMA, or export effect remain
 unresolved.
 
+The `0x6ee3e908` table head now has two additional bounded relationships. The
+helper at `0x6eb7e2d8` stores that value through caller-supplied `a0`, clears
+the field at `a0+8`, and returns zero. A separate path beginning with the call
+at `0x40aac8d7` to `0x40aaca42` builds a 12-byte temporary with the same
+dispatch value, copies two stack words into it, and copies three words to a
+caller-provided destination. The destination owner and its relationship to the
+live-view collection remain unresolved.
+
 ## Established PTP-adjacent record initialization
 
 This is the first bounded corridor with a useful direct data effect. Two
@@ -194,6 +202,10 @@ Additional bounded relationships in this module include:
   dispatch records; its bounded selector path reaches `0x6f334bbf`. These are
   static storage and dispatch boundaries, not an operation ingress or a
   wire-level completion proof.
+- A late handler span at `0x6f33fb8e` has an authenticated direct call to
+  `0x6f33faec` followed by a return, and the established incoming load maps a
+  selected vector tail into that span. This adds a static handler boundary,
+  not runtime reachability, operation meaning, or wire-level completion.
 
 The five reviewed `0xbb02` literal sites now establish one bounded reply
 lifecycle: a 16-byte request layout, selector dispatch through record `+8`,
@@ -258,9 +270,15 @@ delta/scrambling transforms, and direct text encodings.
 Unlike blocks 1 and 3, block 2 does not use the proved
 `(source, length, 0, 0)` grammar. No exact external copy or canonical
 instruction operand identifies a consumer, and the original container headers
-are absent from the decoded blocks. Treating `0x43d00400` as a destination or
-load base remains a structural hypothesis; computed, indirect, or
-runtime-built consumers are not excluded.
+are absent from the decoded blocks.
+
+A new block-0 static parameter path begins with the call at `0x405174b4` to
+`0x40517d27`. For selector `0x101`, the reproduced helper path chooses mask
+`0x1ff` and normalizes `a0=0x43d00400`, `a1=0x43d00000`, `d0=0x400`, and
+`d1=0x101`; `0x43d00000 + 0x400` equals the second block-2 header word. This
+connects the header values to a materializer-shaped parameter path but stops
+before the delegated call at `0x40517d60`. It does not prove payload access,
+copying, DMA, mapping, or runtime reachability.
 
 ## Decoded block 3 resource bundle
 
