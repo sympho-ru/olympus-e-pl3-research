@@ -16,11 +16,11 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 11,006 authenticated ranges and 44,125 reviewed MN103 instruction rows |
-| 1 | 748 authenticated ranges; no reviewed instructions yet |
+| 0 | 12,656 authenticated ranges and 50,389 reviewed MN103 instruction rows |
+| 1 | 827 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
-| 3 | 34 authenticated ranges; no reviewed instructions yet |
-| 4 | 3,209 authenticated ranges covering the full 65,536-byte decoded block; no reviewed instructions yet |
+| 3 | 35 authenticated ranges; no reviewed instructions yet |
+| 4 | 3,230 authenticated ranges covering the full 65,536-byte decoded block; no reviewed instructions yet |
 
 This is partial, non-contiguous coverage rather than a complete disassembly.
 Block offsets and runtime addresses are separate coordinates. Block 0 has more
@@ -87,6 +87,12 @@ spans; the cleanup path loads and clears global `0x60358c3c`, and the
 constructor/destructor evidence uses the same table value `0x6ee69030`.
 Direct-call and literal censuses do not exclude indirect writes or prove that
 every candidate use is reachable.
+
+A separate accepted object path stores its incoming pointer at owner-relative
+field `+2216`, calls slot `+0` through that pointer, reloads the same object,
+and calls slot `+8` at `0x409613d8`. The object's class, both concrete targets,
+and the path's runtime relationship to the established singleton remain
+unresolved.
 
 ### Live-view object lifecycle
 
@@ -245,6 +251,14 @@ image offset `0x000007e0`; its common-service request remains conditional on
 `a3 == 0`. Records 2, 14, 20, 29, 34, 45, and 46 also have authenticated
 conditional materializer paths. None of these paths establishes the delegated
 service's transfer effect.
+
+Accepted rows now extend the selector setup across block-0 offsets
+`0x00257798..0x00257817`: the selector is zero-extended, scaled by the
+16-byte record width, added to a table base, and used with record and global
+state before a helper call. One authenticated high view places that call at
+`0x6e8577f7` with target `0x6e857d27`. The same source corridor has competing
+runtime views, so this does not select one authoritative mapping or establish
+the delegated service's copy, DMA, mapping, parsing, or rendering effect.
 
 The materialized data has two additional verified structures. One is a
 34-resource, directory-aligned UTF-16LE string-dictionary bundle with a
