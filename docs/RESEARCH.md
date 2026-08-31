@@ -36,7 +36,7 @@ Choose a bounded function or control-flow corridor and continue from an
 existing reviewed instruction boundary. Useful starting areas include:
 
 - boot and startup around `0x402c02fb` and `0x402c093c`;
-- still capture around `0x4096368d`;
+- still capture around `0x409613d8` and `0x4096368d`;
 - live-view teardown around `0x40ab9dbd` and wrapper `0x40aba091`;
 - PTP handling around `0x6f3307f5`.
 
@@ -85,6 +85,12 @@ initialization, value association, and append into the searched list through
 `0x4089a73b`. The useful next boundary is the list's runtime class and the
 object whose slot `+20` is invoked. The population path is not evidence of a
 shutter or image effect.
+
+A separate accepted path stores an object at owner-relative field `+2216`,
+calls its slot `+0`, reloads it, and calls slot `+8` at `0x409613d8`. A useful
+next result identifies that concrete object/table and either slot target, then
+tests whether the path joins the established singleton corridor. The static
+calls alone do not prove capture or hardware behavior.
 
 ## Identify the live-view frame owner
 
@@ -141,9 +147,12 @@ Record 0 supplies source `0x42700800`, length `0x547c00`, decoded image offset
 `0x7e0`, and a request that remains conditional on `a3 == 0`. One observation
 at delegated service `0x402e90bc` would distinguish copy/DMA from address
 mapping and begin to connect these file-relative structures to a parser or
-renderer. Before extending that corridor statically, independently anchor
-block-0 offset `0x002577e0`, whose accepted byte slice has competing runtime
-views at `0x405177c0` and `0x40ada9f1`. Broad rescans of block 1 are no longer
+renderer. Accepted rows now extend the selector setup across block-0 offsets
+`0x00257798..0x00257817`, including 16-byte record scaling and a high-view call
+at `0x6e8577f7`, but the same source corridor retains competing runtime views.
+The useful next result is an independently anchored complete caller context
+that selects the applicable view and follows the request through
+`0x402e90bc` to a proved payload effect. Broad rescans of block 1 are no longer
 the smallest useful step.
 
 ## Find block 2's consumer
