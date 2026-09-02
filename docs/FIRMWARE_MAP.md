@@ -16,7 +16,7 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 12,656 authenticated ranges and 50,389 reviewed MN103 instruction rows |
+| 0 | 12,817 authenticated ranges and 50,519 reviewed MN103 instruction rows |
 | 1 | 827 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
 | 3 | 35 authenticated ranges; no reviewed instructions yet |
@@ -88,11 +88,14 @@ constructor/destructor evidence uses the same table value `0x6ee69030`.
 Direct-call and literal censuses do not exclude indirect writes or prove that
 every candidate use is reachable.
 
-A separate accepted object path stores its incoming pointer at owner-relative
-field `+2216`, calls slot `+0` through that pointer, reloads the same object,
-and calls slot `+8` at `0x409613d8`. The object's class, both concrete targets,
-and the path's runtime relationship to the established singleton remain
-unresolved.
+A separate object path stores its incoming pointer at owner-relative field
+`+2216`, calls slot `+0` through that pointer, reloads the same object, and
+calls slot `+8` at `0x409613d8`. Its lazy constructor installs table
+`0x6ee8d1d0`; slot `+0` resolves to `0x6ec1875c` and slot `+8` resolves to
+`0x6ee1d553`. These object, table, and target identities differ from the
+established singleton above. The slot-`+8` body reaches an unresolved indirect
+`calls (a2)` at `0x6ee1d583`, so the object's semantic class and any downstream
+relationship to the still corridor remain unresolved.
 
 ### Live-view object lifecycle
 
@@ -177,7 +180,8 @@ The remaining boundary is deliberately narrow. The evidence does **not** yet
 establish:
 
 - the record’s complete later contents or lifetime;
-- an operation-code-to-handler mapping;
+- the upstream owner that supplies the request record to the selector
+  dispatcher, or any `0x100e` registration or handler path;
 - the absolute dynamic transport object or wire-level completion;
 - runtime reachability of this path in a specific camera state.
 
@@ -187,6 +191,14 @@ The commands needed to reproduce and extend these windows are in
 
 Additional bounded relationships in this module include:
 
+- The request selector dispatcher at `0x6f32d60c` reads the halfword at
+  `a1+8`. Authenticated numeric arms reach `0x1001` at `0x6f32d683`, `0x1002`
+  at `0x6f32d6e4`, both `0x1004` and `0x1005` at `0x6f32d7f3`, `0x1007` at
+  `0x6f32d94f`, and `0x1008` at `0x6f32d985`. The `0x1002` body constructs a
+  12-byte descriptor before calling `0x6e61fd8d`; the `0x1008` body reads the
+  request word at `a1+12`, checks the pointed-to type byte, and reaches the same
+  handoff. This is a static software-dispatch relationship, not proof of live
+  request admission, operation meaning, capture, or transport completion.
 - `0x6f330fba` appends 16-byte records to the array beginning at
   `0xa07b81cc`; `0x6f3307f5` consumes the front record and compacts the
   remainder. The halfword at `0xa07b82cc` is the live count for at most 16
