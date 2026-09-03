@@ -91,11 +91,14 @@ every candidate use is reachable.
 A separate object path stores its incoming pointer at owner-relative field
 `+2216`, calls slot `+0` through that pointer, reloads the same object, and
 calls slot `+8` at `0x409613d8`. Its lazy constructor installs table
-`0x6ee8d1d0`; slot `+0` resolves to `0x6ec1875c` and slot `+8` resolves to
-`0x6ee1d553`. These object, table, and target identities differ from the
-established singleton above. The slot-`+8` body reaches an unresolved indirect
-`calls (a2)` at `0x6ee1d583`, so the object's semantic class and any downstream
-relationship to the still corridor remain unresolved.
+`0x6ee8d1d0`; slots `+0`, `+4`, and `+8` resolve to `0x6ec1875c`,
+`0x6ee1d507`, and `0x6ee1d553`. The slot-`+8` body performs a guarded one-time
+initialization of three words at `0x6065949c` through `0x6ee1b784`, then calls
+the same object's slot `+4`. The slot-`+4` body reaches several further
+receiver-relative indirect calls, beginning at `0x6ee1d52a`. These object,
+table, and target identities differ from the established singleton above; the
+nested targets, semantic class, and any downstream relationship to the still
+corridor remain unresolved.
 
 ### Live-view object lifecycle
 
@@ -192,21 +195,30 @@ The commands needed to reproduce and extend these windows are in
 Additional bounded relationships in this module include:
 
 - The request selector dispatcher at `0x6f32d60c` reads the halfword at
-  `a1+8`. Authenticated numeric arms reach `0x1001` at `0x6f32d683`, `0x1002`
-  at `0x6f32d6e4`, both `0x1004` and `0x1005` at `0x6f32d7f3`, `0x1007` at
-  `0x6f32d94f`, and `0x1008` at `0x6f32d985`. The `0x1002` body constructs a
-  12-byte descriptor before calling `0x6e61fd8d`; the `0x1008` body reads the
-  request word at `a1+12`, checks the pointed-to type byte, and reaches the same
-  handoff. This is a static software-dispatch relationship, not proof of live
-  request admission, operation meaning, capture, or transport completion.
+  `a1+8`. Its eight numeric arms reach `0x1001` at `0x6f32d683`, `0x1002` at
+  `0x6f32d6e4`, `0x1003` at `0x6f32d746`, `0x1004` at `0x6f32d7f3`, `0x1005`
+  at `0x6f32d86f`, `0x1006` at `0x6f32d8e6`, `0x1007` at `0x6f32d94f`, and
+  `0x1008` at `0x6f32d985`. Reviewed `0x1001`, `0x1002`, `0x1007`, and
+  `0x1008` paths construct or publish 12-byte descriptors through
+  `0x6e61fd8d`. This is a static software-dispatch relationship, not proof of
+  live request admission, operation meaning, capture, or transport completion.
+- The nearest authenticated caller now spans `0x6f32d51a..0x6f32d5f8`. It
+  builds stack-local records, calls `0x6e61fc4b`, conditionally calls
+  `0x6f32dc63`, then passes the stack-derived `a2` as selector argument `a1`
+  and `d2` as selector argument `d0`. The upstream runtime owner and any join
+  to the FIFO or transport receive path remain unresolved.
 - `0x6f330fba` appends 16-byte records to the array beginning at
   `0xa07b81cc`; `0x6f3307f5` consumes the front record and compacts the
   remainder. The halfword at `0xa07b82cc` is the live count for at most 16
   records, not a completion flag.
 - The initialization chain through `0x6f33c8f5` installs two callback values
-  into globals later called by this record module. PTP namespace constants and
-  local labels support a PTP-adjacent module attribution, but no RTOS task
-  entry or operation-code ingress is established.
+  into globals later called by this record module. A direct call at
+  `0x6f32f856` now reaches that initializer, and the value installed in
+  `0xa07b81a0` is statically `0x6f33e485`. That target tests caller-supplied
+  `d2`, conditionally reaches a diagnostic-looking helper, and returns `d2`;
+  the value's meaning and the initializer's runtime owner remain unresolved.
+  PTP namespace constants and local labels support a PTP-adjacent module
+  attribution, but no RTOS task entry or operation-code ingress is established.
 - On the out-of-range-selector path, `0x6f33113f` uses record `+0` as a
   dynamic handle and constructs a 12-byte stack payload from the input
   halfword tag plus record fields `+4` and `+12`. It passes that payload
