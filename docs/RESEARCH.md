@@ -38,7 +38,8 @@ existing reviewed instruction boundary. Useful starting areas include:
 - boot and startup around `0x402c02fb` and `0x402c093c`;
 - still capture around `0x409613d8` and `0x4096368d`;
 - live-view teardown around `0x40ab9dbd` and wrapper `0x40aba091`;
-- PTP handling around `0x6f3307f5`.
+- PTP selector handling around `0x6f32d60c` and record handling around
+  `0x6f3307f5`.
 
 Stop at an explicit branch, return, indirect call, or already covered
 boundary. Submit only authenticated source ranges and instruction rows.
@@ -87,10 +88,12 @@ object whose slot `+20` is invoked. The population path is not evidence of a
 shutter or image effect.
 
 A separate accepted path stores an object at owner-relative field `+2216`,
-calls its slot `+0`, reloads it, and calls slot `+8` at `0x409613d8`. A useful
-next result identifies that concrete object/table and either slot target, then
-tests whether the path joins the established singleton corridor. The static
-calls alone do not prove capture or hardware behavior.
+calls its slot `+0`, reloads it, and calls slot `+8` at `0x409613d8`. This is a
+distinct lazy object with table `0x6ee8d1d0`; slot `+0` resolves to
+`0x6ec1875c` and slot `+8` to `0x6ee1d553`. The useful next boundary is the
+slot-`+8` body's terminal indirect call at `0x6ee1d583`: identify its concrete
+target and receiver, then test whether it joins the established singleton
+corridor. The static calls alone do not prove capture or hardware behavior.
 
 ## Identify the live-view frame owner
 
@@ -124,6 +127,21 @@ and completion paths; it is not the queue count. The operation ingress,
 product-level meaning of `0xbb02`, remaining selector targets, absolute dynamic
 storage object, callback owner behind `*(0xa07b81a0)`, wire-level completion,
 and runtime reachability remain unresolved.
+
+A separate request-selector corridor is now authenticated at `0x6f32d60c`.
+It reads the selector from `a1+8` and has numeric arms for `0x1001`, `0x1002`,
+`0x1004`, `0x1005`, `0x1007`, and `0x1008`. The `0x1002` and `0x1008` bodies
+both reach the 12-byte descriptor handoff at `0x6e61fd8d`; this establishes a
+shared static response boundary, not live request admission or wire completion.
+The recovered switch does not establish a `0x100e` arm.
+
+The highest-leverage next direction is to identify one authenticated
+predecessor or runtime owner that supplies the request record to `0x6f32d60c`,
+or the alternate registration/dispatcher path that can reach `0x100e`. Once
+that ingress is anchored, following `0x6e61fc4b`, `0x6e61fd8d`, or
+`0x6f32e09e` far enough to separate validation, phase setup, and response
+handoff would be useful. Another broad opcode or table scan is not the smallest
+next step.
 
 A useful result now identifies the owner of `*(0xa07b81a0)` after the `0xbb02`
 drain and the authenticated operation ingress that supplies the selector or
