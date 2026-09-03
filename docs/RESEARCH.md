@@ -90,9 +90,12 @@ shutter or image effect.
 A separate accepted path stores an object at owner-relative field `+2216`,
 calls its slot `+0`, reloads it, and calls slot `+8` at `0x409613d8`. This is a
 distinct lazy object with table `0x6ee8d1d0`; slot `+0` resolves to
-`0x6ec1875c` and slot `+8` to `0x6ee1d553`. The useful next boundary is the
-slot-`+8` body's terminal indirect call at `0x6ee1d583`: identify its concrete
-target and receiver, then test whether it joins the established singleton
+`0x6ec1875c`, slot `+4` to `0x6ee1d507`, and slot `+8` to `0x6ee1d553`. The
+slot-`+8` body performs a guarded initialization of `0x6065949c` and, for this
+established object identity, its call at `0x6ee1d583` resolves back to slot
+`+4`. The useful next boundary is now the slot-`+4` body's nested receiver call
+at `0x6ee1d52a` or its later slot-`+72`/`+76` calls. Identify those concrete
+receivers and targets, then test whether either joins the established singleton
 corridor. The static calls alone do not prove capture or hardware behavior.
 
 ## Identify the live-view frame owner
@@ -125,30 +128,40 @@ path, and one `0xbb02` reply lifecycle are established. Halfword
 `0xa07b82d0` is co-reset but is absent from the reviewed append, shift, drain,
 and completion paths; it is not the queue count. The operation ingress,
 product-level meaning of `0xbb02`, remaining selector targets, absolute dynamic
-storage object, callback owner behind `*(0xa07b81a0)`, wire-level completion,
-and runtime reachability remain unresolved.
+storage object, wire-level completion, and runtime reachability remain
+unresolved. The callback value installed in `0xa07b81a0` is now statically
+identified as `0x6f33e485` through initializer `0x6f33c8f5`, with a direct call
+to that initializer at `0x6f32f856`; the initializer's runtime owner and the
+meaning of the callback's caller-supplied `d2` value are still unresolved.
 
 A separate request-selector corridor is now authenticated at `0x6f32d60c`.
-It reads the selector from `a1+8` and has numeric arms for `0x1001`, `0x1002`,
-`0x1004`, `0x1005`, `0x1007`, and `0x1008`. The `0x1002` and `0x1008` bodies
-both reach the 12-byte descriptor handoff at `0x6e61fd8d`; this establishes a
-shared static response boundary, not live request admission or wire completion.
-The recovered switch does not establish a `0x100e` arm.
+It reads the selector from `a1+8` and dispatches each value from `0x1001`
+through `0x1008` to a distinct target. Reviewed `0x1001`, `0x1002`, `0x1007`,
+and `0x1008` paths reach the 12-byte descriptor handoff at `0x6e61fd8d`; this
+establishes a shared static response boundary, not live request admission or
+wire completion. The recovered switch still does not establish a `0x100e` arm.
 
-The highest-leverage next direction is to identify one authenticated
-predecessor or runtime owner that supplies the request record to `0x6f32d60c`,
-or the alternate registration/dispatcher path that can reach `0x100e`. Once
-that ingress is anchored, following `0x6e61fc4b`, `0x6e61fd8d`, or
-`0x6f32e09e` far enough to separate validation, phase setup, and response
-handoff would be useful. Another broad opcode or table scan is not the smallest
-next step.
+The nearest authenticated caller is now complete at
+`0x6f32d51a..0x6f32d5f8`. It builds stack-local records, first calls
+`0x6e61fc4b`, conditionally passes the stack-derived object through
+`0x6f32dc63`, and then supplies that object as selector `a1`. This narrows the
+ingress question to the runtime owner feeding this caller, the correct body and
+return contract of `0x6f32dc63`, and any join to the known FIFO or transport
+receive path.
 
-A useful result now identifies the owner of `*(0xa07b81a0)` after the `0xbb02`
-drain and the authenticated operation ingress that supplies the selector or
-record reaching that callback. Resolving another valid selector's producer or
-the absolute dynamic storage object reached by the established 12-byte copy
-path is also useful. Do not infer operation names or wire completion from
-record layout alone.
+The highest-leverage next direction is to identify the runtime predecessor or
+owner that feeds the `0x6f32d51a` caller, or the alternate registration and
+dispatcher path that can reach `0x100e`. Resolving the pointer owner below
+`0x6e61fc4b`, the target body behind `0x6f32dc63`, or the callback's
+caller-supplied `d2` contract would close a concrete remaining boundary.
+Another broad opcode or table scan is not the smallest next step.
+
+A useful result now identifies the runtime owner or reachability of the
+`0x6f32d51a` caller or the `0x6f32f856` initializer call, then joins one of
+those paths to an authenticated transport receive boundary. Resolving the
+absolute dynamic storage object reached by the established 12-byte copy path
+is also useful. Do not infer operation names or wire completion from record
+layout alone.
 
 The late handler at `0x6f33fb8e` now has a reviewed direct call to
 `0x6f33faec` and return, with an established incoming load mapping a selected
