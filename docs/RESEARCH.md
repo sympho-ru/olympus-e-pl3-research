@@ -138,9 +138,13 @@ the callback's caller-supplied `d2` value are still unresolved.
 The fixed FIFO consumer now has a bounded internal handoff on its nonzero
 `0x8050` branch: a helper builds a stack descriptor with size word 128, passes
 it through `0x6e61fd8d` to storage at `0x6e68939a`, and later stops at the
-record-`+8`-selected indirect jump at `0x6f3309c6`. A useful continuation
-resolves that selected target for one concrete record and tests whether it
-reaches an authenticated endpoint or DMA submission. The present evidence
+record-`+8`-selected indirect jump at `0x6f3309c6`. The selector is a full
+sequence value; the consumer advances it modulo 16 and probes 16 eight-byte
+slots in `[0x6f358d44,0x6f358dc4)`, comparing slot `+0` and loading the target
+from slot `+4`. The same-view source coordinate `0x00d58d44` is authenticated
+non-table data, so the table remains runtime-built or supplied through another
+unproved mapping. A useful continuation identifies the writer and runtime owner
+of one concrete slot before resolving its indirect target. The present evidence
 does not establish serialization or wire completion.
 
 A separate request-selector corridor is now authenticated at `0x6f32d60c`.
@@ -148,7 +152,9 @@ It reads the selector from `a1+8` and dispatches each value from `0x1001`
 through `0x1008` to a distinct target. Reviewed `0x1001`, `0x1002`, `0x1007`,
 and `0x1008` paths reach the 12-byte descriptor handoff at `0x6e61fd8d`; this
 establishes a shared static response boundary, not live request admission or
-wire completion. The recovered switch still does not establish a `0x100e` arm.
+wire completion. The `0x1005` arm at `0x6f32d891` and `0x1006` arm at
+`0x6f32d8fa`/`0x6f32d900` now also have reviewed loads of owner pointer global
+`0xa07b7058`. The recovered switch still does not establish a `0x100e` arm.
 
 A separate authenticated table at block-0 offset `0x0008f0e0` consists of 17
 28-byte records keyed by `0x1001`, `0x1002`, and `0x100b..0x1019`. Its
@@ -157,8 +163,11 @@ A separate authenticated table at block-0 offset `0x0008f0e0` consists of 17
 `0x6e69e7cb` reaches an owner-relative indirect call. Positional word `+12`
 is now bounded as the common target field across the record family, but no
 authenticated consumer selects the table. A nearby four-byte indexed pointer
-lookup has incompatible geometry, and a separate 34-word vector at block-0
-offset `0x00090a98` has no authenticated code reference. The table therefore
+lookup has incompatible geometry. Newly reviewed local-overlay routines pair
+that four-byte base with `0x6e690a50` under `0x8050`, while other routines use
+distinct 16- and 20-byte families around `0x6e690708` and `0x6e69081c`; none
+selects the 28-byte record table. A separate 34-word vector at block-0 offset
+`0x00090a98` still has no authenticated code reference. The table therefore
 narrows the alternate `0x100e` path question without proving registration,
 request admission, or a native response.
 
@@ -185,18 +194,37 @@ A separate caller-side continuation now runs
 `0x6f32d597 -> 0x6f32d9dc -> 0x6f32d9f8 -> 0x6f32da3f` and stops at the
 indirect call through global `0xa07b702c` at `0x6f32dab1`. The initializer
 sequence `0x6f32f824..0x6f32f862` can install `0x6f33aa63` into that global
-and `0x6f33e38f` into sibling global `0xa07b7030`. The continuation stores
-fixed firmware receiver `0x6f3581f0` into a state-record field and later passes
-the same receiver as callback context. The containing initializer's runtime
-owner and ordering, the receiver's type, the installed handler contract, and
-the sibling global's consumer remain unproved.
+and `0x6f33e38f` into sibling global `0xa07b7030`. The setup writes
+`0xa07b7044` into pointer global `0xa07b7058`, so the continuation's status-3
+store of fixed firmware receiver `0x6f3581f0` at record `+12` resolves to
+`0xa07b7050`; the same receiver is later passed as callback context. Three
+additional selector-arm reads of the pointer global are now reviewed, but no
+allocation, scheduler, or runtime ordering is established.
 
-The highest-leverage next direction is to identify the consumer and runtime
-owner of the 17-record table, then prove whether it selects the `0x100e` row.
-Alternatively, establish the runtime owner and ordering of the callback
-initializer and resolve the handler reached through `0xa07b702c`, or resolve
-the indirect target selected at `0x6f3309c6` for one concrete queued record.
-Another broad opcode or table scan is not the smallest next step.
+The sibling target `0x6f33e38f` now has a bounded fixed-status entry: it sets
+`d2=24`, reaches `0x6e6050e5`, and returns 24. The helper's nonzero-`0x8050`
+path builds a size-128 descriptor and reaches `0x6e61fd8d`. This entry shape is
+not interchangeable with the record-populating `0x6f33aa63` shape, and the
+canonical block-0 instruction rows contain no direct load of `0xa07b7030`.
+The containing initializer's runtime owner and ordering, the receiver's type,
+the contract reached through `0xa07b702c`, and any indirect consumer of the
+sibling global remain unproved.
+
+The storage corridor at `0x6e6893ae` now has a field-level owner relation:
+`0x8050` indexes the owner table at `0x8ff00004`, the selected owner's `+0x3c`
+field supplies a queue pointer, and queue `+0x1a` supplies an unsigned bound.
+A source-only leaf at block-0 offset `0x000a9736` can store an incoming pointer
+at owner `+0x3c`, but its runtime address, caller, and the queue allocation are
+not established. A useful result identifies that writer's authenticated caller
+and the concrete object supplied in `a1`.
+
+The highest-leverage next direction is to identify the writer and runtime owner
+of one slot in `[0x6f358d44,0x6f358dc4)` before resolving the target selected at
+`0x6f3309c6`. Alternatively, identify the consumer and runtime owner of the
+17-record table and prove whether it selects the `0x100e` row, or establish the
+runtime owner and ordering of the callback initializer and resolve the handler
+reached through `0xa07b702c`. Another broad opcode or table scan is not the
+smallest next step.
 
 A useful result now joins one of those exact owners or consumers to an
 authenticated transport receive boundary. Resolving the absolute dynamic

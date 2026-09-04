@@ -16,7 +16,7 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 12,908 authenticated ranges and 51,010 reviewed MN103 instruction rows |
+| 0 | 12,937 authenticated ranges and 51,099 reviewed MN103 instruction rows |
 | 1 | 827 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
 | 3 | 35 authenticated ranges; no reviewed instructions yet |
@@ -202,7 +202,9 @@ Additional bounded relationships in this module include:
   at `0x6f32d86f`, `0x1006` at `0x6f32d8e6`, `0x1007` at `0x6f32d94f`, and
   `0x1008` at `0x6f32d985`. Reviewed `0x1001`, `0x1002`, `0x1007`, and
   `0x1008` paths construct or publish 12-byte descriptors through
-  `0x6e61fd8d`. This is a static software-dispatch relationship, not proof of
+  `0x6e61fd8d`. The `0x1005` path at `0x6f32d891` and the `0x1006` path at
+  `0x6f32d8fa`/`0x6f32d900` also load pointer global `0xa07b7058` into address
+  registers. This is a static software-dispatch relationship, not proof of
   live request admission, operation meaning, capture, or transport completion.
 - The nearest authenticated caller now spans `0x6f32d51a..0x6f32d5f8`. It
   builds stack-local records, calls `0x6e61fc4b`, conditionally calls
@@ -229,19 +231,25 @@ Additional bounded relationships in this module include:
   are `(0x100e, 0, 3, 0x6e69e7cb, 5, 0x1000, 0)`. The shared target calls
   `0x6e69d892`, clears the word through `a2`, then dispatches indirectly
   through slot `+20` of an object reached from `d2+24`. Newly authenticated
-  neighboring pointer vectors do not identify the consumer: a four-byte
-  indexed lookup rooted at `0x6e68ef1c` has incompatible geometry, while the
-  separate 34-word vector at block-0 offset `0x00090a98` has no authenticated
-  code reference. No runtime owner selects the 17-record table, so it does not
-  add a `0x100e` arm to the primary selector or prove request admission.
+  neighboring lookup families do not identify the consumer. Reviewed
+  local-overlay routines select between four-byte-indexed bases `0x6e68ef1c`
+  and `0x6e690a50` under global `0x8050`; other routines first consume distinct
+  16- and 20-byte families around `0x6e690708` and `0x6e69081c`. Their geometry
+  is incompatible with the 28-byte records, while the separate 34-word vector
+  at block-0 offset `0x00090a98` still has no authenticated code reference. No
+  runtime owner selects the 17-record table, so it does not add a `0x100e` arm
+  to the primary selector or prove request admission.
 - A caller-side branch at `0x6f32d597` reaches `0x6f32d9dc`; within it,
   `0x6f32d9f8` directly calls the bounded routine at
   `0x6f32da3f..0x6f32daca`. That routine loads the pointer at `0xa07b702c`
-  and calls it indirectly at `0x6f32dab1`. Its status-3 path also loads the
-  state record through `0xa07b7058`, stores firmware-resident receiver
-  `0x6f3581f0` at record field `+12`, and later passes the same receiver as the
-  callback context. This is an owner-side static continuation; receiver type,
-  runtime ordering, live ingress, and response behavior remain unproved.
+  and calls it indirectly at `0x6f32dab1`. The setup sequence stores
+  `0xa07b7044` in pointer global `0xa07b7058`, so the status-3 path's store of
+  firmware-resident receiver `0x6f3581f0` at record field `+12` resolves
+  statically to `0xa07b7050`; the same receiver is later passed as callback
+  context. Three additional direct reads of `0xa07b7058` are established in
+  the selector arms above. This is an owner-side static alias and continuation;
+  allocation, runtime ordering, scheduling, live ingress, and response behavior
+  remain unproved.
 - `0x6f330fba` appends 16-byte records to the array beginning at
   `0xa07b81cc`; `0x6f3307f5` consumes the front record and compacts the
   remainder. The halfword at `0xa07b82cc` is the live count for at most 16
@@ -249,22 +257,32 @@ Additional bounded relationships in this module include:
 - The same consumer calls `0x6f33093e`; when global `0x8050` is nonzero, its
   helper builds a stack descriptor with a size word of 128 and passes it
   through `0x6e61fd8d` to the dynamic storage routine at `0x6e68939a`. The
-  fixed path then selects a target through record `+8` and stops at the
-  indirect jump at `0x6f3309c6`. This establishes internal descriptor and
-  storage movement, not serialization, endpoint submission, DMA, or wire
-  completion.
+  fixed path then uses record `+8` as a sequence value, advances it modulo 16,
+  and probes 16 eight-byte slots in `[0x6f358d44,0x6f358dc4)`. Each matching
+  slot holds the full sequence at `+0` and a handler at `+4`; control stops at
+  the indirect jump at `0x6f3309c6`. The apparent same-view source coordinate
+  `0x00d58d44` is authenticated non-table data, and the static dispatch records
+  at `0x00d589f8` are a distinct structure. No writer or runtime owner for the
+  16-slot table is established. This proves internal selection and storage
+  movement, not serialization, endpoint submission, DMA, or wire completion.
 - The complete containing initializer spans `0x6f32f6b5..0x6f32f864`; its
   suffix at `0x6f32f824..0x6f32f862` directly calls
   `0x6f3391d0` at `0x6f32f848` and `0x6f33c8f5` at `0x6f32f856`. The first
   path writes `0x6f33aa63` to `0xa07b702c` through setter `0x6f32d5f8`;
   the second writes `0x6f33e38f` to separate global `0xa07b7030` through
-  `0x6f32d602` and installs `0x6f33e485` into `0xa07b81a0`. The last target
-  tests caller-supplied `d2`, conditionally reaches a diagnostic-looking
-  helper, and returns `d2`. Runtime ordering and ownership, the body and
-  contract installed through `0xa07b702c`, and any consumer of `0xa07b7030`
-  remain unresolved. PTP namespace constants and local labels support a
-  PTP-adjacent module attribution, but no RTOS task entry or operation-code
-  ingress is established.
+  `0x6f32d602` and installs `0x6f33e485` into `0xa07b81a0`. The reviewed
+  `0x6f33e38f` entry fixes `d2` and its return value at 24, reaches helper
+  `0x6e6050e5`, and returns through a 32-byte cleanup; the helper's nonzero
+  `0x8050` path builds a size-128 descriptor and hands it to `0x6e61fd8d`.
+  This differs from the record-populating shape of `0x6f33aa63`; adjacent
+  registration does not prove a shared callback signature. The last target
+  `0x6f33e485` instead tests caller-supplied `d2`, conditionally reaches a
+  diagnostic-looking helper, and returns `d2`. Canonical block-0 instruction
+  rows contain no direct load of `0xa07b7030`; runtime ordering and ownership,
+  the contract installed through `0xa07b702c`, and any indirect or runtime-built
+  consumer of `0xa07b7030` remain unresolved. PTP namespace constants and local
+  labels support a PTP-adjacent module attribution, but no RTOS task entry or
+  operation-code ingress is established.
 - On the out-of-range-selector path, `0x6f33113f` uses record `+0` as a
   dynamic handle and constructs a 12-byte stack payload from the input
   halfword tag plus record fields `+4` and `+12`. It passes that payload
@@ -272,12 +290,13 @@ Additional bounded relationships in this module include:
   circular storage. Bytes 2 and 3 are not initialized by the builder. This
   proves a buffer-copy path, not USB/wire completion.
 - Accepted coverage continues the storage corridor at `0x6e6893ae` through a
-  pointer walk rooted at table `0x8ff00004`, an owner-relative queue object,
-  an unsigned bound, and the caller-supplied 12-byte descriptor. A separate
-  authenticated 128-byte structure at block-0 offset `0x00d589f8` contains 16
-  dispatch records; its bounded selector path reaches `0x6f334bbf`. These are
-  static storage and dispatch boundaries, not an operation ingress or a
-  wire-level completion proof.
+  pointer walk rooted at table `0x8ff00004`. The current `0x8050` value selects
+  an owner; reviewed rows then read the queue pointer at owner `+0x3c` and its
+  unsigned halfword bound at queue `+0x1a`. A source-only leaf at block-0
+  offset `0x000a9736` can store incoming `a1` at owner `+0x3c`, but its runtime
+  address, caller, and the queue allocation are unresolved. These are static
+  storage and field-level boundaries, not an operation ingress or a wire-level
+  completion proof.
 - A late handler span at `0x6f33fb8e` has an authenticated direct call to
   `0x6f33faec` followed by a return, and the established incoming load maps a
   selected vector tail into that span. This adds a static handler boundary,
