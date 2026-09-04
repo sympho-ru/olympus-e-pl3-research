@@ -16,7 +16,7 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 12,817 authenticated ranges and 50,519 reviewed MN103 instruction rows |
+| 0 | 12,884 authenticated ranges and 50,965 reviewed MN103 instruction rows |
 | 1 | 827 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
 | 3 | 35 authenticated ranges; no reviewed instructions yet |
@@ -184,7 +184,9 @@ establish:
 
 - the record’s complete later contents or lifetime;
 - the upstream owner that supplies the request record to the selector
-  dispatcher, or any `0x100e` registration or handler path;
+  dispatcher;
+- the consumer that selects the distinct static `0x100e` descriptor row and
+  any connection from that row to request admission;
 - the absolute dynamic transport object or wire-level completion;
 - runtime reachability of this path in a specific camera state.
 
@@ -205,20 +207,46 @@ Additional bounded relationships in this module include:
 - The nearest authenticated caller now spans `0x6f32d51a..0x6f32d5f8`. It
   builds stack-local records, calls `0x6e61fc4b`, conditionally calls
   `0x6f32dc63`, then passes the stack-derived `a2` as selector argument `a1`
-  and `d2` as selector argument `d0`. The upstream runtime owner and any join
-  to the FIFO or transport receive path remain unresolved.
+  and `d2` as selector argument `d0`. Under this caller's local source relation,
+  `0x6f32dc63` maps to block-0 offset `0x00d2dc83` and is a 33-byte status
+  adapter: it writes two words through `a0`, calls `0x6e61fd33`, conditionally
+  calls `0x6e682eea` for a negative status, and returns the original status in
+  `d0`. Other accepted source spans carry the same runtime address under
+  different local views and do not identify this caller's target body.
+- `0x6e61fc4b` has two direct calls to the complete 32-byte routine at
+  `0x6e689567`. That routine calls `0x6e6861ea`, reads the word at `d2+64`,
+  conditionally copies it to stack word `+8`, calls `0x6e68419f`, and returns
+  that stack word. The two callee contracts, the meaning of `d2+64`, the
+  upstream runtime owner, and any join to a transport receive path remain
+  unresolved.
+- A separate authenticated table at block-0 offset `0x0008f0e0` contains 17
+  contiguous 28-byte records keyed by `0x1001`, `0x1002`, and
+  `0x100b..0x1019`. The `0x100e` record's seven positional words are
+  `(0x100e, 0, 3, 0x6e69e7cb, 5, 0x1000, 0)`. Under a locally supported code
+  view, `0x6e69e7cb` calls `0x6e69d892`, clears the word through `a2`, then
+  dispatches indirectly through slot `+20` of an object reached from `d2+24`.
+  No authenticated consumer or runtime owner selects this table, so it does
+  not add a `0x100e` arm to the primary selector or prove request admission.
+- A caller-side branch at `0x6f32d597` reaches `0x6f32d9dc`; within it,
+  `0x6f32d9f8` directly calls the bounded routine at
+  `0x6f32da3f..0x6f32daca`. That routine loads the pointer at `0xa07b702c`
+  and calls it indirectly at `0x6f32dab1`. This is an owner-side static
+  continuation, not a proved live ingress or response path.
 - `0x6f330fba` appends 16-byte records to the array beginning at
   `0xa07b81cc`; `0x6f3307f5` consumes the front record and compacts the
   remainder. The halfword at `0xa07b82cc` is the live count for at most 16
   records, not a completion flag.
-- The initialization chain through `0x6f33c8f5` installs two callback values
-  into globals later called by this record module. A direct call at
-  `0x6f32f856` now reaches that initializer, and the value installed in
-  `0xa07b81a0` is statically `0x6f33e485`. That target tests caller-supplied
-  `d2`, conditionally reaches a diagnostic-looking helper, and returns `d2`;
-  the value's meaning and the initializer's runtime owner remain unresolved.
-  PTP namespace constants and local labels support a PTP-adjacent module
-  attribution, but no RTOS task entry or operation-code ingress is established.
+- The initialization sequence at `0x6f32f824..0x6f32f862` directly calls
+  `0x6f3391d0` at `0x6f32f848` and `0x6f33c8f5` at `0x6f32f856`. The first
+  path writes `0x6f33aa63` to `0xa07b702c` through setter `0x6f32d5f8`;
+  the second writes `0x6f33e38f` to separate global `0xa07b7030` through
+  `0x6f32d602` and installs `0x6f33e485` into `0xa07b81a0`. The last target
+  tests caller-supplied `d2`, conditionally reaches a diagnostic-looking
+  helper, and returns `d2`. Runtime ordering and ownership, the body and
+  contract installed through `0xa07b702c`, and any consumer of `0xa07b7030`
+  remain unresolved. PTP namespace constants and local labels support a
+  PTP-adjacent module attribution, but no RTOS task entry or operation-code
+  ingress is established.
 - On the out-of-range-selector path, `0x6f33113f` uses record `+0` as a
   dynamic handle and constructs a 12-byte stack payload from the input
   halfword tag plus record fields `+4` and `+12`. It passes that payload

@@ -141,27 +141,50 @@ and `0x1008` paths reach the 12-byte descriptor handoff at `0x6e61fd8d`; this
 establishes a shared static response boundary, not live request admission or
 wire completion. The recovered switch still does not establish a `0x100e` arm.
 
+A separate authenticated table at block-0 offset `0x0008f0e0` consists of 17
+28-byte records keyed by `0x1001`, `0x1002`, and `0x100b..0x1019`. Its
+`0x100e` row contains positional words
+`(0x100e, 0, 3, 0x6e69e7cb, 5, 0x1000, 0)`. A locally supported code view of
+`0x6e69e7cb` reaches an owner-relative indirect call, but no authenticated
+consumer selects the table. The table therefore narrows the alternate
+`0x100e` path question without proving registration, request admission, or a
+native response.
+
 The nearest authenticated caller is now complete at
 `0x6f32d51a..0x6f32d5f8`. It builds stack-local records, first calls
 `0x6e61fc4b`, conditionally passes the stack-derived object through
-`0x6f32dc63`, and then supplies that object as selector `a1`. This narrows the
-ingress question to the runtime owner feeding this caller, the correct body and
-return contract of `0x6f32dc63`, and any join to the known FIFO or transport
-receive path.
+`0x6f32dc63`, and then supplies that object as selector `a1`. The caller's
+local source relation now identifies a 33-byte `0x6f32dc63` status adapter at
+block-0 offset `0x00d2dc83`: it writes two record words, calls `0x6e61fd33`,
+conditionally calls `0x6e682eea` after a negative status, and returns that
+status. This closes the caller-side adapter ABI while leaving its runtime owner
+and any join to the known FIFO or transport receive path unresolved.
 
-The highest-leverage next direction is to identify the runtime predecessor or
-owner that feeds the `0x6f32d51a` caller, or the alternate registration and
-dispatcher path that can reach `0x100e`. Resolving the pointer owner below
-`0x6e61fc4b`, the target body behind `0x6f32dc63`, or the callback's
-caller-supplied `d2` contract would close a concrete remaining boundary.
-Another broad opcode or table scan is not the smallest next step.
+The `0x6e61fc4b` path also has two direct calls to a complete routine at
+`0x6e689567`. That routine calls `0x6e6861ea`, reads `d2+64`, conditionally
+copies the word to its stack result slot, calls `0x6e68419f`, and returns the
+slot. The next bounded question on this branch is the first callee's contract
+and whether it initializes or changes the later-read `d2+64` field.
 
-A useful result now identifies the runtime owner or reachability of the
-`0x6f32d51a` caller or the `0x6f32f856` initializer call, then joins one of
-those paths to an authenticated transport receive boundary. Resolving the
-absolute dynamic storage object reached by the established 12-byte copy path
-is also useful. Do not infer operation names or wire completion from record
-layout alone.
+A separate caller-side continuation now runs
+`0x6f32d597 -> 0x6f32d9dc -> 0x6f32d9f8 -> 0x6f32da3f` and stops at the
+indirect call through global `0xa07b702c` at `0x6f32dab1`. The initializer
+sequence `0x6f32f824..0x6f32f862` can install `0x6f33aa63` into that global
+and `0x6f33e38f` into sibling global `0xa07b7030`; its runtime owner and
+ordering, the installed handler contract, and the sibling global's consumer
+remain unproved.
+
+The highest-leverage next direction is to identify the consumer and runtime
+owner of the 17-record table, then prove whether it selects the `0x100e` row.
+Alternatively, establish the runtime owner and ordering of the callback
+initializer and resolve the handler reached through `0xa07b702c`. Following
+`0x6e6861ea` to a proved `d2+64` effect would close the remaining direct-helper
+boundary. Another broad opcode or table scan is not the smallest next step.
+
+A useful result now joins one of those exact owners or consumers to an
+authenticated transport receive boundary. Resolving the absolute dynamic
+storage object reached by the established 12-byte copy path is also useful.
+Do not infer operation names or wire completion from record layout alone.
 
 The late handler at `0x6f33fb8e` now has a reviewed direct call to
 `0x6f33faec` and return, with an established incoming load mapping a selected
