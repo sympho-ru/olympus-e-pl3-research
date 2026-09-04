@@ -131,8 +131,17 @@ product-level meaning of `0xbb02`, remaining selector targets, absolute dynamic
 storage object, wire-level completion, and runtime reachability remain
 unresolved. The callback value installed in `0xa07b81a0` is now statically
 identified as `0x6f33e485` through initializer `0x6f33c8f5`, with a direct call
-to that initializer at `0x6f32f856`; the initializer's runtime owner and the
-meaning of the callback's caller-supplied `d2` value are still unresolved.
+to that initializer at `0x6f32f856`. The complete containing initializer is
+now bounded at `0x6f32f6b5..0x6f32f864`; its runtime owner and the meaning of
+the callback's caller-supplied `d2` value are still unresolved.
+
+The fixed FIFO consumer now has a bounded internal handoff on its nonzero
+`0x8050` branch: a helper builds a stack descriptor with size word 128, passes
+it through `0x6e61fd8d` to storage at `0x6e68939a`, and later stops at the
+record-`+8`-selected indirect jump at `0x6f3309c6`. A useful continuation
+resolves that selected target for one concrete record and tests whether it
+reaches an authenticated endpoint or DMA submission. The present evidence
+does not establish serialization or wire completion.
 
 A separate request-selector corridor is now authenticated at `0x6f32d60c`.
 It reads the selector from `a1+8` and dispatches each value from `0x1001`
@@ -145,10 +154,13 @@ A separate authenticated table at block-0 offset `0x0008f0e0` consists of 17
 28-byte records keyed by `0x1001`, `0x1002`, and `0x100b..0x1019`. Its
 `0x100e` row contains positional words
 `(0x100e, 0, 3, 0x6e69e7cb, 5, 0x1000, 0)`. A locally supported code view of
-`0x6e69e7cb` reaches an owner-relative indirect call, but no authenticated
-consumer selects the table. The table therefore narrows the alternate
-`0x100e` path question without proving registration, request admission, or a
-native response.
+`0x6e69e7cb` reaches an owner-relative indirect call. Positional word `+12`
+is now bounded as the common target field across the record family, but no
+authenticated consumer selects the table. A nearby four-byte indexed pointer
+lookup has incompatible geometry, and a separate 34-word vector at block-0
+offset `0x00090a98` has no authenticated code reference. The table therefore
+narrows the alternate `0x100e` path question without proving registration,
+request admission, or a native response.
 
 The nearest authenticated caller is now complete at
 `0x6f32d51a..0x6f32d5f8`. It builds stack-local records, first calls
@@ -161,25 +173,30 @@ status. This closes the caller-side adapter ABI while leaving its runtime owner
 and any join to the known FIFO or transport receive path unresolved.
 
 The `0x6e61fc4b` path also has two direct calls to a complete routine at
-`0x6e689567`. That routine calls `0x6e6861ea`, reads `d2+64`, conditionally
-copies the word to its stack result slot, calls `0x6e68419f`, and returns the
-slot. The next bounded question on this branch is the first callee's contract
-and whether it initializes or changes the later-read `d2+64` field.
+`0x6e689567`. That routine sets `a0=d2` before calling the complete 85-byte
+body at `0x6e6861ea`, which writes zero to `a0+64`, initializes other fields,
+links pointer fields, conditionally calls `0x6e6860f7`, then calls
+`0x6e687d3c` and returns. The later read of `d2+64` therefore observes the
+proved zero initialization. The next bounded question on this branch is the
+contract of `0x6e6860f7` on the bit-1-set path or the runtime owner of the
+pointed-to objects.
 
 A separate caller-side continuation now runs
 `0x6f32d597 -> 0x6f32d9dc -> 0x6f32d9f8 -> 0x6f32da3f` and stops at the
 indirect call through global `0xa07b702c` at `0x6f32dab1`. The initializer
 sequence `0x6f32f824..0x6f32f862` can install `0x6f33aa63` into that global
-and `0x6f33e38f` into sibling global `0xa07b7030`; its runtime owner and
-ordering, the installed handler contract, and the sibling global's consumer
-remain unproved.
+and `0x6f33e38f` into sibling global `0xa07b7030`. The continuation stores
+fixed firmware receiver `0x6f3581f0` into a state-record field and later passes
+the same receiver as callback context. The containing initializer's runtime
+owner and ordering, the receiver's type, the installed handler contract, and
+the sibling global's consumer remain unproved.
 
 The highest-leverage next direction is to identify the consumer and runtime
 owner of the 17-record table, then prove whether it selects the `0x100e` row.
 Alternatively, establish the runtime owner and ordering of the callback
-initializer and resolve the handler reached through `0xa07b702c`. Following
-`0x6e6861ea` to a proved `d2+64` effect would close the remaining direct-helper
-boundary. Another broad opcode or table scan is not the smallest next step.
+initializer and resolve the handler reached through `0xa07b702c`, or resolve
+the indirect target selected at `0x6f3309c6` for one concrete queued record.
+Another broad opcode or table scan is not the smallest next step.
 
 A useful result now joins one of those exact owners or consumers to an
 authenticated transport receive boundary. Resolving the absolute dynamic

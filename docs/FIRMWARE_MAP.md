@@ -16,7 +16,7 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 12,884 authenticated ranges and 50,965 reviewed MN103 instruction rows |
+| 0 | 12,908 authenticated ranges and 51,010 reviewed MN103 instruction rows |
 | 1 | 827 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
 | 3 | 35 authenticated ranges; no reviewed instructions yet |
@@ -214,29 +214,47 @@ Additional bounded relationships in this module include:
   `d0`. Other accepted source spans carry the same runtime address under
   different local views and do not identify this caller's target body.
 - `0x6e61fc4b` has two direct calls to the complete 32-byte routine at
-  `0x6e689567`. That routine calls `0x6e6861ea`, reads the word at `d2+64`,
-  conditionally copies it to stack word `+8`, calls `0x6e68419f`, and returns
-  that stack word. The two callee contracts, the meaning of `d2+64`, the
-  upstream runtime owner, and any join to a transport receive path remain
-  unresolved.
+  `0x6e689567`. That routine sets `a0=d2` before calling the complete 85-byte
+  body at `0x6e6861ea`. The body writes zero to `a0+64`, initializes several
+  other fields, links two pointer fields, conditionally calls `0x6e6860f7`,
+  then calls `0x6e687d3c` and returns. The caller's later read of `d2+64`
+  therefore observes the established zero initialization before it calls
+  `0x6e68419f`. The pointed-to object owners, direct-callee contracts, and any
+  join to a transport receive path remain unresolved.
 - A separate authenticated table at block-0 offset `0x0008f0e0` contains 17
   contiguous 28-byte records keyed by `0x1001`, `0x1002`, and
-  `0x100b..0x1019`. The `0x100e` record's seven positional words are
-  `(0x100e, 0, 3, 0x6e69e7cb, 5, 0x1000, 0)`. Under a locally supported code
-  view, `0x6e69e7cb` calls `0x6e69d892`, clears the word through `a2`, then
-  dispatches indirectly through slot `+20` of an object reached from `d2+24`.
-  No authenticated consumer or runtime owner selects this table, so it does
-  not add a `0x100e` arm to the primary selector or prove request admission.
+  `0x100b..0x1019`. Positional word `+12` is consistently target-shaped:
+  rows 2 through 12 share `0x6e69e7cb`, while the remaining rows have bounded
+  target spans under the same local relation. The `0x100e` row's seven words
+  are `(0x100e, 0, 3, 0x6e69e7cb, 5, 0x1000, 0)`. The shared target calls
+  `0x6e69d892`, clears the word through `a2`, then dispatches indirectly
+  through slot `+20` of an object reached from `d2+24`. Newly authenticated
+  neighboring pointer vectors do not identify the consumer: a four-byte
+  indexed lookup rooted at `0x6e68ef1c` has incompatible geometry, while the
+  separate 34-word vector at block-0 offset `0x00090a98` has no authenticated
+  code reference. No runtime owner selects the 17-record table, so it does not
+  add a `0x100e` arm to the primary selector or prove request admission.
 - A caller-side branch at `0x6f32d597` reaches `0x6f32d9dc`; within it,
   `0x6f32d9f8` directly calls the bounded routine at
   `0x6f32da3f..0x6f32daca`. That routine loads the pointer at `0xa07b702c`
-  and calls it indirectly at `0x6f32dab1`. This is an owner-side static
-  continuation, not a proved live ingress or response path.
+  and calls it indirectly at `0x6f32dab1`. Its status-3 path also loads the
+  state record through `0xa07b7058`, stores firmware-resident receiver
+  `0x6f3581f0` at record field `+12`, and later passes the same receiver as the
+  callback context. This is an owner-side static continuation; receiver type,
+  runtime ordering, live ingress, and response behavior remain unproved.
 - `0x6f330fba` appends 16-byte records to the array beginning at
   `0xa07b81cc`; `0x6f3307f5` consumes the front record and compacts the
   remainder. The halfword at `0xa07b82cc` is the live count for at most 16
   records, not a completion flag.
-- The initialization sequence at `0x6f32f824..0x6f32f862` directly calls
+- The same consumer calls `0x6f33093e`; when global `0x8050` is nonzero, its
+  helper builds a stack descriptor with a size word of 128 and passes it
+  through `0x6e61fd8d` to the dynamic storage routine at `0x6e68939a`. The
+  fixed path then selects a target through record `+8` and stops at the
+  indirect jump at `0x6f3309c6`. This establishes internal descriptor and
+  storage movement, not serialization, endpoint submission, DMA, or wire
+  completion.
+- The complete containing initializer spans `0x6f32f6b5..0x6f32f864`; its
+  suffix at `0x6f32f824..0x6f32f862` directly calls
   `0x6f3391d0` at `0x6f32f848` and `0x6f33c8f5` at `0x6f32f856`. The first
   path writes `0x6f33aa63` to `0xa07b702c` through setter `0x6f32d5f8`;
   the second writes `0x6f33e38f` to separate global `0xa07b7030` through
