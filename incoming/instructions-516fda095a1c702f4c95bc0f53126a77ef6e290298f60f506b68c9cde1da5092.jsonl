@@ -1,4 +1,0 @@
-{"address":1852314893,"block":0,"instruction":"asl\t3,d0","length":3,"offset":529709,"sha256":"db52291004c5fa7fed7f1c9db4ca4047c232bc81f34fe79129a7e29245f71b96"}
-{"address":1852314896,"block":0,"instruction":"add\td0,a0","length":2,"offset":529712,"sha256":"211151636e5282940322cd166278c80c98fee87df441be91d75da95fe1581b6c"}
-{"address":1852314898,"block":0,"instruction":"mov\td1,(24,a0)","length":3,"offset":529714,"sha256":"74b17d7625ae946fb9d60d34a21b2e81154de4356895f9abc70762c6a3fd8aa3"}
-{"address":1852314901,"block":0,"instruction":"retf\t[],0","length":3,"offset":529717,"sha256":"27bea7d8f2553c0ed4081cc731c5b541fe9ff5e085904d92ed4442095436f0b5"}

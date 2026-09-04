@@ -16,7 +16,7 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 12,937 authenticated ranges and 51,099 reviewed MN103 instruction rows |
+| 0 | 12,938 authenticated ranges and 51,103 reviewed MN103 instruction rows |
 | 1 | 827 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
 | 3 | 35 authenticated ranges; no reviewed instructions yet |
@@ -262,9 +262,13 @@ Additional bounded relationships in this module include:
   slot holds the full sequence at `+0` and a handler at `+4`; control stops at
   the indirect jump at `0x6f3309c6`. The apparent same-view source coordinate
   `0x00d58d44` is authenticated non-table data, and the static dispatch records
-  at `0x00d589f8` are a distinct structure. No writer or runtime owner for the
-  16-slot table is established. This proves internal selection and storage
-  movement, not serialization, endpoint submission, DMA, or wire completion.
+  at `0x00d589f8` are a distinct structure. Paired routines at `0x6e681503` and
+  `0x6e68150d` write `d1` at `a0+20+8*d0` and `a0+24+8*d0`; their established
+  callers supply both fields for the same indices. This geometry is compatible
+  with the 16-slot table if the incoming base is `0x6f358d30`, but no accepted
+  instruction establishes that alias or its runtime owner. This proves a
+  candidate materializer shape, not table ownership, serialization, endpoint
+  submission, DMA, or wire completion.
 - The complete containing initializer spans `0x6f32f6b5..0x6f32f864`; its
   suffix at `0x6f32f824..0x6f32f862` directly calls
   `0x6f3391d0` at `0x6f32f848` and `0x6f33c8f5` at `0x6f32f856`. The first
