@@ -179,7 +179,7 @@ def test_default_and_override_private_terms_scan_the_tree(
 
 
 def test_public_corpus_retains_the_authenticated_range_and_instruction_data() -> None:
-    assert load_evidence(ROOT) == EvidenceCounts(ranges=16944, instructions=50853)
+    assert load_evidence(ROOT) == EvidenceCounts(ranges=16980, instructions=50965)
     ranges = {
         (item["block"], item["offset"], item["length"], item["sha256"])
         for item in (
