@@ -16,7 +16,7 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 12,944 authenticated ranges and 51,122 reviewed MN103 instruction rows |
+| 0 | 12,946 authenticated ranges and 51,150 reviewed MN103 instruction rows |
 | 1 | 827 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
 | 3 | 35 authenticated ranges; no reviewed instructions yet |
@@ -210,10 +210,14 @@ Additional bounded relationships in this module include:
   `0x5001..0x501c`, subtracts `0x5001`, scales the result by four, and indexes
   the target vector at runtime base `0x6f359da8`. The complete 28-word vector
   is authenticated at block-0 offset `0x00d58988`; slot 0 contains
-  `0x6f334a8c`. That target builds a stack descriptor and directly calls
-  `0x6e61fd8d`. This is a static selector-to-target edge, not proof of the
-  dispatcher's runtime owner, a live `0x5001` selection, ingress,
-  serialization, or wire completion.
+  `0x6f334a8c`. The enclosing 38-word vector at `0x00d58960..0x00d589f7`
+  is also authenticated and includes neighboring value `0x6f334aef`. The
+  first target builds a stack descriptor and calls `0x6e61fd8d` at
+  `0x6f334aab`; the sibling body sets `d0=2` at `0x6f334acf` and calls the
+  same handoff at `0x6f334aef`. The vector relationship does not establish a
+  common entry ABI. These are static selector and neighboring-target facts,
+  not proof of the dispatcher's runtime owner, a live `0x5001` selection,
+  ingress, serialization, or wire completion.
 - The nearest authenticated caller now spans `0x6f32d51a..0x6f32d5f8`. It
   builds stack-local records, calls `0x6e61fc4b`, conditionally calls
   `0x6f32dc63`, then passes the stack-derived `a2` as selector argument `a1`
@@ -251,10 +255,12 @@ Additional bounded relationships in this module include:
   `0x6f32d9dc`. It reads record `+8` and branches on values 0 through 3:
   status 0 calls the descriptor builder at `0x6f32da0e`, status 1 calls the
   bounded routine at `0x6f32da3f..0x6f32daca`, status 2 reaches
-  `0x6f32d9ff`, and status 3 calls `0x6f32dae1`. The status-0 builder reaches
-  `0x6e61fd8d`; the instruction at the status-2 landing point remains outside
-  the reviewed canonical rows. The status-1 routine loads the pointer at
-  `0xa07b702c` and calls it indirectly at `0x6f32dab1`. The setup sequence stores
+  `0x6f32d9ff` and calls `0x6f32dacd`, and status 3 calls `0x6f32dae1`.
+  The status-0 builder reaches `0x6e61fd8d`. Within the status-1 routine, four
+  direct calls reach the complete leaf at `0x6f32db27`; it returns the
+  unsigned halfword read from `0x60355a2c` in `d0` without writing `d2`.
+  The same routine loads the pointer at `0xa07b702c` and calls it indirectly
+  at `0x6f32dab1`. The setup sequence stores
   `0xa07b7044` in pointer global `0xa07b7058`, so the status-3 path's store of
   firmware-resident receiver `0x6f3581f0` at record field `+12` resolves
   statically to `0xa07b7050`; the same receiver is later passed as callback
@@ -305,10 +311,12 @@ Additional bounded relationships in this module include:
   through `0x6e61fd8d` to `0x6e68939a`, which copies it into dynamic queued or
   circular storage. Bytes 2 and 3 are not initialized by the builder. This
   proves a buffer-copy path, not USB/wire completion.
-- Accepted coverage continues the storage corridor at `0x6e6893ae` through a
-  pointer walk rooted at table `0x8ff00004`. The current `0x8050` value selects
-  an owner; reviewed rows then read the queue pointer at owner `+0x3c` and its
-  unsigned halfword bound at queue `+0x1a`. A source-only leaf at block-0
+- Accepted coverage continues the storage corridor at `0x6e6893ae` through
+  pointer walks rooted at table `0x8ff00004`. The current `0x8050` value makes
+  one four-byte-indexed selection. A second index is derived as
+  `(d0 & 0x7000) >> 12`; its selected owner's `+0x3c` field supplies a queue
+  pointer, and queue `+0x1a` supplies an unsigned halfword bound. A source-only
+  leaf at block-0
   offset `0x000a9736` can store incoming `a1` at owner `+0x3c`, but its runtime
   address, caller, and the queue allocation are unresolved. These are static
   storage and field-level boundaries, not an operation ingress or a wire-level
