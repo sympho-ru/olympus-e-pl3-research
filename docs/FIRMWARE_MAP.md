@@ -321,11 +321,21 @@ Additional bounded relationships in this module include:
   that path reads an owner candidate from object field `+288`, then obtains the
   callback and context from `+172` and `+244`. A related pair writes an incoming
   object to field `+288` at `0x6e6a0783` and later reads the field at
-  `0x6e6a237c` before indirect dispatch through `0x6e6a224e`. This establishes
-  a static callback registration/consumption and owner-field provenance shape,
-  not the upstream producer, concrete callback target, runtime owner or ordering
-  of either object, or a join to the PTP selector, FIFO, ingress, USB, wire, or
-  camera behavior.
+  `0x6e6a237c` before indirect dispatch through `0x6e6a224e`.
+  The producer at `0x6e6a0742` now binds two incoming object roles: with
+  `O` in `a0` and `S` in `a1`, its guarded path stores `O` at `S+0x30`
+  (`0x6e6a077a`) and `S` at `O+0x120` (`0x6e6a0783`), then calls
+  `0x6e6a224e`. Callback/context values come from `O+0xac` and `O+0xf4`.
+  Thunks at `0x6e6ae092` and `0x6e6ae95e` load `O` from the pointer field
+  at `parent+0x24` and call `0x6e6a0742` and `0x6e6a22c1`, respectively;
+  `S` remains caller-supplied. Their authenticated block-0 spans are
+  `(offset=0x000ae0b2, length=40)` and `(offset=0x000ae97e, length=40)`;
+  the latter callee is covered by `(offset=0x000a22e1, length=214)`.
+  The indirect call at `0x6e6a0a9d`, through slot `+0x20` of the table
+  referenced at `O+0x128`, still has no concrete target. These local object
+  relations do not establish allocation, writers of the callback/context
+  values, a concrete callback routine, runtime ownership or ordering, or a
+  join to the PTP selector, FIFO, ingress, USB, wire, or camera behavior.
 - On the out-of-range-selector path, `0x6f33113f` uses record `+0` as a
   dynamic handle and constructs a 12-byte stack payload from the input
   halfword tag plus record fields `+4` and `+12`. It passes that payload
