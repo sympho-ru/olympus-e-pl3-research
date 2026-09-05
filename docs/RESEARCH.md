@@ -241,6 +241,14 @@ The late handler at `0x6f33fb8e` now has a reviewed direct call to
 vector tail into the span. The useful next step is its authenticated producer
 or runtime owner, not another isolated decode of the handler body.
 
+A separate 66-record table at block-0 offset `0x0008b300` has a key-`0x4e`
+record whose first word points to reviewed interior call `0x6e708fa2` within
+the authenticated body at `0x6e708f9f`. The two other authenticated words that
+point into that body remain raw leads. A useful continuation identifies the
+table's runtime address and owner, then proves the key-selection and indirect
+call path; the static pointer alone does not establish registration, runtime
+reachability, or a live-handler identity.
+
 Three uncovered byte starts at `0x6f331e20`, `0x6f331e30`, and `0x6f331e58`
 now have authenticated alternate decodes, but no accepted control-flow or table
 edge selects them. A useful result for this branch must establish such an edge;

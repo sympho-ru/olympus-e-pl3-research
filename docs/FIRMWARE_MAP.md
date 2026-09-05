@@ -16,7 +16,7 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 12,938 authenticated ranges and 51,106 reviewed MN103 instruction rows |
+| 0 | 12,941 authenticated ranges and 51,106 reviewed MN103 instruction rows |
 | 1 | 827 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
 | 3 | 35 authenticated ranges; no reviewed instructions yet |
@@ -305,6 +305,11 @@ Additional bounded relationships in this module include:
   `0x6f33faec` followed by a return, and the established incoming load maps a
   selected vector tail into that span. This adds a static handler boundary,
   not runtime reachability, operation meaning, or wire-level completion.
+- A 66-record table at block-0 offset `0x0008b300` uses 28-byte records. Its
+  key-`0x4e` record points to `0x6e708fa2`, three bytes into the authenticated
+  body at `0x6e708f9f` and exactly at the reviewed call to `0x6f33f6dc`.
+  This is a static table-to-interior-entry edge; no accepted evidence identifies
+  the table's runtime address, owner, selection logic, or indirect invocation.
 - The uncovered byte starts at `0x6f331e20`, `0x6f331e30`, and `0x6f331e58`
   independently decode as `clr d0`, `clr d0`, and `clr d1`. They are alternate
   starts at byte gaps between retained canonical rows; no accepted branch,
