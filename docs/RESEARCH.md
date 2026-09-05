@@ -247,10 +247,17 @@ and paired indirect consumer at `0x6e6a9720`. The setter uses owner fields
 `+0x1c` (guard), `+0x3c` (callback), and `+0x48` (context); the consumer calls
 the stored target with that context only when the callback field is non-null.
 Two direct caller fragments reach the setter after loading the callback and
-context from another object's `+172` and `+244` fields. The useful next result
-is the concrete runtime identity of the setter/consumer owner and a supported
-edge from it to one established PTP selector, queue, or transport boundary.
-The field geometry and indirect call alone do not establish that join.
+context from another object's `+172` and `+244` fields. The upstream path at
+`0x6e69ed55` forwards its incoming object into `0x6e6a0a58`, which reads an
+owner candidate from field `+288` before those callback/context loads. Related
+paths write an incoming object to field `+288` at `0x6e6a0783` and later read
+that field at `0x6e6a237c` before indirect dispatch through `0x6e6a224e`.
+
+The useful next result is the producer of the object entering `0x6e69ed55`, the
+concrete target reached through the paired `+288` paths, or a supported owner
+edge to one established PTP selector, queue, or transport boundary. The field
+geometry and indirect calls do not establish callback identity, runtime
+reachability, or that join.
 
 The storage corridor at `0x6e6893ae` now has a field-level owner relation.
 `0x8050` makes one four-byte-indexed selection from table `0x8ff00004`; a

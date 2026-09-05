@@ -316,10 +316,16 @@ Additional bounded relationships in this module include:
   without dispatch when `+0x3c` is null, or loads context `+0x48` and calls the
   stored target indirectly. Direct caller fragments at `0x6e6a0abe` and
   `0x6e6a224e` load the proposed callback and context from another object's
-  fields `+172` and `+244` before reaching the setter. This establishes a
-  static callback registration/consumption shape, not the runtime owner or
-  ordering of either object, the selected target's contract, or a join to the
-  PTP selector, FIFO, ingress, USB, wire, or camera behavior.
+  fields `+172` and `+244` before reaching the setter. An authenticated caller
+  beginning at `0x6e69ed55` forwards its incoming object into `0x6e6a0a58`;
+  that path reads an owner candidate from object field `+288`, then obtains the
+  callback and context from `+172` and `+244`. A related pair writes an incoming
+  object to field `+288` at `0x6e6a0783` and later reads the field at
+  `0x6e6a237c` before indirect dispatch through `0x6e6a224e`. This establishes
+  a static callback registration/consumption and owner-field provenance shape,
+  not the upstream producer, concrete callback target, runtime owner or ordering
+  of either object, or a join to the PTP selector, FIFO, ingress, USB, wire, or
+  camera behavior.
 - On the out-of-range-selector path, `0x6f33113f` uses record `+0` as a
   dynamic handle and constructs a 12-byte stack payload from the input
   halfword tag plus record fields `+4` and `+12`. It passes that payload
