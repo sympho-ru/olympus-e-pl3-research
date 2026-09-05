@@ -143,9 +143,13 @@ sequence value; the consumer advances it modulo 16 and probes 16 eight-byte
 slots in `[0x6f358d44,0x6f358dc4)`, comparing slot `+0` and loading the target
 from slot `+4`. The same-view source coordinate `0x00d58d44` is authenticated
 non-table data, so the table remains runtime-built or supplied through another
-unproved mapping. A useful continuation identifies the writer and runtime owner
-of one concrete slot before resolving its indirect target. The present evidence
-does not establish serialization or wire completion.
+unproved mapping. Paired routines at `0x6e681503` and `0x6e68150d` write the
+two fields of an eight-byte-stride array at base-relative offsets `+20` and
+`+24`. Their established callers populate both fields for matching indices,
+but no accepted instruction proves that their incoming base is `0x6f358d30`.
+A useful continuation establishes that base provenance and runtime owner before
+resolving an indirect target. The present evidence does not establish table
+ownership, serialization, or wire completion.
 
 A separate request-selector corridor is now authenticated at `0x6f32d60c`.
 It reads the selector from `a1+8` and dispatches each value from `0x1001`
@@ -218,10 +222,11 @@ at owner `+0x3c`, but its runtime address, caller, and the queue allocation are
 not established. A useful result identifies that writer's authenticated caller
 and the concrete object supplied in `a1`.
 
-The highest-leverage next direction is to identify the writer and runtime owner
-of one slot in `[0x6f358d44,0x6f358dc4)` before resolving the target selected at
-`0x6f3309c6`. Alternatively, identify the consumer and runtime owner of the
-17-record table and prove whether it selects the `0x100e` row, or establish the
+The highest-leverage next direction is to prove whether the paired field
+writers receive base `0x6f358d30`, then identify that object's runtime owner
+before resolving the target selected at `0x6f3309c6`. Alternatively, identify
+the consumer and runtime owner of the 17-record table and prove whether it
+selects the `0x100e` row, or establish the
 runtime owner and ordering of the callback initializer and resolve the handler
 reached through `0xa07b702c`. Another broad opcode or table scan is not the
 smallest next step.
