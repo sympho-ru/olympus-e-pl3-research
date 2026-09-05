@@ -16,7 +16,7 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 12,946 authenticated ranges and 51,150 reviewed MN103 instruction rows |
+| 0 | 12,948 authenticated ranges and 51,188 reviewed MN103 instruction rows |
 | 1 | 827 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
 | 3 | 35 authenticated ranges; no reviewed instructions yet |
@@ -296,8 +296,12 @@ Additional bounded relationships in this module include:
   `0x6f33e38f` entry fixes `d2` and its return value at 24, reaches helper
   `0x6e6050e5`, and returns through a 32-byte cleanup; the helper's nonzero
   `0x8050` path builds a size-128 descriptor and hands it to `0x6e61fd8d`.
-  This differs from the record-populating shape of `0x6f33aa63`; adjacent
-  registration does not prove a shared callback signature. The last target
+  This differs from the record-populating shape of `0x6f33aa63`; at that
+  installed entry, the unconditional branch at `0x6f33aaa6` skips the interior
+  `0x6f33aaad` selector and its call to `0x6f33362c`. No accepted predecessor
+  selects that interior entry, so adjacent registration does not join the
+  installed callback to the `0x5001..0x501c` dispatcher or prove a shared
+  callback signature. The last target
   `0x6f33e485` instead tests caller-supplied `d2`, conditionally reaches a
   diagnostic-looking helper, and returns `d2`. Canonical block-0 instruction
   rows contain no direct load of `0xa07b7030`; runtime ordering and ownership,
@@ -305,6 +309,17 @@ Additional bounded relationships in this module include:
   consumer of `0xa07b7030` remain unresolved. PTP namespace constants and local
   labels support a PTP-adjacent module attribution, but no RTOS task entry or
   operation-code ingress is established.
+- A separate guarded setter at `0x6e6a9707` checks owner field `+0x1c`. When
+  clear, it stores callback `a1` at `+0x3c`, context `d0` at `+0x48`, and
+  returns the loaded zero guard; otherwise it returns `0x9a000201` (rendered as
+  signed decimal `-1711275519`). Its paired consumer at `0x6e6a9720` returns
+  without dispatch when `+0x3c` is null, or loads context `+0x48` and calls the
+  stored target indirectly. Direct caller fragments at `0x6e6a0abe` and
+  `0x6e6a224e` load the proposed callback and context from another object's
+  fields `+172` and `+244` before reaching the setter. This establishes a
+  static callback registration/consumption shape, not the runtime owner or
+  ordering of either object, the selected target's contract, or a join to the
+  PTP selector, FIFO, ingress, USB, wire, or camera behavior.
 - On the out-of-range-selector path, `0x6f33113f` uses record `+0` as a
   dynamic handle and constructs a 12-byte stack payload from the input
   halfword tag plus record fields `+4` and `+12`. It passes that payload
