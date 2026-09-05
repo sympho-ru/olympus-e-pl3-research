@@ -227,6 +227,12 @@ store of fixed firmware receiver `0x6f3581f0` at record `+12` resolves to
 additional selector-arm reads of the pointer global are now reviewed, but no
 allocation, scheduler, or runtime ordering is established.
 
+The normal installed entry at `0x6f33aa63` does not supply the missing
+`0x5001..0x501c` join: its unconditional branch at `0x6f33aaa6` skips the
+interior selector setup at `0x6f33aaad` and the call to `0x6f33362c`. A useful
+continuation would need an authenticated predecessor that selects the interior
+entry; entering at `0x6f33aa63` itself is now a bounded negative.
+
 The sibling target `0x6f33e38f` now has a bounded fixed-status entry: it sets
 `d2=24`, reaches `0x6e6050e5`, and returns 24. The helper's nonzero-`0x8050`
 path builds a size-128 descriptor and reaches `0x6e61fd8d`. This entry shape is
@@ -235,6 +241,16 @@ canonical block-0 instruction rows contain no direct load of `0xa07b7030`.
 The containing initializer's runtime owner and ordering, the receiver's type,
 the contract reached through `0xa07b702c`, and any indirect consumer of the
 sibling global remain unproved.
+
+A separate object family now has a guarded callback setter at `0x6e6a9707`
+and paired indirect consumer at `0x6e6a9720`. The setter uses owner fields
+`+0x1c` (guard), `+0x3c` (callback), and `+0x48` (context); the consumer calls
+the stored target with that context only when the callback field is non-null.
+Two direct caller fragments reach the setter after loading the callback and
+context from another object's `+172` and `+244` fields. The useful next result
+is the concrete runtime identity of the setter/consumer owner and a supported
+edge from it to one established PTP selector, queue, or transport boundary.
+The field geometry and indirect call alone do not establish that join.
 
 The storage corridor at `0x6e6893ae` now has a field-level owner relation.
 `0x8050` makes one four-byte-indexed selection from table `0x8ff00004`; a
@@ -250,10 +266,9 @@ The highest-leverage next direction is to prove whether the paired field
 writers receive base `0x6f358d30`, then identify that object's runtime owner
 before resolving the target selected at `0x6f3309c6`. Alternatively, identify
 the consumer and runtime owner of the 17-record table and prove whether it
-selects the `0x100e` row, or establish the
-runtime owner and ordering of the callback initializer and resolve the handler
-reached through `0xa07b702c`. Another broad opcode or table scan is not the
-smallest next step.
+selects the `0x100e` row, or bind the `0x6e6a9707`/`0x6e6a9720` callback object
+to an established PTP owner and resolve its selected target. Another broad
+opcode or table scan is not the smallest next step.
 
 A useful result now joins one of those exact owners or consumers to an
 authenticated transport receive boundary. Resolving the concrete object and
