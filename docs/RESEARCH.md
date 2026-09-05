@@ -241,6 +241,11 @@ The late handler at `0x6f33fb8e` now has a reviewed direct call to
 vector tail into the span. The useful next step is its authenticated producer
 or runtime owner, not another isolated decode of the handler body.
 
+Three uncovered byte starts at `0x6f331e20`, `0x6f331e30`, and `0x6f331e58`
+now have authenticated alternate decodes, but no accepted control-flow or table
+edge selects them. A useful result for this branch must establish such an edge;
+the isolated starts alone do not identify an entry or prove runtime execution.
+
 ## Resolve block 1's delegated materializer
 
 The 69-record block-1 layout and its three block-0 materializer paths are now
