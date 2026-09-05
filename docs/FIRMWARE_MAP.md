@@ -16,7 +16,7 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 12,941 authenticated ranges and 51,106 reviewed MN103 instruction rows |
+| 0 | 12,943 authenticated ranges and 51,106 reviewed MN103 instruction rows |
 | 1 | 827 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
 | 3 | 35 authenticated ranges; no reviewed instructions yet |
@@ -308,8 +308,13 @@ Additional bounded relationships in this module include:
 - A 66-record table at block-0 offset `0x0008b300` uses 28-byte records. Its
   key-`0x4e` record points to `0x6e708fa2`, three bytes into the authenticated
   body at `0x6e708f9f` and exactly at the reviewed call to `0x6f33f6dc`.
-  This is a static table-to-interior-entry edge; no accepted evidence identifies
-  the table's runtime address, owner, selection logic, or indirect invocation.
+  Two other raw four-byte hits near that body are alignment false positives:
+  bytes `6e 70 90 82` at block-0 offset `0x003a312f` begin inside a
+  little-endian vector word, while bytes `6e 70 90 08` at `0x0081422a`
+  cross three MN103 instructions in GNU objdump 2.45's decode of the enclosing
+  range. This leaves one static table-to-interior-entry edge; no accepted
+  evidence identifies the table's runtime address, owner, selection logic, or
+  indirect invocation.
 - The uncovered byte starts at `0x6f331e20`, `0x6f331e30`, and `0x6f331e58`
   independently decode as `clr d0`, `clr d0`, and `clr d1`. They are alternate
   starts at byte gaps between retained canonical rows; no accepted branch,
