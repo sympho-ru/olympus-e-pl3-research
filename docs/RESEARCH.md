@@ -253,11 +253,18 @@ owner candidate from field `+288` before those callback/context loads. Related
 paths write an incoming object to field `+288` at `0x6e6a0783` and later read
 that field at `0x6e6a237c` before indirect dispatch through `0x6e6a224e`.
 
-The useful next result is the producer of the object entering `0x6e69ed55`, the
-concrete target reached through the paired `+288` paths, or a supported owner
-edge to one established PTP selector, queue, or transport boundary. The field
-geometry and indirect calls do not establish callback identity, runtime
-reachability, or that join.
+The local producer at `0x6e6a0742` now pairs incoming objects `O` and `S`:
+its guarded path writes `O` to `S+0x30` and `S` to `O+0x120` before calling
+`0x6e6a224e`, whose registration path loads callback/context from `O+0xac`
+and `O+0xf4`. Thunks at `0x6e6ae092` and `0x6e6ae95e` load `O` from the
+pointer stored at `parent+0x24`; they do not establish `S`'s allocation.
+The useful next result identifies that parent field's producer, proves a
+writer of `O+0xac` or `O+0xf4` belongs to this same object, or resolves the
+indirect target at `0x6e6a0a9d` through the table referenced at `O+0x128`.
+Matching field offsets in another object are insufficient evidence of identity.
+A supported owner edge to an established PTP selector, queue, or transport
+boundary also remains useful. The local pairing and indirect calls do not
+establish a concrete callback routine, runtime reachability, or that join.
 
 The storage corridor at `0x6e6893ae` now has a field-level owner relation.
 `0x8050` makes one four-byte-indexed selection from table `0x8ff00004`; a
