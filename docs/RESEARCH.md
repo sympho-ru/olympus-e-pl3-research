@@ -160,6 +160,15 @@ wire completion. The `0x1005` arm at `0x6f32d891` and `0x1006` arm at
 `0x6f32d8fa`/`0x6f32d900` now also have reviewed loads of owner pointer global
 `0xa07b7058`. The recovered switch still does not establish a `0x100e` arm.
 
+A distinct static dispatcher at `0x6f33362c` bounds selectors
+`0x5001..0x501c`, converts them to a four-byte index, and loads the selected
+target from runtime base `0x6f359da8`. The complete 28-word source vector at
+block-0 offset `0x00d58988` is now authenticated. Its selector-`0x5001` slot
+contains `0x6f334a8c`, whose reviewed body builds a descriptor and calls
+`0x6e61fd8d`. The next useful result is an authenticated caller and owner that
+supplies `0x5001` to this dispatcher; the static edge alone does not establish
+runtime reachability, ingress, serialization, or wire completion.
+
 A separate authenticated table at block-0 offset `0x0008f0e0` consists of 17
 28-byte records keyed by `0x1001`, `0x1002`, and `0x100b..0x1019`. Its
 `0x100e` row contains positional words
@@ -194,10 +203,15 @@ proved zero initialization. The next bounded question on this branch is the
 contract of `0x6e6860f7` on the bit-1-set path or the runtime owner of the
 pointed-to objects.
 
-A separate caller-side continuation now runs
-`0x6f32d597 -> 0x6f32d9dc -> 0x6f32d9f8 -> 0x6f32da3f` and stops at the
-indirect call through global `0xa07b702c` at `0x6f32dab1`. The initializer
-sequence `0x6f32f824..0x6f32f862` can install `0x6f33aa63` into that global
+A separate caller-side continuation now reaches a status dispatcher at
+`0x6f32d9dc`. Record `+8` values 0, 1, 2, and 3 select landing points
+`0x6f32d9f1`, `0x6f32d9f8`, `0x6f32d9ff`, and `0x6f32da06` respectively.
+The reviewed status-0 path calls the descriptor builder at `0x6f32da0e` and
+reaches `0x6e61fd8d`; status 1 calls `0x6f32da3f` and stops at the indirect
+call through global `0xa07b702c` at `0x6f32dab1`; status 3 calls
+`0x6f32dae1`. The instruction at the status-2 landing point is not canonical.
+The initializer sequence `0x6f32f824..0x6f32f862` can install `0x6f33aa63`
+into that global
 and `0x6f33e38f` into sibling global `0xa07b7030`. The setup writes
 `0xa07b7044` into pointer global `0xa07b7058`, so the continuation's status-3
 store of fixed firmware receiver `0x6f3581f0` at record `+12` resolves to
