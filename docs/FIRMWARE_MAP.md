@@ -16,7 +16,7 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 12,943 authenticated ranges and 51,106 reviewed MN103 instruction rows |
+| 0 | 12,944 authenticated ranges and 51,122 reviewed MN103 instruction rows |
 | 1 | 827 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
 | 3 | 35 authenticated ranges; no reviewed instructions yet |
@@ -206,6 +206,14 @@ Additional bounded relationships in this module include:
   `0x6f32d8fa`/`0x6f32d900` also load pointer global `0xa07b7058` into address
   registers. This is a static software-dispatch relationship, not proof of
   live request admission, operation meaning, capture, or transport completion.
+- A distinct dispatcher at `0x6f33362c` accepts selectors
+  `0x5001..0x501c`, subtracts `0x5001`, scales the result by four, and indexes
+  the target vector at runtime base `0x6f359da8`. The complete 28-word vector
+  is authenticated at block-0 offset `0x00d58988`; slot 0 contains
+  `0x6f334a8c`. That target builds a stack descriptor and directly calls
+  `0x6e61fd8d`. This is a static selector-to-target edge, not proof of the
+  dispatcher's runtime owner, a live `0x5001` selection, ingress,
+  serialization, or wire completion.
 - The nearest authenticated caller now spans `0x6f32d51a..0x6f32d5f8`. It
   builds stack-local records, calls `0x6e61fc4b`, conditionally calls
   `0x6f32dc63`, then passes the stack-derived `a2` as selector argument `a1`
@@ -239,10 +247,14 @@ Additional bounded relationships in this module include:
   at block-0 offset `0x00090a98` still has no authenticated code reference. No
   runtime owner selects the 17-record table, so it does not add a `0x100e` arm
   to the primary selector or prove request admission.
-- A caller-side branch at `0x6f32d597` reaches `0x6f32d9dc`; within it,
-  `0x6f32d9f8` directly calls the bounded routine at
-  `0x6f32da3f..0x6f32daca`. That routine loads the pointer at `0xa07b702c`
-  and calls it indirectly at `0x6f32dab1`. The setup sequence stores
+- A caller-side branch at `0x6f32d597` reaches a status dispatcher at
+  `0x6f32d9dc`. It reads record `+8` and branches on values 0 through 3:
+  status 0 calls the descriptor builder at `0x6f32da0e`, status 1 calls the
+  bounded routine at `0x6f32da3f..0x6f32daca`, status 2 reaches
+  `0x6f32d9ff`, and status 3 calls `0x6f32dae1`. The status-0 builder reaches
+  `0x6e61fd8d`; the instruction at the status-2 landing point remains outside
+  the reviewed canonical rows. The status-1 routine loads the pointer at
+  `0xa07b702c` and calls it indirectly at `0x6f32dab1`. The setup sequence stores
   `0xa07b7044` in pointer global `0xa07b7058`, so the status-3 path's store of
   firmware-resident receiver `0x6f3581f0` at record field `+12` resolves
   statically to `0xa07b7050`; the same receiver is later passed as callback
