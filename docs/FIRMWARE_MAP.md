@@ -282,9 +282,15 @@ Additional bounded relationships in this module include:
   `0x00d58d44` is authenticated non-table data, and the static dispatch records
   at `0x00d589f8` are a distinct structure. Paired routines at `0x6e681503` and
   `0x6e68150d` write `d1` at `a0+20+8*d0` and `a0+24+8*d0`; their established
-  callers supply both fields for the same indices. This geometry is compatible
-  with the 16-slot table if the incoming base is `0x6f358d30`, but no accepted
-  instruction establishes that alias or its runtime owner. This proves a
+  callers supply both fields for the same indices. Complete caller ranges are
+  now authenticated at `0x6e68002c` (120 bytes), `0x6e680246` (98 bytes),
+  `0x6e68042c` (114 bytes), and `0x6e6809b8` (97 bytes). Each saves incoming
+  `a1` in `a2` and supplies it in `a0` to the paired writers; none establishes
+  a concrete address for that incoming object. The second fields contain
+  constants `0x1000`, `0x8000`, or zero, without an established executable
+  handler identity. This geometry is compatible with the 16-slot table if
+  the incoming base is `0x6f358d30`, but no accepted instruction establishes
+  that alias or its runtime owner. This proves a
   candidate materializer shape, not table ownership, serialization, endpoint
   submission, DMA, or wire completion.
 - The complete containing initializer spans `0x6f32f6b5..0x6f32f864`; its

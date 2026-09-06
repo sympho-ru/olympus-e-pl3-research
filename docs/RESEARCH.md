@@ -147,9 +147,15 @@ unproved mapping. Paired routines at `0x6e681503` and `0x6e68150d` write the
 two fields of an eight-byte-stride array at base-relative offsets `+20` and
 `+24`. Their established callers populate both fields for matching indices,
 but no accepted instruction proves that their incoming base is `0x6f358d30`.
-A useful continuation establishes that base provenance and runtime owner before
-resolving an indirect target. The present evidence does not establish table
-ownership, serialization, or wire completion.
+The complete callers at `0x6e68002c`, `0x6e680246`, `0x6e68042c`, and
+`0x6e6809b8` preserve incoming `a1` in `a2` and pass it to the writers in
+`a0`; bounding those bodies does not resolve the object supplied by their
+callers. Their second-field constants (`0x1000`, `0x8000`, or zero) do not
+identify an executable handler. A useful continuation traces the incoming
+`a1` of these exact bodies to an authenticated producer and establishes its
+relationship to the consumer's table before resolving an indirect target.
+The present evidence does not establish table ownership, serialization, or
+wire completion.
 
 A separate request-selector corridor is now authenticated at `0x6f32d60c`.
 It reads the selector from `a1+8` and dispatches each value from `0x1001`
@@ -287,7 +293,8 @@ not established. A useful result identifies that writer's authenticated caller
 and the concrete object supplied in `a1`.
 
 The highest-leverage next direction is to prove whether the paired field
-writers receive base `0x6f358d30`, then identify that object's runtime owner
+writers receive base `0x6f358d30`: trace the incoming `a1` of the four
+complete caller bodies above, then identify that object's runtime owner
 before resolving the target selected at `0x6f3309c6`. Alternatively, identify
 the consumer and runtime owner of the 17-record table and prove whether it
 selects the `0x100e` row, or bind the `0x6e6a9707`/`0x6e6a9720` callback object
