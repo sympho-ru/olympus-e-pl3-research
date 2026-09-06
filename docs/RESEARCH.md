@@ -132,8 +132,9 @@ storage object, wire-level completion, and runtime reachability remain
 unresolved. The callback value installed in `0xa07b81a0` is now statically
 identified as `0x6f33e485` through initializer `0x6f33c8f5`, with a direct call
 to that initializer at `0x6f32f856`. The complete containing initializer is
-now bounded at `0x6f32f6b5..0x6f32f864`; its runtime owner and the meaning of
-the callback's caller-supplied `d2` value are still unresolved.
+now bounded at `0x6f32f6b5..0x6f32f864`; its runtime owner remains unresolved.
+The local callback consumer and its `d2` save/restore are now bounded below,
+but their execution for a live request is not established.
 
 The fixed FIFO consumer now has a bounded internal handoff on its nonzero
 `0x8050` branch: a helper builds a stack descriptor with size word 128, passes
@@ -156,6 +157,20 @@ identify an executable handler. A useful continuation traces the incoming
 relationship to the consumer's table before resolving an indirect target.
 The present evidence does not establish table ownership, serialization, or
 wire completion.
+
+The complete body `[0x6f330ec2,0x6f330f3d)` now bounds the callback path
+through `0xa07b81a0`. Its nonzero-`0xa07b81c8` branch passes record fields
+`+0`, `+4`, and `+12` with `0xbb02` to `0x6f33113f`, then calls
+`0x6f331166` with an explicit `d2` save. The helper restores `d2` on return,
+so its internal assignment is not the value supplied to the indirect callback
+at `0x6f330f0b`. The fixed consumer initializes `d2` to post-prologue `sp+12`
+and supplies either FIFO base `0xa07b81cc` or that local frame object to
+`0x6f33093e`; the target arm at `0x6f330b53` forwards the record to this body.
+The zero-guard branch instead copies the record and sets two flag bytes.
+A useful continuation proves the table contents and selection of this arm,
+distinguishes which object route executes, and identifies its runtime owner.
+The local register contract does not establish a live handler or join this
+callback to the primary selector's descriptor output, USB/PTP, or capture.
 
 A separate request-selector corridor is now authenticated at `0x6f32d60c`.
 It reads the selector from `a1+8` and dispatches each value from `0x1001`

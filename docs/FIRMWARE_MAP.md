@@ -293,6 +293,22 @@ Additional bounded relationships in this module include:
   that alias or its runtime owner. This proves a
   candidate materializer shape, not table ownership, serialization, endpoint
   submission, DMA, or wire completion.
+- The complete 123-byte body at `0x6f330ec2` preserves its incoming record
+  pointer in `a2`. When byte `0xa07b81c8` is nonzero, it passes record fields
+  `+0`, `+4`, and `+12`, with `d1=0xbb02`, to `0x6f33113f`, clears
+  `0xa07b81b8`, and calls `0x6f331166` at `0x6f330f00`. That call saves
+  `d2`; the helper's `ret [d2],8` restores the incoming value despite its
+  internal `mov d0,d2`. The body then loads `0xa07b81a0` and invokes it at
+  `0x6f330f0b`. The zero-guard branch instead copies 16 bytes from the record
+  to `0xa07b81a8` and sets bytes `0xa07b82d7` and `0xa07b82d6` to one.
+  The consumer at `0x6f3307f5` initializes `d2` to its post-prologue `sp+12`;
+  its calls to `0x6f33093e` supply either fixed FIFO base `0xa07b81cc`
+  (`0x6f330821`) or that local frame object (`0x6f330889`). The target arm
+  at `0x6f330b53` forwards the selected record to `0x6f330ec2`. These are
+  bounded object routes and a local callback register contract; the runtime
+  table contents and selection of that arm remain unproved. They do not join
+  this callback to the primary selector's descriptor output or establish a
+  live operation handler.
 - The complete containing initializer spans `0x6f32f6b5..0x6f32f864`; its
   suffix at `0x6f32f824..0x6f32f862` directly calls
   `0x6f3391d0` at `0x6f32f848` and `0x6f33c8f5` at `0x6f32f856`. The first
