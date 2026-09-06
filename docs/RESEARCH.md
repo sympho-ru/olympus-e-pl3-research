@@ -206,7 +206,13 @@ A separate authenticated table at block-0 offset `0x0008f0e0` consists of 17
 28-byte records keyed by `0x1001`, `0x1002`, and `0x100b..0x1019`. Its
 `0x100e` row contains positional words
 `(0x100e, 0, 3, 0x6e69e7cb, 5, 0x1000, 0)`. A locally supported code view of
-`0x6e69e7cb` reaches an owner-relative indirect call. Positional word `+12`
+`0x6e69e7cb` reaches an owner-relative indirect call. Its direct helper at
+`0x6e69d892` is now authenticated as a complete nine-byte range at block-0
+offset `0x0009d892`: an unsigned byte read, two register clears, a comparison,
+and return. It does not establish operation meaning or an image path. The
+remaining target-side question is the concrete callee in slot `+20` of the
+object reached from `d2+24`, together with its owner and selection provenance.
+Positional word `+12`
 is now bounded as the common target field across the record family, but no
 authenticated consumer selects the table. A nearby four-byte indexed pointer
 lookup has incompatible geometry. Newly reviewed local-overlay routines pair
