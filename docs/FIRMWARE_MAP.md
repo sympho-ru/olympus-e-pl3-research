@@ -242,7 +242,11 @@ Additional bounded relationships in this module include:
   target spans under the same local relation. The `0x100e` row's seven words
   are `(0x100e, 0, 3, 0x6e69e7cb, 5, 0x1000, 0)`. The shared target calls
   `0x6e69d892`, clears the word through `a2`, then dispatches indirectly
-  through slot `+20` of an object reached from `d2+24`. Newly authenticated
+  through slot `+20` of an object reached from `d2+24`. The complete nine-byte
+  helper at block-0 offset `0x0009d892` (local address `0x6e69d892`) reads
+  an unsigned byte from `(d3,a3)` into `d0`, clears `d1` and `d0`, compares
+  `a0` with 20, and returns. This bounded leaf does not identify the indirect
+  callee or establish capture, image ownership, or transfer. Newly authenticated
   neighboring lookup families do not identify the consumer. Reviewed
   local-overlay routines select between four-byte-indexed bases `0x6e68ef1c`
   and `0x6e690a50` under global `0x8050`; other routines first consume distinct
