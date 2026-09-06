@@ -331,11 +331,23 @@ Additional bounded relationships in this module include:
   `S` remains caller-supplied. Their authenticated block-0 spans are
   `(offset=0x000ae0b2, length=40)` and `(offset=0x000ae97e, length=40)`;
   the latter callee is covered by `(offset=0x000a22e1, length=214)`.
-  The indirect call at `0x6e6a0a9d`, through slot `+0x20` of the table
-  referenced at `O+0x128`, still has no concrete target. These local object
-  relations do not establish allocation, writers of the callback/context
-  values, a concrete callback routine, runtime ownership or ordering, or a
-  join to the PTP selector, FIFO, ingress, USB, wire, or camera behavior.
+  New caller rows at `0x6e6caa8c` and `0x6e6d829e` directly reach
+  `0x6e6ae092` after loading the source pointer through `a1`; the source
+  class remains unidentified.
+  An authenticated provider-aggregate construction span at block-0 offset
+  `0x00653ab2` (222 bytes) constructs subobjects at `outer+0xe8` and
+  `outer+0x1b0`. The setup spans at `0x00653f9d` (8 bytes) and
+  `0x006540de` (15 bytes), with the setter at `0x00654fe6` (7 bytes),
+  establish the local relation `O=outer+0x1b0`, `P=outer+0xe8`, and
+  `*(O+0x128)=P`. The 184-byte constructor span at `0x00654340` clears
+  `O+0x128` before later setup supplies that field.
+  The exact factory frontier at `0x6e6a0a9d` loads `P=*(O+0x128)`, then
+  calls the function pointer stored at `P+0x20`; there is no intervening
+  load of a table from `*(P)`. That function pointer remains unresolved.
+  These local object relations do not establish the concrete source class,
+  writers of the callback/context values, a concrete callback routine,
+  runtime ownership or ordering, or a join to the PTP selector, FIFO,
+  ingress, USB, wire, or camera behavior.
 - On the out-of-range-selector path, `0x6f33113f` uses record `+0` as a
   dynamic handle and constructs a 12-byte stack payload from the input
   halfword tag plus record fields `+4` and `+12`. It passes that payload
