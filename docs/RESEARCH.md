@@ -167,8 +167,16 @@ at `0x6f330f0b`. The fixed consumer initializes `d2` to post-prologue `sp+12`
 and supplies either FIFO base `0xa07b81cc` or that local frame object to
 `0x6f33093e`; the target arm at `0x6f330b53` forwards the record to this body.
 The zero-guard branch instead copies the record and sets two flag bytes.
-A useful continuation proves the table contents and selection of this arm,
-distinguishes which object route executes, and identifies its runtime owner.
+The status getter at `0x6f3311b2` reads unsigned halfword `0xa07b81a4`.
+After the initial bank search, status 2 selects the 16-slot bank
+`[0x6f358bc4,0x6f358c44)` through `0x6f330b16`, ending at the indirect jump
+`0x6f330b4d`. Statuses 0, 1, and 3 select banks at `0x6f358cc4`,
+`0x6f358c44`, and `0x6f358b44`. The five search windows and the four
+additional 128-byte same-view source windows are authenticated; source
+coordinates alone do not prove runtime slot contents. A useful continuation
+identifies a source-proven writer of the status-2 bank and shows that a
+matching slot's `+4` contains `0x6f330b53`, then distinguishes which record
+route executes and establishes its runtime owner.
 The local register contract does not establish a live handler or join this
 callback to the primary selector's descriptor output, USB/PTP, or capture.
 

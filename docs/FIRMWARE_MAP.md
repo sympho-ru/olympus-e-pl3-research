@@ -293,6 +293,19 @@ Additional bounded relationships in this module include:
   that alias or its runtime owner. This proves a
   candidate materializer shape, not table ownership, serialization, endpoint
   submission, DMA, or wire completion.
+- Five bounded searches use 16 eight-byte slots: the initial search uses
+  `[0x6f358d44,0x6f358dc4)`; subsequent status values 0, 1, 2, and 3 select
+  banks beginning at `0x6f358cc4`, `0x6f358c44`, `0x6f358bc4`, and
+  `0x6f358b44`, respectively. The status getter at `0x6f3311b2` reads the
+  unsigned halfword at `0xa07b81a4`. Each search starts at the low four bits
+  of the incremented record `+8` value, compares the full value at slot `+0`,
+  wraps at the bank end, and jumps through matching slot `+4`; a zero key
+  exits the search. In particular, status 2 reaches the search at
+  `0x6f330b16` and indirect jump at `0x6f330b4d`. The four additional
+  same-view source windows at block-0 offsets `0x00d58b44`, `0x00d58bc4`,
+  `0x00d58c44`, and `0x00d58cc4` are now authenticated for 128 bytes each;
+  their hashes do not establish runtime bank contents. No accepted producer
+  establishes a slot containing callback landing `0x6f330b53`.
 - The complete 123-byte body at `0x6f330ec2` preserves its incoming record
   pointer in `a2`. When byte `0xa07b81c8` is nonzero, it passes record fields
   `+0`, `+4`, and `+12`, with `d1=0xbb02`, to `0x6f33113f`, clears
