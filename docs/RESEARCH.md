@@ -258,10 +258,20 @@ its guarded path writes `O` to `S+0x30` and `S` to `O+0x120` before calling
 `0x6e6a224e`, whose registration path loads callback/context from `O+0xac`
 and `O+0xf4`. Thunks at `0x6e6ae092` and `0x6e6ae95e` load `O` from the
 pointer stored at `parent+0x24`; they do not establish `S`'s allocation.
-The useful next result identifies that parent field's producer, proves a
-writer of `O+0xac` or `O+0xf4` belongs to this same object, or resolves the
-indirect target at `0x6e6a0a9d` through the table referenced at `O+0x128`.
-Matching field offsets in another object are insufficient evidence of identity.
+Direct callers at `0x6e6caa8c` and `0x6e6d829e` now reach `0x6e6ae092`
+after loading the source pointer through `a1`; these edges still do not identify
+its class. A local provider-aggregate setup now establishes
+`O=outer+0x1b0`, `P=outer+0xe8`, and `*(O+0x128)=P`, supported by block-0
+spans at `0x00653ab2`, `0x00653f9d`, `0x006540de`, `0x00654340`, and
+`0x00654fe6`. The factory at `0x6e6a0a9d` calls the pointer stored directly
+at `P+0x20` after loading `P=*(O+0x128)`. It does not first load `*(P)`
+as a dispatch table; a candidate selected by that extra dereference is not a
+supported target.
+
+The useful next result resolves the writer and value of `P+0x20`, identifies
+the parent field's producer or the callers' source class, or proves a writer
+of `O+0xac` or `O+0xf4` belongs to this same object. Matching field offsets
+in another object are insufficient evidence of identity.
 A supported owner edge to an established PTP selector, queue, or transport
 boundary also remains useful. The local pairing and indirect calls do not
 establish a concrete callback routine, runtime reachability, or that join.
