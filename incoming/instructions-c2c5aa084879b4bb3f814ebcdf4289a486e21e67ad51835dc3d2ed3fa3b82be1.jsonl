@@ -1,0 +1,4 @@
+{"address":1860294024,"block":0,"instruction":"mov\ta1,(100,a0)","length":3,"offset":8503656,"sha256":"2160558bec90bea75e74ee648df95591fa0d0a18018479b3e0c8fc8fac1748a2"}
+{"address":1860294027,"block":0,"instruction":"mov\ta1,(92,a0)","length":3,"offset":8503659,"sha256":"b94b08f13d6ad5e2bab9955f525769a7a7290aa40aab056d179c0983a69db02a"}
+{"address":1860294030,"block":0,"instruction":"retf\t[],0","length":3,"offset":8503662,"sha256":"27bea7d8f2553c0ed4081cc731c5b541fe9ff5e085904d92ed4442095436f0b5"}
+{"address":1860294439,"block":0,"instruction":"retf\t[],0","length":3,"offset":8504071,"sha256":"27bea7d8f2553c0ed4081cc731c5b541fe9ff5e085904d92ed4442095436f0b5"}
