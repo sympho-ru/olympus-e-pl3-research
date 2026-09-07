@@ -117,14 +117,20 @@ earlier getter result is nonzero, now has an accepted body and direct successor
 at `0x6ee1db5b`. The stack-temporary preparation, helper calls, dynamic
 dispatch, and return do not establish capture or an image consumer.
 
-The next exact boundary is the parent receiver's slot `+52` call at
-`0x6ee1db7f`. Track the incoming parent saved in `a2` and restored into `a0`
-before that call; do not confuse it with the other incoming object saved in
-`d3` or the returned object saved in `a3`. Establish the concrete receiver/table,
-target, and returned object's owner before following its later slot-`+8` or
-slot-`+48` calls. Require a source-backed capture, image, file, or transfer
-effect before advancing the request-to-image claim. Re-decoding the
-slot-`+76` wrapper alone does not close that gap.
+For parent table `0x6ee8d1d0`, the slot-`+52` call at `0x6ee1db7f`
+resolves to the accepted field-`+100` getter at `0x6ee1dc28`. The accepted
+writer at `0x6ee1d588` stores incoming `a1` into both `+100` and `+92`.
+The next useful result must establish where that incoming pointer comes from,
+which concrete object/table is stored, and how the returned object reaches its
+later slot-`+8` or slot-`+48` consumer. Keep the parent saved in `a2`, the
+other incoming object saved in `d3`, and the getter result saved in `a3`
+distinct. A field getter and setter alone do not establish image ownership.
+
+The parent table's slot-`+40` body at `0x6ee1d727` is an accepted return-only
+no-op. Do not apply that result to the other object's slot-`+40` call at
+`0x6ee1db91` without proving its receiver/table identity. Require complete
+supported instruction boundaries and a source-backed capture, image, file, or
+transfer effect before advancing the request-to-image claim.
 
 ## Identify the live-view frame owner
 
