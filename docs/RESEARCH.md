@@ -150,6 +150,22 @@ caller-supplied object or the destination of the three-word copy, then binds it
 to the `outer+132` collection or one concrete frame handle. The lifecycle,
 object binding, collection append, and mapped tables are already established.
 
+## Resolve the ThroughImage selector's runtime record
+
+The accepted constructor-shaped body at `0x6edfc227` installs table
+`0x6eefbc84`; its slot `+0x20` selects the existing caller at `0x6edfc346`.
+The new span at `0x6e868efe` maps that caller's selector 4 to `0x2100`,
+passes a stack destination to `0x6e76d553`, and loads a 16-bit scalar into
+`d0`. Its source coverage ends before the return instruction. The caller's
+saved scalar and return mechanics do not identify a JPEG or frame pointer.
+
+The useful next boundary is the producer and contents of the runtime record
+array at `0x6034aff0`: establish the `0x2100` record's `+4` value and follow
+it through `0x6e76efc8` / `0x6e76ee46` to the destination write or a concrete
+payload effect. The helper's key search, `0x2900` sentinel, and halfword
+status return are now bounded. Resolving a receiver table alone does not
+establish image ownership, capture, transfer submission, or wire completion.
+
 ## Resolve a read-only PTP request and response lifecycle
 
 PTP handling around `0x6f3307f5` and `0x6f330905` accesses runtime data record
