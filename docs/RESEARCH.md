@@ -93,10 +93,10 @@ distinct lazy object with table `0x6ee8d1d0`; slot `+0` resolves to
 `0x6ec1875c`, slot `+4` to `0x6ee1d507`, and slot `+8` to `0x6ee1d553`. The
 slot-`+8` body performs a guarded initialization of `0x6065949c` and, for this
 established object identity, its call at `0x6ee1d583` resolves back to slot
-`+4`. The useful next boundary is now the slot-`+4` body's nested receiver call
-at `0x6ee1d52a` or its later slot-`+72`/`+76` calls. Identify those concrete
-receivers and targets, then test whether either joins the established singleton
-corridor. The static calls alone do not prove capture or hardware behavior.
+`+4`. Continue from the slot-`+4` body's nested receiver call
+at `0x6ee1d52a` or its later slot-`+76` call. Identify the concrete runtime
+receivers and test whether either joins the established singleton corridor.
+The static calls alone do not prove capture or hardware behavior.
 
 The six-byte source span at block-0 offset `0x0081a3a2` locally decodes at
 `0x6ee1b7c2` as a field-`+8` getter and return; the return at `0x6ee1b7c5`
@@ -105,8 +105,18 @@ that the nested call executes with that receiver. The existing load row has
 a different address anchor (`0x6ee1b7c8`), so keep source coordinates and
 local address views explicit. A useful next result establishes the concrete
 receiver/table provenance and the returned field's producer or consumer, or
-resolves the later slot-`+72`/`+76` targets. Re-decoding this getter alone will
+follows the later slot-`+76` target. Re-decoding this getter alone will
 not establish capture, a frame handle, or transfer.
+
+The accepted slot-`+72` candidate at `0x6ee1d38f` dispatches through the
+receiver's slot `+64`. For table `0x6ee8d1d0`, that successor is
+`0x6ee1d263`, whose bounded body performs helper calls and returns a scalar
+result. These authenticated bodies do not establish an image-producing effect.
+The next narrow branch is slot `+76`, mapped to `0x6ee1d39e` and called at
+`0x6ee1d53a` when the earlier getter result is nonzero. Trace its supported
+successor edges and require concrete receiver provenance and a source-backed
+capture, image, file, or transfer effect before advancing the request-to-image
+claim. Re-decoding the slot-`+72` wrapper alone does not close that gap.
 
 ## Identify the live-view frame owner
 
