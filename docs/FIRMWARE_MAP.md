@@ -16,7 +16,7 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 12,990 authenticated ranges and 51,466 reviewed MN103 instruction rows |
+| 0 | 12,990 authenticated ranges and 51,474 reviewed MN103 instruction rows |
 | 1 | 827 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
 | 3 | 35 authenticated ranges; no reviewed instructions yet |
@@ -519,6 +519,15 @@ pool. Checkout first-fit reserves one of two `0x40000`-byte backing buffers and
 returns its pointer or null; release matches that pointer and clears the
 descriptor's availability halfword. Routine `0x6f334b5e` is a separate
 stateful consumer, not another release primitive.
+
+The descriptor target at `0x6e74c410` now has eight reviewed instructions
+covering the 21-byte span at block-0 offset `0x0014c430`. It reads the
+unsigned halfword at incoming `a0 + 138`, tests it with mask `-8`, and
+returns `0x7301` on the nonzero arm. The zero arm branches to `0x6e74c425`,
+outside this authenticated span. These instructions do not read the caller's
+descriptor buffer pointer or length, or establish a payload copy. This bounds
+only the reviewed entry span; the successor's behavior, runtime reachability,
+image/file ownership, USB/PTP submission, and wire completion remain unknown.
 
 Adjacent halfword `0xa07b82d0` is co-reset with the FIFO and is later used as
 the unsigned dividend of a caller-supplied divisor. It is not referenced by
