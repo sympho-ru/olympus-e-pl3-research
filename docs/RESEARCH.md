@@ -94,8 +94,8 @@ distinct lazy object with table `0x6ee8d1d0`; slot `+0` resolves to
 slot-`+8` body performs a guarded initialization of `0x6065949c` and, for this
 established object identity, its call at `0x6ee1d583` resolves back to slot
 `+4`. Continue from the slot-`+4` body's nested receiver call
-at `0x6ee1d52a` or its later slot-`+76` call. Identify the concrete runtime
-receivers and test whether either joins the established singleton corridor.
+at `0x6ee1d52a` or its later slot-`+76` continuation. Identify the concrete
+runtime receivers and test whether either joins the established singleton corridor.
 The static calls alone do not prove capture or hardware behavior.
 
 The six-byte source span at block-0 offset `0x0081a3a2` locally decodes at
@@ -105,18 +105,26 @@ that the nested call executes with that receiver. The existing load row has
 a different address anchor (`0x6ee1b7c8`), so keep source coordinates and
 local address views explicit. A useful next result establishes the concrete
 receiver/table provenance and the returned field's producer or consumer, or
-follows the later slot-`+76` target. Re-decoding this getter alone will
-not establish capture, a frame handle, or transfer.
+resolves the later slot-`+76` continuation's dynamic targets.
+Re-decoding this getter alone will not establish capture, a frame handle, or transfer.
 
 The accepted slot-`+72` candidate at `0x6ee1d38f` dispatches through the
 receiver's slot `+64`. For table `0x6ee8d1d0`, that successor is
 `0x6ee1d263`, whose bounded body performs helper calls and returns a scalar
 result. These authenticated bodies do not establish an image-producing effect.
-The next narrow branch is slot `+76`, mapped to `0x6ee1d39e` and called at
-`0x6ee1d53a` when the earlier getter result is nonzero. Trace its supported
-successor edges and require concrete receiver provenance and a source-backed
-capture, image, file, or transfer effect before advancing the request-to-image
-claim. Re-decoding the slot-`+72` wrapper alone does not close that gap.
+Slot `+76`, mapped to `0x6ee1d39e` and called at `0x6ee1d53a` when the
+earlier getter result is nonzero, now has an accepted body and direct successor
+at `0x6ee1db5b`. The stack-temporary preparation, helper calls, dynamic
+dispatch, and return do not establish capture or an image consumer.
+
+The next exact boundary is the parent receiver's slot `+52` call at
+`0x6ee1db7f`. Track the incoming parent saved in `a2` and restored into `a0`
+before that call; do not confuse it with the other incoming object saved in
+`d3` or the returned object saved in `a3`. Establish the concrete receiver/table,
+target, and returned object's owner before following its later slot-`+8` or
+slot-`+48` calls. Require a source-backed capture, image, file, or transfer
+effect before advancing the request-to-image claim. Re-decoding the
+slot-`+76` wrapper alone does not close that gap.
 
 ## Identify the live-view frame owner
 
