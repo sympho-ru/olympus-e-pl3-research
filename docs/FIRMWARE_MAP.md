@@ -16,7 +16,7 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 12,983 authenticated ranges and 51,409 reviewed MN103 instruction rows |
+| 0 | 12,985 authenticated ranges and 51,413 reviewed MN103 instruction rows |
 | 1 | 827 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
 | 3 | 35 authenticated ranges; no reviewed instructions yet |
@@ -131,9 +131,21 @@ receiver from `a2` into `a0` and calls that receiver's slot `+52` at
 `0x6ee1db7f`. It saves the returned `a0` in `a3`; later dispatch uses the
 other incoming object and the returned object, including slots `+8` or `+48`
 of the latter according to global `0x6035b1ac`. These 72 instruction rows
-establish bounded dynamic dispatch and return mechanics, not the slot-`+52`
-callee's identity, the returned object's ownership, capture, image/file
-creation, hardware actuation, or an image consumer.
+establish bounded dynamic dispatch and return mechanics, not the returned
+object's ownership, capture, image/file creation, hardware actuation, or an
+image consumer.
+
+For parent table `0x6ee8d1d0`, slot `+52` resolves to the already-canonical
+six-byte getter at `0x6ee1dc28` (block-0 offset `0x0081c808`): it loads
+field `+100` into `a0` and returns. The newly accepted writer at `0x6ee1d588`
+(offset `0x0081c168`, nine bytes) stores incoming `a1` into fields `+100`
+and `+92`, then returns. This identifies a setter body, not the producer or
+concrete dispatch table of the stored object. The same parent table's slot
+`+40` resolves to `0x6ee1d727` (offset `0x0081c307`, three bytes), whose
+accepted body is only `retf [],0`. That bounded no-op does not identify the
+other incoming object's slot-`+40` target at `0x6ee1db91`. The field value,
+its runtime provenance, and its later slot-`+8`/`+48` consumers remain
+unresolved; none of these bodies establishes image ownership or transfer.
 
 ### Live-view object lifecycle
 

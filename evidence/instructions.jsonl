@@ -32618,9 +32618,13 @@
 {"address":1860294016,"instruction":"mov\t(4,a2),a2","block":0,"offset":8503648,"length":3,"sha256":"efb303ea170d64aa76ba246970408157f0b7b207135e5bc3a63aae66d3cacbfa"}
 {"address":1860294019,"instruction":"calls\t(a2)","block":0,"offset":8503651,"length":2,"sha256":"88d050808ebbdd58a3cae29385b2959d465aeae604fffa3e5b54c99cb595e169"}
 {"address":1860294021,"instruction":"ret\t[a2,a3],12","block":0,"offset":8503653,"length":3,"sha256":"747362e0e98d2d01ea2f3c04bd3547290996c38c727c20ee982fcb93cac2e8e8"}
+{"address":1860294024,"instruction":"mov\ta1,(100,a0)","block":0,"offset":8503656,"length":3,"sha256":"2160558bec90bea75e74ee648df95591fa0d0a18018479b3e0c8fc8fac1748a2"}
+{"address":1860294027,"instruction":"mov\ta1,(92,a0)","block":0,"offset":8503659,"length":3,"sha256":"b94b08f13d6ad5e2bab9955f525769a7a7290aa40aab056d179c0983a69db02a"}
+{"address":1860294030,"instruction":"retf\t[],0","block":0,"offset":8503662,"length":3,"sha256":"27bea7d8f2553c0ed4081cc731c5b541fe9ff5e085904d92ed4442095436f0b5"}
 {"address":1860294041,"instruction":"mov\t(a0),a1","block":0,"offset":8503673,"length":2,"sha256":"7ebe9de91f1483d8446f8d8bce8a638d7f258cbef9eda04c1be151f9c5f47d96"}
 {"address":1860294043,"instruction":"mov\t(52,a1),a1","block":0,"offset":8503675,"length":3,"sha256":"16cfd4aed0ff2dab603ea008f83362fe07ee85a0e6e554853ae45aeeb730a3fa"}
 {"address":1860294046,"instruction":"calls\t(a1)","block":0,"offset":8503678,"length":2,"sha256":"52ac7fa39995d19bde491708457d801972c932452fe61d3f16f07301570a27dd"}
+{"address":1860294439,"instruction":"retf\t[],0","block":0,"offset":8504071,"length":3,"sha256":"27bea7d8f2553c0ed4081cc731c5b541fe9ff5e085904d92ed4442095436f0b5"}
 {"address":1860295515,"instruction":"mov\td0,(4,sp)","block":0,"offset":8505147,"length":2,"sha256":"f4daf8fafbc239eebeb8b8f2204b444536a01ea3ec8a4039227c36c68fa18243"}
 {"address":1860295517,"instruction":"mov\ta1,d3","block":0,"offset":8505149,"length":2,"sha256":"5b1535074a840f2507c31fa597845358b2382b0bc5194b4bcb6ad200146ffdc4"}
 {"address":1860295519,"instruction":"mov\ta0,a2","block":0,"offset":8505151,"length":1,"sha256":"956062137518b270d730d4753000896de17c100a42f9e24f5acee2faa75d5fdd"}
