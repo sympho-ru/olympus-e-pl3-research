@@ -16,7 +16,7 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 12,979 authenticated ranges and 51,308 reviewed MN103 instruction rows |
+| 0 | 12,981 authenticated ranges and 51,337 reviewed MN103 instruction rows |
 | 1 | 827 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
 | 3 | 35 authenticated ranges; no reviewed instructions yet |
@@ -97,8 +97,8 @@ initialization of three words at `0x6065949c` through `0x6ee1b784`, then calls
 the same object's slot `+4`. The slot-`+4` body reaches several further
 receiver-relative indirect calls, beginning at `0x6ee1d52a`. These object,
 table, and target identities differ from the established singleton above; the
-nested targets, semantic class, and any downstream relationship to the still
-corridor remain unresolved.
+concrete runtime receivers, semantic class, and any downstream relationship to
+the still corridor remain unresolved.
 
 The nested call at `0x6ee1d52a` loads receiver-table slot `+12`. The
 canonical six-byte range at block-0 offset `0x0081a3a2`, decoded locally at
@@ -109,6 +109,19 @@ replace that anchor or admit an alternate-address load row. Under the local
 view, the bounded body is a field getter. Its field meaning, the receiver's
 runtime identity, and downstream image ownership remain unproven; this body
 does not establish capture actuation or image transfer.
+
+For the established table `0x6ee8d1d0`, slot `+72` resolves to
+`0x6ee1d38f` (block-0 offset `0x0081bf6f`, 15 bytes). This wrapper loads
+`*(a0)`, calls that receiver table's slot `+64`, and returns. Under the same
+table identity, slot `+64` resolves to `0x6ee1d263` (offset `0x0081be43`,
+57 bytes). That body branches on `d0`, calls `0x6ee1db5b` on both paths,
+uses `0x6ee1b795` and `0x6ee1b7a6` around the zero-input path, and returns
+the saved scalar result in `d0`. Both spans and 29 instruction rows are now
+canonical; the two-byte boundary at `0x6ee1d281` has range coverage only.
+These bodies bound the proposed slot-`+72` continuation but do not prove
+runtime dispatch, capture, frame/image creation, file publication, or transfer.
+The adjacent slot `+76` maps to `0x6ee1d39e`; its downstream behavior remains
+a separate research boundary.
 
 ### Live-view object lifecycle
 
