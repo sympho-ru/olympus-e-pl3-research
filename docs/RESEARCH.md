@@ -175,6 +175,16 @@ establish image ownership, capture, transfer submission, or wire completion.
 
 ## Resolve a read-only PTP request and response lifecycle
 
+The large-buffer descriptor target's entry at `0x6e74c410` is now decoded
+through the end of its authenticated 21-byte span (block-0 offset
+`0x0014c430`). It tests the owner-relative halfword at `+138` and returns
+`0x7301` on one arm without reading the descriptor's buffer pointer or length.
+The other arm reaches `0x6e74c425`, outside the reviewed span. A useful
+continuation authenticates that successor and establishes whether it consumes
+the descriptor or returns another status. The entry alone neither proves a
+payload effect nor excludes one beyond the span; image/file ownership,
+USB/PTP submission, and wire completion remain unresolved.
+
 PTP handling around `0x6f3307f5` and `0x6f330905` accesses runtime data record
 `0xa07b81cc`, including its `+8` field at `0xa07b81d4`. These are runtime-memory
 addresses, not decoded-block offsets. At code address `0x6f3307fa`, the same
