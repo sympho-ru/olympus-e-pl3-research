@@ -16,7 +16,7 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 12,981 authenticated ranges and 51,337 reviewed MN103 instruction rows |
+| 0 | 12,983 authenticated ranges and 51,409 reviewed MN103 instruction rows |
 | 1 | 827 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
 | 3 | 35 authenticated ranges; no reviewed instructions yet |
@@ -120,8 +120,20 @@ the saved scalar result in `d0`. Both spans and 29 instruction rows are now
 canonical; the two-byte boundary at `0x6ee1d281` has range coverage only.
 These bodies bound the proposed slot-`+72` continuation but do not prove
 runtime dispatch, capture, frame/image creation, file publication, or transfer.
-The adjacent slot `+76` maps to `0x6ee1d39e`; its downstream behavior remains
-a separate research boundary.
+
+The adjacent slot `+76` maps to `0x6ee1d39e` (block-0 offset
+`0x0081bf7e`, 45 bytes). Its now-canonical body prepares a stack temporary
+through `0x6ee1b795`, passes it to `0x6ee1db5b`, calls `0x6ee1b7a6`, and
+returns the saved result. The direct successor `0x6ee1db5b` (offset
+`0x0081c73b`, 103 bytes) also has canonical coverage. After a predicate call
+and a conditional slot-`+8` status path, it restores the incoming parent
+receiver from `a2` into `a0` and calls that receiver's slot `+52` at
+`0x6ee1db7f`. It saves the returned `a0` in `a3`; later dispatch uses the
+other incoming object and the returned object, including slots `+8` or `+48`
+of the latter according to global `0x6035b1ac`. These 72 instruction rows
+establish bounded dynamic dispatch and return mechanics, not the slot-`+52`
+callee's identity, the returned object's ownership, capture, image/file
+creation, hardware actuation, or an image consumer.
 
 ### Live-view object lifecycle
 
