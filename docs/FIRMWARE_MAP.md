@@ -16,7 +16,7 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 12,948 authenticated ranges and 51,188 reviewed MN103 instruction rows |
+| 0 | 12,979 authenticated ranges and 51,308 reviewed MN103 instruction rows |
 | 1 | 827 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
 | 3 | 35 authenticated ranges; no reviewed instructions yet |
@@ -99,6 +99,16 @@ receiver-relative indirect calls, beginning at `0x6ee1d52a`. These object,
 table, and target identities differ from the established singleton above; the
 nested targets, semantic class, and any downstream relationship to the still
 corridor remain unresolved.
+
+The nested call at `0x6ee1d52a` loads receiver-table slot `+12`. The
+canonical six-byte range at block-0 offset `0x0081a3a2`, decoded locally at
+`0x6ee1b7c2`, is `mov (8,a0),a0` followed by `retf [],0` at `0x6ee1b7c5`.
+The return is now a canonical instruction row. The existing load row uses
+address `0x6ee1b7c8` for the same source offset; this acceptance does not
+replace that anchor or admit an alternate-address load row. Under the local
+view, the bounded body is a field getter. Its field meaning, the receiver's
+runtime identity, and downstream image ownership remain unproven; this body
+does not establish capture actuation or image transfer.
 
 ### Live-view object lifecycle
 

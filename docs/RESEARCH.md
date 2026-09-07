@@ -98,6 +98,16 @@ at `0x6ee1d52a` or its later slot-`+72`/`+76` calls. Identify those concrete
 receivers and targets, then test whether either joins the established singleton
 corridor. The static calls alone do not prove capture or hardware behavior.
 
+The six-byte source span at block-0 offset `0x0081a3a2` locally decodes at
+`0x6ee1b7c2` as a field-`+8` getter and return; the return at `0x6ee1b7c5`
+is now canonical. This bounds the proposed slot-`+12` target without proving
+that the nested call executes with that receiver. The existing load row has
+a different address anchor (`0x6ee1b7c8`), so keep source coordinates and
+local address views explicit. A useful next result establishes the concrete
+receiver/table provenance and the returned field's producer or consumer, or
+resolves the later slot-`+72`/`+76` targets. Re-decoding this getter alone will
+not establish capture, a frame handle, or transfer.
+
 ## Identify the live-view frame owner
 
 The lazy singleton accessor at `0x40ab9cbd` constructs through `0x40ab9ceb`;
