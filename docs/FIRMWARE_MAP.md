@@ -16,7 +16,7 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 12,988 authenticated ranges and 51,460 reviewed MN103 instruction rows |
+| 0 | 12,990 authenticated ranges and 51,466 reviewed MN103 instruction rows |
 | 1 | 827 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
 | 3 | 35 authenticated ranges; no reviewed instructions yet |
@@ -200,7 +200,7 @@ receiver. The existing authenticated table at offset `0x008fa864` selects
 selector 4 to `0x6e868efe`, saves its scalar result, and forwards it in `d0`.
 “ThroughImage” is a research label, not proof of a JPEG or frame owner.
 
-The newly accepted selector span at `0x6e868efe` (offset `0x00267ade`,
+The accepted selector span at `0x6e868efe` (offset `0x00267ade`,
 56 bytes) maps selector 4 to `0x2100`, selector 5 to `0x2400`, and other
 values to `0x0c00`. It passes a stack halfword destination to `0x6e76d553`,
 clears that halfword when the helper reports nonzero status, then loads it
@@ -216,6 +216,17 @@ instruction rows bound this static selector/scalar path. The runtime records,
 concrete value selected for `0x2100`, downstream callee effects, and runtime
 reachability remain unresolved. No image payload pointer, capture, transfer
 queue submission, or wire completion is established.
+
+The additional root-load rows at `0x6e76d58c` and `0x6e76d592`
+explicitly establish the helper's `0x6034aff0` base. A separate 51-byte
+initializer-shaped span at `0x6e76df43` (block-0 offset `0x0016cb23`)
+passes `0x2100` and a reference to the authenticated `MENU_BG` identifier
+(offset `0x0036c8bf`, 8 bytes) to `0x6e76edd1`. The accepted rows at
+`0x6e76edd2` and `0x6e76edd8` load `0x6e96def4` and store it through
+`a2`. These are static initialization facts; they do not identify the live
+`0x2100` record's `+4` value or establish that this initializer populates
+`0x6034aff0`. The six additional instruction rows and two ranges leave the
+join to the queued-copy frontier at `0x6e61fd8d` / `0x6e68939a` unresolved.
 
 ## Established PTP-adjacent record initialization
 

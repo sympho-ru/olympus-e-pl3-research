@@ -1,6 +1,0 @@
-{"address":1853279672,"block":0,"instruction":"call\t0x6e76d553,[d2,d3,a2,a3],48","length":5,"offset":1489304,"sha256":"09ba30965fffcc3beb03bc1a6250529902b68044ac1072afc981ee8de6b35c82"}
-{"address":1853281676,"block":0,"instruction":"mov\t1614065648,a0","length":6,"offset":1491308,"sha256":"6742108930eb04ddcbf46bcd4ec7fd8837bcdcbbee4ec22cd89825a75b13c41c"}
-{"address":1853281682,"block":0,"instruction":"mov\ta0,a2","length":1,"offset":1491314,"sha256":"956062137518b270d730d4753000896de17c100a42f9e24f5acee2faa75d5fdd"}
-{"address":1853284163,"block":0,"instruction":"mov\t8448,d0","length":3,"offset":1493795,"sha256":"3de8398b36011dc3d2f1d6e7374483c154164b252e978dfabb8560abb376d0db"}
-{"address":1853287890,"block":0,"instruction":"mov\t1855381236,d2","length":6,"offset":1497522,"sha256":"62e302a77da7b2402b53a9ca405f0937814ddc62c9aff4b253cb8b2c4d39e3e4"}
-{"address":1853287896,"block":0,"instruction":"mov\td2,(a2)","length":1,"offset":1497528,"sha256":"189f40034be7a199f1fa9891668ee3ab6049f82d38c68be70f596eab2e1857b7"}
