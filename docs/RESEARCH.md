@@ -154,10 +154,17 @@ object binding, collection append, and mapped tables are already established.
 
 The accepted constructor-shaped body at `0x6edfc227` installs table
 `0x6eefbc84`; its slot `+0x20` selects the existing caller at `0x6edfc346`.
-The new span at `0x6e868efe` maps that caller's selector 4 to `0x2100`,
+The accepted span at `0x6e868efe` maps that caller's selector 4 to `0x2100`,
 passes a stack destination to `0x6e76d553`, and loads a 16-bit scalar into
 `d0`. Its source coverage ends before the return instruction. The caller's
 saved scalar and return mechanics do not identify a JPEG or frame pointer.
+
+The accepted root-load rows explicitly locate the helper's runtime base at
+`0x6034aff0`. The separate initializer-shaped span at `0x6e76df43`
+references `0x2100` and `MENU_BG`, but does not establish a producer for
+that runtime array or the selected record's `+4` value. Matching the selector
+constant alone does not join this initializer to the live selected entry or
+the queued-copy frontier at `0x6e61fd8d` / `0x6e68939a`.
 
 The useful next boundary is the producer and contents of the runtime record
 array at `0x6034aff0`: establish the `0x2100` record's `+4` value and follow
