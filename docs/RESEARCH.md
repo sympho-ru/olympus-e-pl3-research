@@ -175,6 +175,12 @@ establish image ownership, capture, transfer submission, or wire completion.
 
 ## Resolve a read-only PTP request and response lifecycle
 
+The caller window `0x6f331fb7..0x6f332029` (end exclusive) now has
+47 contiguous, full-width instruction records after correcting eight truncated
+rows and removing five call-operand interior records. Those interior addresses
+are not established alternate entries; any such claim needs independent
+entry evidence. The corrected call targets are unchanged.
+
 The large-buffer descriptor target's entry at `0x6e74c410` is now decoded
 through the end of its authenticated 21-byte span (block-0 offset
 `0x0014c430`). It tests the owner-relative halfword at `+138` and returns

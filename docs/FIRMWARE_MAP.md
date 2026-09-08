@@ -16,7 +16,7 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 12,990 authenticated ranges and 51,474 reviewed MN103 instruction rows |
+| 0 | 12,990 authenticated ranges and 51,469 reviewed MN103 instruction rows |
 | 1 | 827 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
 | 3 | 35 authenticated ranges; no reviewed instructions yet |
@@ -519,6 +519,14 @@ pool. Checkout first-fit reserves one of two `0x40000`-byte backing buffers and
 returns its pointer or null; release matches that pointer and clears the
 descriptor's availability halfword. Routine `0x6f334b5e` is a separate
 stateful consumer, not another release primitive.
+
+The caller window `0x6f331fb7..0x6f332029` (end exclusive), at block-0
+offsets `0x00d31fd7..0x00d32049`, contains 47 contiguous instructions.
+Full-width decoding corrects eight previously truncated lengths and slice
+hashes without changing their instruction text or call targets. Five records
+inside the call operands at `0x6f331ffd` and `0x6f33201b` were removed; no
+independent alternate-entry evidence justifies retaining them. This correction
+establishes static boundaries, not runtime reachability.
 
 The descriptor target at `0x6e74c410` now has eight reviewed instructions
 covering the 21-byte span at block-0 offset `0x0014c430`. It reads the
