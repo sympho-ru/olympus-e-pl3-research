@@ -1,8 +1,0 @@
-{"address":1865621431,"instruction":"call 0x6f334b0e,[],0","block":0,"offset":13836247,"length":5,"sha256":"b6e2043ad4e65bd6073e43561dca52f352bb79054d60a35990b9d24994bc4cbb"}
-{"address":1865621454,"instruction":"call 0x6f335b9f,[d2,d3,a2],16","block":0,"offset":13836270,"length":5,"sha256":"00a1e36d177149b81c79e578259d66c2490a4e5d520cd22ad377ddb45346bac5"}
-{"address":1865621476,"instruction":"mov 262144,d1","block":0,"offset":13836292,"length":6,"sha256":"18440f997425016f0c8f60faca5a007298326b3a9229b432f407670b16c971d2"}
-{"address":1865621482,"instruction":"call 0x6f335bba,[d2,d3,a2,a3],20","block":0,"offset":13836298,"length":5,"sha256":"2035593d95f812526006341fd5e55ad745be7fe3cca06d3ed88210216f22dcfa"}
-{"address":1865621488,"instruction":"call 0x6f335bf4,[a2],8","block":0,"offset":13836304,"length":5,"sha256":"8713f1c62216048305e54d490f73b8da77509bd3ee86c9600c560a88269201a4"}
-{"address":1865621501,"instruction":"call 0x6e74c3f6,[],0","block":0,"offset":13836317,"length":7,"sha256":"8de1c6c2360c25eda73fe03632e0168e27337b67ba3a788a1b0ab30d8d953cea"}
-{"address":1865621518,"instruction":"mov 262144,d0","block":0,"offset":13836334,"length":6,"sha256":"4dfe27905bf93c9e0cf57edeb69fc95ace2e7eda5e17475247f9e294106c4d3e"}
-{"address":1865621531,"instruction":"call 0x6e74c410,[d2,a2,a3],16","block":0,"offset":13836347,"length":7,"sha256":"7e6e3d01472ff057a461ee38a5d6dc6d0b9ab5a4c44d3723fad30a72bf98c6d6"}
