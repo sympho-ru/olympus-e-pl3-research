@@ -6,6 +6,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 
+from .decoding import require_verified, verify_instructions
 from .audit import audit_paths
 from .evidence import (
     InstructionRow,
@@ -126,6 +127,7 @@ def _analyze(
     root: Path,
     source: VerifiedSource,
     selected: list[Path] | None = None,
+    *, objdump: str | None = None, overlap_review: Path | None = None,
 ) -> _Analysis:
     canonical_ranges, canonical_instructions = _canonical_rows(root, source)
     paths, submitted_ranges, submitted_instructions = _load_submitted(
@@ -170,6 +172,11 @@ def _analyze(
             )
         instruction_by_key[key].add(row)
         new_instructions.add(row)
+
+    if submitted_instructions:
+        require_verified(verify_instructions(
+            source, tuple(submitted_instructions), canonical_instructions, executable=objdump
+        ), overlap_review)
 
     report = ContributionReport(
         files=len(paths),
@@ -240,17 +247,19 @@ def check_contribution(
     root: Path,
     base: str,
     source: VerifiedSource,
+    *, objdump: str | None = None, overlap_review: Path | None = None,
 ) -> ContributionReport:
     _verify_pr_scope(root, base)
-    return _analyze(root, source).report
+    return _analyze(root, source, objdump=objdump, overlap_review=overlap_review).report
 
 
 def accept_contribution(
     root: Path,
     source: VerifiedSource,
     paths: list[Path],
+    *, objdump: str | None = None, overlap_review: Path | None = None,
 ) -> ContributionReport:
-    analysis = _analyze(root, source, paths)
+    analysis = _analyze(root, source, paths, objdump=objdump, overlap_review=overlap_review)
     if analysis.new_ranges:
         merged_ranges = sorted(set(analysis.canonical_ranges) | set(analysis.new_ranges))
         write_jsonl(

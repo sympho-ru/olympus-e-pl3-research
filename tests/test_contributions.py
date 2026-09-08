@@ -16,6 +16,14 @@ from epl3_research.evidence import EvidenceCounts, load_evidence, write_jsonl
 from epl3_research.source import sha256_bytes
 
 
+@pytest.fixture(autouse=True)
+def synthetic_decode(monkeypatch):
+    # These tests exercise contribution mechanics using arbitrary synthetic
+    # instruction text. Real decoder/acceptance integration is tested separately.
+    monkeypatch.setattr("epl3_research.contributions.verify_instructions",
+                        lambda *a, **k: {"results": [], "overlaps": []})
+
+
 def git(root: Path, *arguments: str) -> str:
     return subprocess.run(
         ["git", "-C", str(root), *arguments],

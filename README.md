@@ -56,7 +56,9 @@ epl3-research check-contribution \
 
 The command proves that canonical evidence was not modified, verifies the
 content-addressed incoming files, authenticates only their firmware slices,
-and reports instruction decodes requiring review. See
+and enforces contextual instruction decoding with GNU MN103 objdump 2.45.
+Overlapping rows require explicit adjudication. See [DECODING.md](docs/DECODING.md)
+for setup, the corpus screen, and the limits of the mechanical check. See
 [CONTRIBUTING.md](CONTRIBUTING.md) for submission and acceptance steps.
 
 Release mode additionally audits configured private terms and all blobs
