@@ -74,6 +74,8 @@ epl3-research source-range \
 Structural checks reject missing or additional fields, unexpected evidence
 files, invalid bounds, invalid digest syntax, duplicates, and unsorted rows.
 Firmware-backed checks recompute every digest from the verified image.
+Instruction contribution checks and acceptance additionally enforce the shared
+[contextual decode gate](DECODING.md), including intersecting canonical rows.
 
 `check-contribution` applies the same validation only to incoming files, checks
 their content-addressed names, scans them for prohibited payloads and private

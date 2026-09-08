@@ -12,7 +12,8 @@ from .contributions import (
     accept_contribution,
     check_contribution,
 )
-from .evidence import EvidenceError
+from .evidence import EvidenceError, load_instruction_rows
+from .decoding import verify_instructions
 from .source import SourceVerificationError, sha256_bytes, source_summary, verify_source
 
 
@@ -94,6 +95,15 @@ def _parser() -> argparse.ArgumentParser:
         "--root", type=Path, help="repository root; defaults to the current checkout"
     )
     accept.add_argument("files", nargs="+", type=Path, help="incoming files to consume")
+    for command in (contribution, accept):
+        command.add_argument("--objdump", help="GNU MN103 objdump 2.45; or MN103_OBJDUMP")
+        command.add_argument("--overlap-review", type=Path, help="exact overlapping row pairs and review reasons")
+    screen = commands.add_parser("screen-instructions", help="report decode defects and overlaps without changing evidence")
+    screen.add_argument("--source", required=True)
+    screen.add_argument("--root", type=Path)
+    screen.add_argument("--objdump")
+    screen.add_argument("--output", required=True, type=Path)
+    screen.add_argument("files", nargs="*", type=Path, help="selected instruction JSONL; omitted screens canonical corpus")
     return parser
 
 
@@ -107,6 +117,8 @@ def _print_contribution_report(prefix: str, report: ContributionReport) -> None:
         f"{report.new_instructions} new, {report.duplicate_instructions} duplicate"
     )
     print(f"instruction decodes requiring review: {report.instruction_decodes_to_review}")
+    if report.new_instructions or report.duplicate_instructions:
+        print("contextual decode gate passed; start anchors and semantic claims still require review")
 
 
 def _extract_blocks(
@@ -180,15 +192,30 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "check-contribution":
             root = (args.root or project_root()).resolve()
             source = verify_source(Path(args.source))
-            report = check_contribution(root, args.base, source)
+            report = check_contribution(root, args.base, source, objdump=args.objdump, overlap_review=args.overlap_review)
             _print_contribution_report("PASS", report)
             return 0
         if args.command == "accept-contribution":
             root = (args.root or project_root()).resolve()
             source = verify_source(Path(args.source))
-            report = accept_contribution(root, source, args.files)
+            report = accept_contribution(root, source, args.files, objdump=args.objdump, overlap_review=args.overlap_review)
             _print_contribution_report("ACCEPTED", report)
             return 0
+        if args.command == "screen-instructions":
+            root = (args.root or project_root()).resolve()
+            source = verify_source(Path(args.source))
+            canonical = load_instruction_rows(root / "evidence/instructions.jsonl", source.registry)
+            rows = tuple(row for path in args.files for row in load_instruction_rows(
+                path if path.is_absolute() else root / path, source.registry, source
+            )) if args.files else canonical
+            report = verify_instructions(source, rows, canonical, executable=args.objdump)
+            report["canonical_instructions_sha256"] = sha256_bytes((root / "evidence/instructions.jsonl").read_bytes())
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
+            failures = sum(row["status"] == "fail" for row in report["results"])
+            print(json.dumps({"checked": len(report["results"]), "failed": failures,
+                              "overlaps": len(report["overlaps"]), "report": str(args.output)}))
+            return 1 if failures or report["overlaps"] else 0
         if args.command == "check":
             root = (args.root or project_root()).resolve()
             if args.release and not args.source:

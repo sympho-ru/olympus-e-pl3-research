@@ -140,3 +140,16 @@ By submitting a contribution for inclusion in this project, you agree to
 license code under [Apache-2.0](LICENSE) and authored documentation and evidence
 metadata under [CC BY 4.0](LICENSE-DOCUMENTATION). You also confirm that you
 have the right to submit the contribution under those terms.
+
+## Contextual instruction gate
+
+Instruction intake requires GNU MN103 objdump 2.45 through `MN103_OBJDUMP` or
+`--objdump`. Both contribution verification and maintainer acceptance enforce
+complete lengths and text against contextual source windows. Overlapping rows
+require exact pair adjudication; a decode defect cannot be waived. See
+[DECODING.md](docs/DECODING.md) for commands and review format.
+
+For decisive semantic conclusions, explicitly reproduce branch outcomes and
+argument/register definitions through intervening calls to the consumer. A
+valid decode or known call target does not establish register preservation.
+State unresolved anchors or joins and withhold unsupported conclusions.
