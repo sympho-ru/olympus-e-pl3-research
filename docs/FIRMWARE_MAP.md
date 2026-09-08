@@ -16,7 +16,7 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 12,993 authenticated ranges and 51,654 reviewed MN103 instruction rows |
+| 0 | 12,993 authenticated ranges and 51,635 reviewed MN103 instruction rows |
 | 1 | 827 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
 | 3 | 35 authenticated ranges; no reviewed instructions yet |
@@ -535,6 +535,15 @@ operands and are removed without alternate-entry evidence. Calls at
 `0x6f33195f`, `0x6f332112`, `0x6f33217d`, `0x6f332c99`, and `0x6f332d3d`
 also have corrected full widths and slice hashes; instruction text and targets
 are unchanged. These eight width corrections establish static boundaries only.
+
+Full-width decoding at `0x6f331cf3` and ten starts within
+`0x6f334b62..0x6f334c0b` establishes six-byte instructions. Eleven stale
+four-byte rows and ten malformed one-byte `a0` operand fragments are removed;
+nine correct full-width counterparts were already present. The overlapping
+`jmp 0xde68afeb` at `0x6f331cf4` independently reproduces as five bytes, so
+its length and slice hash are corrected while retaining the alternate decode.
+An executable entry at that overlapping start remains unproven. These repairs
+establish static widths only, with no new response or transfer claim.
 
 The descriptor target's entry at `0x6e74c410` covers 21 bytes at block-0
 offset `0x0014c430`. It tests the unsigned owner-relative halfword at `+138`

@@ -181,6 +181,13 @@ rows and removing five call-operand interior records. Those interior addresses
 are not established alternate entries; any such claim needs independent
 entry evidence. The corrected call targets are unchanged.
 
+The owner/output-handoff width repair at `0x6f331cf3` and
+`0x6f334b62..0x6f334c0b` removes stale truncated rows and malformed `a0`
+fragments. The overlapping jump at `0x6f331cf4` is retained with its
+independently verified five-byte width; an alternate entry is still unproven.
+This correction does not establish transitive register preservation, response
+completion, or image/USB/PTP transfer.
+
 The large-buffer descriptor target now has a reviewed dispatcher at
 `0x6e74c425..0x6e74c495` and operation bodies at
 `0x6e74c631..0x6e74c67a` and `0x6e74c67a..0x6e74c77b` (ends exclusive).
