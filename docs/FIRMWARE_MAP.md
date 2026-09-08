@@ -16,7 +16,7 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 12,990 authenticated ranges and 51,469 reviewed MN103 instruction rows |
+| 0 | 12,993 authenticated ranges and 51,657 reviewed MN103 instruction rows |
 | 1 | 827 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
 | 3 | 35 authenticated ranges; no reviewed instructions yet |
@@ -528,14 +528,32 @@ inside the call operands at `0x6f331ffd` and `0x6f33201b` were removed; no
 independent alternate-entry evidence justifies retaining them. This correction
 establishes static boundaries, not runtime reachability.
 
-The descriptor target at `0x6e74c410` now has eight reviewed instructions
-covering the 21-byte span at block-0 offset `0x0014c430`. It reads the
-unsigned halfword at incoming `a0 + 138`, tests it with mask `-8`, and
-returns `0x7301` on the nonzero arm. The zero arm branches to `0x6e74c425`,
-outside this authenticated span. These instructions do not read the caller's
-descriptor buffer pointer or length, or establish a payload copy. This bounds
-only the reviewed entry span; the successor's behavior, runtime reachability,
-image/file ownership, USB/PTP submission, and wire completion remain unknown.
+The descriptor target's entry at `0x6e74c410` covers 21 bytes at block-0
+offset `0x0014c430`. It tests the unsigned owner-relative halfword at `+138`
+with mask `-8` and returns `0x7301` on the nonzero arm. Its zero arm now
+continues into the reviewed dispatcher at `0x6e74c425..0x6e74c495`.
+That span and operation bodies `0x6e74c631..0x6e74c67a` and
+`0x6e74c67a..0x6e74c77b` add 188 full-width instructions over 442 bytes,
+at block-0 offsets `0x0014c445`, `0x0014c651`, and `0x0014c69a`
+respectively. All ends are exclusive; the return at `0x6e74c492` is three
+bytes and ends at `0x6e74c495`.
+
+The dispatcher distinguishes the descriptor's outer `+0` switch from its
+nested `+2` switch. Outer `+0=1` with nested `+2=1` or `2` calls
+`0x6e74c631` at `0x6e74c468`; outer `+0=2` instead calls `0x6e74c67a`
+at `0x6e74c474`. On success it ORs the outer selector into the owner state
+halfword. These are distinct operations: a later outer-2 invocation may
+inherit state from an earlier outer-1 operation.
+
+The first body copies owner fields `+4` and `+8` into `+24` and `+28`,
+calls `0x6e8d9b7d`, and checks the halfword at owner `+96` for nested
+selectors 1 and 2. The second body requires bit 0 in owner `+138` and
+conditionally writes derived values to owner `+112`, `+116`, and `+120`,
+with a result halfword at `+124`. Its paths depend on helper results and
+preexisting owner state. These static field writes do not establish the
+helpers' complete behavior, a selected runtime owner, image/file identity,
+capture, USB/PTP submission, or wire completion. No immediate consumer of
+the resulting owner fields is established by these spans.
 
 Adjacent halfword `0xa07b82d0` is co-reset with the FIFO and is later used as
 the unsigned dividend of a caller-supplied divisor. It is not referenced by

@@ -181,15 +181,23 @@ rows and removing five call-operand interior records. Those interior addresses
 are not established alternate entries; any such claim needs independent
 entry evidence. The corrected call targets are unchanged.
 
-The large-buffer descriptor target's entry at `0x6e74c410` is now decoded
-through the end of its authenticated 21-byte span (block-0 offset
-`0x0014c430`). It tests the owner-relative halfword at `+138` and returns
-`0x7301` on one arm without reading the descriptor's buffer pointer or length.
-The other arm reaches `0x6e74c425`, outside the reviewed span. A useful
-continuation authenticates that successor and establishes whether it consumes
-the descriptor or returns another status. The entry alone neither proves a
-payload effect nor excludes one beyond the span; image/file ownership,
-USB/PTP submission, and wire completion remain unresolved.
+The large-buffer descriptor target now has a reviewed dispatcher at
+`0x6e74c425..0x6e74c495` and operation bodies at
+`0x6e74c631..0x6e74c67a` and `0x6e74c67a..0x6e74c77b` (ends exclusive).
+The entry's owner-state guard at `0x6e74c410` remains relevant. Keep the
+outer `+0` and nested `+2` switches separate: outer-1/nested-2 calls the
+first body at `0x6e74c468`, whereas outer-2 calls the second at
+`0x6e74c474`. A later outer-2 invocation can inherit state from outer-1;
+assuming freshly zeroed state would incorrectly exclude that path.
+
+The first body initializes owner `+24/+28` from `+4/+8` before a helper
+call. The second conditionally writes owner `+112/+116/+120` and result
+halfword `+124`. The next useful boundary is an authenticated consumer of
+those fields, with the required owner state and helper outcomes traced from
+the caller. Establish the payload's identity and lifetime before describing
+it as an image or file. These spans establish neither an immediate owner
+consumer nor runtime reachability, capture, USB/PTP submission, or host
+transfer; the helper calls alone do not establish their complete behavior.
 
 PTP handling around `0x6f3307f5` and `0x6f330905` accesses runtime data record
 `0xa07b81cc`, including its `+8` field at `0xa07b81d4`. These are runtime-memory
