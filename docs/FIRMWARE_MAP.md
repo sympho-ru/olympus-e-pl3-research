@@ -16,7 +16,7 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 12,993 authenticated ranges and 51,657 reviewed MN103 instruction rows |
+| 0 | 12,993 authenticated ranges and 51,654 reviewed MN103 instruction rows |
 | 1 | 827 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
 | 3 | 35 authenticated ranges; no reviewed instructions yet |
@@ -527,6 +527,14 @@ hashes without changing their instruction text or call targets. Five records
 inside the call operands at `0x6f331ffd` and `0x6f33201b` were removed; no
 independent alternate-entry evidence justifies retaining them. This correction
 establishes static boundaries, not runtime reachability.
+
+The owner-corridor loads at `0x6f331948`, `0x6f332c7f`, and `0x6f332d20`
+are six-byte `mov (0xa07b87f0),a0` instructions. The former one-byte `a0`
+records at `0x6f33194c`, `0x6f332c83`, and `0x6f332d24` lie inside their
+operands and are removed without alternate-entry evidence. Calls at
+`0x6f33195f`, `0x6f332112`, `0x6f33217d`, `0x6f332c99`, and `0x6f332d3d`
+also have corrected full widths and slice hashes; instruction text and targets
+are unchanged. These eight width corrections establish static boundaries only.
 
 The descriptor target's entry at `0x6e74c410` covers 21 bytes at block-0
 offset `0x0014c430`. It tests the unsigned owner-relative halfword at `+138`
