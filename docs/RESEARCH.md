@@ -300,6 +300,14 @@ wire completion. The `0x1005` arm at `0x6f32d891` and `0x1006` arm at
 `0x6f32d8fa`/`0x6f32d900` now also have reviewed loads of owner pointer global
 `0xa07b7058`. The recovered switch still does not establish a `0x100e` arm.
 
+The current X3C source-vector span is now authenticated over block-0
+`[0x00d58918,0x00d58988)` (28 four-byte entries). Its 40-byte tail overlaps
+the existing range beginning at `0x00d58960`; the adjacent vector begins at
+`0x00d58988`. Keep the accepted load at `0x6f333527`, which names runtime
+base `0x6f359d38`, separate from the `0x6f359da8` load below. Further
+research must establish the source-to-runtime placement and caller/owner
+relationship before treating either vector as a live request route.
+
 A distinct static dispatcher at `0x6f33362c` bounds selectors
 `0x5001..0x501c`, converts them to a four-byte index, and loads the selected
 target from runtime base `0x6f359da8`. The complete 28-word source vector at
