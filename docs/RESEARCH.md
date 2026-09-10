@@ -200,6 +200,12 @@ independently verified five-byte width; an alternate entry is still unproven.
 This correction does not establish transitive register preservation, response
 completion, or image/USB/PTP transfer.
 
+The calls at `0x6f339800`, `0x6f339854`, and `0x6f33a8e0` now have
+verified complete lengths of seven, five, and five bytes. Their targets and
+instruction text are unchanged. These repairs do not establish caller
+reachability, register preservation across calls, host ingress, capture,
+image production, transfer, or patch safety.
+
 The load at `0x6f333527` now has its verified six-byte length and slice
 hash; the next instruction begins at `0x6f33352d`. This width repair does
 not establish dispatch activation, host ingress, capture, image production,

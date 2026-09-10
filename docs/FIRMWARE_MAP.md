@@ -556,6 +556,14 @@ its length and slice hash are corrected while retaining the alternate decode.
 An executable entry at that overlapping start remains unproven. These repairs
 establish static widths only, with no new response or transfer claim.
 
+The calls at `0x6f339800`, `0x6f339854`, and `0x6f33a8e0` (block-0
+source offsets `0x00d39820`, `0x00d39874`, and `0x00d3a900`) have
+complete lengths of seven, five, and five bytes respectively. These replace
+three truncated four-byte records and their slice hashes; instruction text
+and corpus counts are unchanged. The next instruction starts are
+`0x6f339807`, `0x6f339859`, and `0x6f33a8e5`. These static width
+corrections establish no runtime reachability or register preservation.
+
 The `mov 1865784632,a1` at `0x6f333527` (block-0 source offset
 `0x00d33547`) is six bytes, replacing its truncated four-byte record and
 slice hash. The next instruction starts at `0x6f33352d`. This correction
