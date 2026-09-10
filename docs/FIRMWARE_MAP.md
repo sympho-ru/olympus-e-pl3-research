@@ -16,7 +16,7 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 12,994 authenticated ranges and 51,637 reviewed MN103 instruction rows |
+| 0 | 12,995 authenticated ranges and 51,637 reviewed MN103 instruction rows |
 | 1 | 827 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
 | 3 | 35 authenticated ranges; no reviewed instructions yet |
@@ -302,6 +302,14 @@ Additional bounded relationships in this module include:
   `0x6f32d8fa`/`0x6f32d900` also load pointer global `0xa07b7058` into address
   registers. This is a static software-dispatch relationship, not proof of
   live request admission, operation meaning, capture, or transport completion.
+- The current X3C source-vector span at block-0
+  `[0x00d58918,0x00d58988)` is now authenticated in full: 112 bytes,
+  or 28 four-byte entries. It shares its final 40 bytes with the previously
+  authenticated range beginning at `0x00d58960` and ends where the adjacent
+  vector at `0x00d58988` begins. The accepted indexed load at `0x6f333527`
+  names runtime base `0x6f359d38`, distinct from `0x6f359da8` below.
+  Source authentication alone does not establish runtime table placement,
+  selection, ownership, or a live request path.
 - A distinct dispatcher at `0x6f33362c` accepts selectors
   `0x5001..0x501c`, subtracts `0x5001`, scales the result by four, and indexes
   the target vector at runtime base `0x6f359da8`. The complete 28-word vector
