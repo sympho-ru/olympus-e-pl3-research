@@ -200,6 +200,11 @@ independently verified five-byte width; an alternate entry is still unproven.
 This correction does not establish transitive register preservation, response
 completion, or image/USB/PTP transfer.
 
+The load at `0x6f333527` now has its verified six-byte length and slice
+hash; the next instruction begins at `0x6f33352d`. This width repair does
+not establish dispatch activation, host ingress, capture, image production,
+transfer, or patch safety.
+
 The large-buffer descriptor target now has a reviewed dispatcher at
 `0x6e74c425..0x6e74c495` and operation bodies at
 `0x6e74c631..0x6e74c67a` and `0x6e74c67a..0x6e74c77b` (ends exclusive).

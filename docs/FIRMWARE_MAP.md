@@ -556,6 +556,12 @@ its length and slice hash are corrected while retaining the alternate decode.
 An executable entry at that overlapping start remains unproven. These repairs
 establish static widths only, with no new response or transfer claim.
 
+The `mov 1865784632,a1` at `0x6f333527` (block-0 source offset
+`0x00d33547`) is six bytes, replacing its truncated four-byte record and
+slice hash. The next instruction starts at `0x6f33352d`. This correction
+establishes a static instruction boundary only; runtime reachability and
+dispatch activation remain unproven. Corpus counts are unchanged.
+
 The descriptor target's entry at `0x6e74c410` covers 21 bytes at block-0
 offset `0x0014c430`. It tests the unsigned owner-relative halfword at `+138`
 with mask `-8` and returns `0x7301` on the nonzero arm. Its zero arm now
