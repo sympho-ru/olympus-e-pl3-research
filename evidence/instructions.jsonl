@@ -32528,6 +32528,8 @@
 {"address":1859907357,"instruction":"ret\t[],4","block":0,"offset":8116989,"length":3,"sha256":"846323003cbd92056e147507e0302bcd5c300b76e33e8fb84103898ab51c7922"}
 {"address":1859907359,"instruction":"calls\t(a2)","block":0,"offset":8122175,"length":2,"sha256":"88d050808ebbdd58a3cae29385b2959d465aeae604fffa3e5b54c99cb595e169"}
 {"address":1859907361,"instruction":"cmp\t1,d0","block":0,"offset":8122177,"length":2,"sha256":"a8f2b41f20ebd1e503126d30aeaec7618fc484fbb93d2c96cb6ad806e0844fff"}
+{"address":1859916036,"instruction":"movm\t[d2,a2],(sp)","block":0,"offset":8125668,"length":2,"sha256":"98583bfcb8b24b29b44e0ebef63e4a33602059075ddc8fa6fbbc6cf64ec31354"}
+{"address":1859916038,"instruction":"add\t-4,sp","block":0,"offset":8125670,"length":3,"sha256":"e046fc11e3bc1c1b874ea064bd2c049d1a650448fb97734dae749ca98f5752c9"}
 {"address":1860055994,"instruction":"mov\t1861183344,a1","block":0,"offset":8265626,"length":6,"sha256":"2a5e42a04a4ee675269eb42b401be9f9d55db56e53c735bc304742da5b6ace33"}
 {"address":1860056000,"instruction":"mov\t(d1,a1),a1","block":0,"offset":8265632,"length":2,"sha256":"b74e96615e00b77fac0c8e3c35ad65f225ea09b564c45671f7e78f0e46960370"}
 {"address":1860056002,"instruction":"jmp\t(a1)","block":0,"offset":8265634,"length":2,"sha256":"d2b94ba01e01c6d48037ebc498b19752a1fc79700fb363829c6f3804a7e11786"}

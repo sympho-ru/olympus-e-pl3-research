@@ -16,7 +16,7 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 12,993 authenticated ranges and 51,635 reviewed MN103 instruction rows |
+| 0 | 12,994 authenticated ranges and 51,637 reviewed MN103 instruction rows |
 | 1 | 827 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
 | 3 | 35 authenticated ranges; no reviewed instructions yet |
@@ -189,6 +189,17 @@ at `0x40aac8d7` to `0x40aaca42` builds a 12-byte temporary with the same
 dispatch value, copies two stack words into it, and copies three words to a
 caller-provided destination. The destination owner and its relationship to the
 live-view collection remain unresolved.
+
+### Candidate receiver method prologue
+
+The five-byte span at block-0 offset `0x007bfce4`, under local address view
+`0x6edc1104`, now has two reviewed instructions: `movm [d2,a2],(sp)`
+(length 2), then `add -4,sp` at `0x6edc1106` (length 3). This establishes
+only the register-save and stack-allocation prologue, ending before
+`0x6edc1109`. It does not identify a receiver or dispatch table, prove an
+entry edge, or establish register preservation through later indirect calls.
+No runtime readiness, capture, image production, or transfer follows from
+this span.
 
 ### ThroughImage receiver and selector scalar
 
