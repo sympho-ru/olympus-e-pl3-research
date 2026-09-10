@@ -46,6 +46,18 @@ boundary. Submit only authenticated source ranges and instruction rows.
 Mention decoder disagreements in the PR rather than silently choosing one
 interpretation.
 
+## Resolve the candidate receiver method beyond its prologue
+
+The prologue at local address `0x6edc1104` (block 0, offset `0x007bfce4`,
+length 5) is now canonical. Its two instructions save `d2` and `a2` and
+allocate four stack bytes; they do not establish the proposed receiver-table
+match. A useful continuation supplies an authenticated caller or table edge
+selecting this source anchor and follows the body from `0x6edc1109`
+(offset `0x007bfce9`) to a bounded consumer. Establish argument definitions
+and register preservation through intervening calls before using the result
+to identify a stock receiver or an image path. Repeating the prologue decode
+alone adds no evidence of receiver identity, runtime readiness, or transfer.
+
 ## Map decoded offsets to runtime addresses
 
 The relationship between container offsets, decoded blocks, declared load
