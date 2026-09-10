@@ -16,7 +16,7 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 12,995 authenticated ranges and 51,637 reviewed MN103 instruction rows |
+| 0 | 12,996 authenticated ranges and 51,637 reviewed MN103 instruction rows |
 | 1 | 827 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
 | 3 | 35 authenticated ranges; no reviewed instructions yet |
@@ -57,6 +57,15 @@ backed by block-0 offset `0x000016c2` and begins by clearing `d2`. This closes
 the local target mapping, but it still does not connect the handoff to reset or
 to initializer `0x402c0262`. The bounded negative does not exclude another
 block, ROM, runtime-built state, or a different block-0 address relation.
+
+### Bounded caller source coverage
+
+The 56-byte block-0 range `[0x006b0204,0x006b023c)` extends the existing
+48-byte same-start slice through the complete five-byte call at offset
+`0x006b0232` and the return at `0x006b0239`. The shorter slice remains valid
+range evidence, but its endpoint lies inside that call. This addition
+provides a complete source span through the return; it adds no instruction
+rows and establishes no event identity, runtime execution, or image transfer.
 
 ### Still-corridor singleton dispatch
 

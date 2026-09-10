@@ -46,6 +46,12 @@ boundary. Submit only authenticated source ranges and instruction rows.
 Mention decoder disagreements in the PR rather than silently choosing one
 interpretation.
 
+For the caller span starting at block-0 offset `0x006b0204`, use the accepted
+56-byte range through `0x006b023c` when reproducing the trailing call and
+return. The older 48-byte slice stops inside the call. Range acceptance does
+not establish the proposed event-30 identity or argument preservation through
+intervening calls; those require separate instruction and consumer evidence.
+
 ## Resolve the candidate receiver method beyond its prologue
 
 The prologue at local address `0x6edc1104` (block 0, offset `0x007bfce4`,
