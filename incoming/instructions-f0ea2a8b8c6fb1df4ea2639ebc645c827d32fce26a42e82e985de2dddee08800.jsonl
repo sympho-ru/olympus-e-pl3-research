@@ -1,0 +1,2 @@
+{"address":1859916036,"block":0,"instruction":"movm\t[d2,a2],(sp)","length":2,"offset":8125668,"sha256":"98583bfcb8b24b29b44e0ebef63e4a33602059075ddc8fa6fbbc6cf64ec31354"}
+{"address":1859916038,"block":0,"instruction":"add\t-4,sp","length":3,"offset":8125670,"sha256":"e046fc11e3bc1c1b874ea064bd2c049d1a650448fb97734dae749ca98f5752c9"}
