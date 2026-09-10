@@ -1,3 +1,0 @@
-{"address":1865652224,"block":0,"instruction":"call 0x6f32fcc6,[],0","length":7,"offset":13867040,"sha256":"de3a9a770b1b7695b0953362b7fe404c94f1fb9c158d06f63ab690c25ef79f5c"}
-{"address":1865652308,"block":0,"instruction":"call 0x6f33b602,[],4","length":5,"offset":13867124,"sha256":"9780b37811917300e1360fc9759734438707b7085579b1083e7befc7ee5a2f50"}
-{"address":1865656544,"block":0,"instruction":"call 0x6f333511,[d2],8","length":5,"offset":13871360,"sha256":"8725f5374fa28a90e6e6fd6471ed640f7835c1dbe2346a098e66f06ab23b44a6"}
