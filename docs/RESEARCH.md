@@ -64,6 +64,18 @@ and register preservation through intervening calls before using the result
 to identify a stock receiver or an image path. Repeating the prologue decode
 alone adds no evidence of receiver identity, runtime readiness, or transfer.
 
+## Connect the initializer to the selected runtime record
+
+The accepted span at `0x6e76edd1..0x6e76ee1c` (block-0 offsets
+`0x0016d9b1..0x0016d9fc`, exclusive end) now covers receiver field writes
+and the trailing return around the previously recorded table installation.
+Use this source span to establish the caller's argument definitions and the
+intervening call's register effects before tracing a stored value to a consumer.
+The missing join is still between this initializer, the array rooted at
+`0x6034aff0`, and the live `0x2100` record's `+4` value. Neither the field
+writes nor the completed selector return identify an image owner or establish
+capture or transfer.
+
 ## Map decoded offsets to runtime addresses
 
 The relationship between container offsets, decoded blocks, declared load
@@ -174,7 +186,8 @@ The accepted constructor-shaped body at `0x6edfc227` installs table
 `0x6eefbc84`; its slot `+0x20` selects the existing caller at `0x6edfc346`.
 The accepted span at `0x6e868efe` maps that caller's selector 4 to `0x2100`,
 passes a stack destination to `0x6e76d553`, and loads a 16-bit scalar into
-`d0`. Its source coverage ends before the return instruction. The caller's
+`d0`. The separately accepted `ret [d2],12` at `0x6e868f36`
+(block-0 offset `0x00267b16`) completes its local return boundary. The caller's
 saved scalar and return mechanics do not identify a JPEG or frame pointer.
 
 The accepted root-load rows explicitly locate the helper's runtime base at

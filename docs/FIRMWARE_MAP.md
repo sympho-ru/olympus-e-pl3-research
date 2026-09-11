@@ -16,7 +16,7 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 12,996 authenticated ranges and 51,637 reviewed MN103 instruction rows |
+| 0 | 12,998 authenticated ranges and 51,658 reviewed MN103 instruction rows |
 | 1 | 827 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
 | 3 | 35 authenticated ranges; no reviewed instructions yet |
@@ -224,8 +224,9 @@ The accepted selector span at `0x6e868efe` (offset `0x00267ade`,
 56 bytes) maps selector 4 to `0x2100`, selector 5 to `0x2400`, and other
 values to `0x0c00`. It passes a stack halfword destination to `0x6e76d553`,
 clears that halfword when the helper reports nonzero status, then loads it
-unsigned into `d0`. This span ends at the halfword load; it does not include
-the callee's return instruction.
+unsigned into `d0`. The separately accepted three-byte return at
+`0x6e868f36` (block-0 offset `0x00267b16`) is `ret [d2],12`, completing
+local coverage through `0x6e868f39` without changing the scalar interpretation.
 
 The helper at `0x6e76d553` (offset `0x0016c133`, 224 bytes) searches
 8-byte records from runtime `0x6034aff0`, compares halfword keys, and uses
@@ -247,6 +248,17 @@ passes `0x2100` and a reference to the authenticated `MENU_BG` identifier
 `0x2100` record's `+4` value or establish that this initializer populates
 `0x6034aff0`. The six additional instruction rows and two ranges leave the
 join to the queued-copy frontier at `0x6e61fd8d` / `0x6e68939a` unresolved.
+
+The accepted 75-byte span at `0x6e76edd1..0x6e76ee1c` (block-0
+`[0x0016d9b1,0x0016d9fc)`) adds 20 instruction rows around the existing
+table installation. It saves incoming `a0` in `a2`, stores incoming `d0`
+and `d1` at receiver offsets `+12` and `+16`, copies stack arguments into
+fields `+20`, `+22`, `+24`, `+28`, and `+30`, and clears field `+4` before
+the intervening call. The trailing `ret [d2,a2,a3],16` is now canonical.
+The range also authenticates intervening instructions not individually recorded
+in the corpus. This initializer-shaped coverage does not establish the caller's
+argument identities, register preservation across the call, the live record's
+producer, or a join to an image or transfer consumer.
 
 ## Established PTP-adjacent record initialization
 
