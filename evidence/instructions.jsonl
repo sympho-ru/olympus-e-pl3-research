@@ -32265,6 +32265,14 @@
 {"address":1858046468,"instruction":"add\t548,sp","block":0,"offset":6256100,"length":4,"sha256":"1e6843d27e64aa53f96f5f7fe1d50e61943ed6a181ddc6ee1d313b3d07fecc26"}
 {"address":1858046472,"instruction":"ret\t[d2,a2,a3],12","block":0,"offset":6256104,"length":3,"sha256":"ab23ae0d0519959265b59995e65166951f37b1239a5e0d5fc3965ddbd48bbe45"}
 {"address":1858120009,"instruction":"call\t0x6ec0c097,[d2,d3,a2],16","block":0,"offset":6330729,"length":5,"sha256":"c45c183a1c3f2e4a780b1b863f2e2d16082f3186b84c740b7a0440ca709d28ad"}
+{"address":1858123543,"instruction":"clr d0","block":0,"offset":6337271,"length":1,"sha256":"6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"}
+{"address":1858123544,"instruction":"mov 0,a1","block":0,"offset":6337272,"length":2,"sha256":"b717ea9e9532f895e0d79cd76b2a48284f00eba37f5d4dd4ba8a89d3dd951612"}
+{"address":1858123546,"instruction":"call 0x6ee1a0ef,[],0","block":0,"offset":6337274,"length":7,"sha256":"9af382fc5791b14f9c78d9e47492fe8b2401c09cfc6b2de987f016bf7dc15a98"}
+{"address":1858123553,"instruction":"mov 1860740508,d0","block":0,"offset":6337281,"length":6,"sha256":"f4979956e85ab1f0542e579e533aec64f9456cf4e96ff4cb93494d7ffb7433bd"}
+{"address":1858123559,"instruction":"mov d0,(a0)","block":0,"offset":6337287,"length":1,"sha256":"8d33f520a3c4cef80d2453aef81b612bfe1cb44c8b2025630ad38662763f13d3"}
+{"address":1858123560,"instruction":"mov 2204,d0","block":0,"offset":6337288,"length":3,"sha256":"5a694093d022d308e151ea659c9744559b5c500feeb90e3abf407ca03755e959"}
+{"address":1858123563,"instruction":"movhu d0,(4,a0)","block":0,"offset":6337291,"length":3,"sha256":"482093f57307d4179ed98fdc734499e74912f5c906292eef5c65d46e3ba03325"}
+{"address":1858123566,"instruction":"ret [],4","block":0,"offset":6337294,"length":3,"sha256":"846323003cbd92056e147507e0302bcd5c300b76e33e8fb84103898ab51c7922"}
 {"address":1858141924,"instruction":"call\t0x6ec0ffe9,[d2,d3,a2,a3],128","block":0,"offset":6356740,"length":5,"sha256":"40fc59dfc7b3ff988d60a783845e41a5e623f4984cd3192dd4511871a205bf38"}
 {"address":1858142259,"instruction":"mov\t1860430088,d0","block":0,"offset":6357075,"length":6,"sha256":"4a6b2f82f23b9e2edf93b53255f5a0ca654dbc2c1dd8f27ec74dbd2cab330147"}
 {"address":1858142721,"instruction":"mov\t(16,sp),a3","block":0,"offset":6357537,"length":2,"sha256":"c580ce800aec653742dbe8e84250c40b340e614e70f2526b12b7d6a1115671e4"}

@@ -156,6 +156,17 @@ later slot-`+8` or slot-`+48` consumer. Keep the parent saved in `a2`, the
 other incoming object saved in `d3`, and the getter result saved in `a3`
 distinct. A field getter and setter alone do not establish image ownership.
 
+A second accepted table candidate at local `0x6ee8a59c` (block-0 offset
+`0x0088a17c`, 160 bytes) shares getter/setter slots `+52`/`+56` and several
+continuations with `0x6ee8d1d0`, but has a different slot-`+40` target,
+`0x6edeeaf7`. The accepted initializer at `0x6ec0b717` (offset
+`0x0060b2f7`, 26 bytes) calls `0x6ee1a0ef`, installs `0x6ee8a59c` through
+post-call `a0`, and writes halfword `2204` at `+4`. Keep this local address
+view (`source + 0x6e600420`) explicit. Shared methods do not identify which
+parent reaches `0x6ee1db7f` or which object the getter returns. Establish
+that receiver join and the setter's incoming pointer before assigning the
+later indirect consumers or inferring image ownership.
+
 The parent table's slot-`+40` body at `0x6ee1d727` is an accepted return-only
 no-op. Do not apply that result to the other object's slot-`+40` call at
 `0x6ee1db91` without proving its receiver/table identity. Require complete

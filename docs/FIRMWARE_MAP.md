@@ -16,7 +16,7 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 12,998 authenticated ranges and 51,658 reviewed MN103 instruction rows |
+| 0 | 13,000 authenticated ranges and 51,666 reviewed MN103 instruction rows |
 | 1 | 827 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
 | 3 | 35 authenticated ranges; no reviewed instructions yet |
@@ -155,6 +155,20 @@ accepted body is only `retf [],0`. That bounded no-op does not identify the
 other incoming object's slot-`+40` target at `0x6ee1db91`. The field value,
 its runtime provenance, and its later slot-`+8`/`+48` consumers remain
 unresolved; none of these bodies establishes image ownership or transfer.
+
+The accepted 26-byte initializer at local address `0x6ec0b717` (block-0
+offset `0x0060b2f7`) clears `d0`, sets `a1` to zero, calls `0x6ee1a0ef`,
+then writes table value `0x6ee8a59c` through the post-call `a0` and stores
+halfword `2204` at `a0+4` before returning. The 160-byte table span at
+offset `0x0088a17c` maps to `0x6ee8a59c` under the same local delta
+`0x6e600420`. Its slots `+52` and `+56` contain the field-`+100` getter
+`0x6ee1dc28` and writer `0x6ee1d588`; slots `+8`, `+64`, `+72`, and `+76`
+also share the previously mapped targets. Its slot `+40`, however, contains
+`0x6edeeaf7`, so the no-op established for table `0x6ee8d1d0` cannot be
+transferred to this table. These source spans establish a separate table
+candidate with shared methods. They do not prove the allocator/helper's
+behavior, the field-`+100` value's provenance, or the runtime receiver at a
+later indirect call. The local address relation is not a global load base.
 
 ### Live-view object lifecycle
 
