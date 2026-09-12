@@ -16,7 +16,7 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 13,000 authenticated ranges and 51,666 reviewed MN103 instruction rows |
+| 0 | 13,008 authenticated ranges and 51,679 reviewed MN103 instruction rows |
 | 1 | 827 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
 | 3 | 35 authenticated ranges; no reviewed instructions yet |
@@ -273,6 +273,34 @@ The range also authenticates intervening instructions not individually recorded
 in the corpus. This initializer-shaped coverage does not establish the caller's
 argument identities, register preservation across the call, the live record's
 producer, or a join to an image or transfer consumer.
+
+### PTP-adjacent registration caller source
+
+The 36-byte block-0 caller span `[0x00d30548,0x00d3056c)` has ten
+reviewed instructions under local address view `0x6f330528..0x6f33054c`.
+It supplies keys `0x100c` and `0x100d` in `d0`, each with `d1=2`, `a1=0`,
+and respective callback literals `0x6f33a684` and `0x6f33a805` in `a0`,
+then calls local `0x6f3349de` (source `0x00d349fe`). This establishes
+static caller arguments, not runtime registration or host command selection.
+
+The 77-byte builder range at `0x00d349fe` and helper ranges at
+`0x00d35440` (98 bytes), `0x00d354d9` (32), `0x00d354f9` (40), and
+`0x00d35521` (38) authenticate the surrounding allocation and list operations.
+Source branch `0x00d34a15` takes a zero lookup result to allocation;
+`0x00d34a2a` takes a nonzero allocation result to initialization. The builder
+copies incoming `d1` into `d3` before calls and later stores `d3` at node
+`+2`, but the allocator's transitive calls do not establish preservation of
+`d3`. The caller value 2 is therefore not established as the stored metadata.
+
+Additional spans at source `0x00d39264` (5 bytes) and `0x00d393e5`
+(150 bytes) have three new instruction rows under local views `0x6f339244`
+and `0x6f3393c5`. Mapping the callback literals to these spans by subtracting
+`0x6e601420` remains a hypothesis: the singleton module's established delta
+does not prove placement of this distinct module. In the latter source span,
+the mismatch branch at `0x00d3941e` reaches intermediate status block
+`0x00d3942e`; the complete call at `0x00d39469` targets source `0x00d34b57`.
+Neither the source coverage nor these local decodes establish callback identity,
+payload ownership, helper preservation, capture, or host delivery.
 
 ## Established PTP-adjacent record initialization
 

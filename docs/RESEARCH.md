@@ -217,6 +217,16 @@ establish image ownership, capture, transfer submission, or wire completion.
 
 ## Resolve a read-only PTP request and response lifecycle
 
+The caller pair at block-0 source `0x00d30548..0x00d3056c` now supplies
+keys `0x100c`/`0x100d` and callback literals `0x6f33a684`/`0x6f33a805` to
+builder source `0x00d349fe`. The next useful result establishes this module's
+source-to-runtime placement and binds those literals to authenticated entry
+spans. The singleton module's `0x6e601420` delta alone cannot select candidate
+sources `0x00d39264`/`0x00d393e5`. Separately, trace the allocator's transitive
+calls before claiming that caller metadata 2 survives in `d3` to node `+2`.
+The accepted caller and source spans do not establish runtime registration,
+a selected host request, image ownership, or transfer.
+
 The caller window `0x6f331fb7..0x6f332029` (end exclusive) now has
 47 contiguous, full-width instruction records after correcting eight truncated
 rows and removing five call-operand interior records. Those interior addresses
