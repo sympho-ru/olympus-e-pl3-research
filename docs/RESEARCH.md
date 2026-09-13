@@ -17,7 +17,7 @@ work queue; overlapping contributions and well-supported negatives are useful.
 | Interest | Questions |
 |---|---|
 | First contribution | [Extend a supported boundary](#r-first-contribution) |
-| Release interface and inputs | [Release body](#r-release-contract), [frontend inputs](#r-release-inputs), [key owner](#r-key-owner) |
+| Release interface and inputs | [Release and guarded action](#r-release-contract), [caller record](#r-caller-record), [frontend inputs](#r-release-inputs), [key owner](#r-key-owner) |
 | Still-object ownership | [List consumer](#r-still-list), [nested receiver](#r-still-receiver), [field +100](#r-still-field-100) |
 | Live view and scalar records | [Frame owner](#r-live-view-owner), [ThroughImage record](#r-throughimage-record) |
 | PTP-adjacent ingress and dispatch | [Registration](#r-ptp-registration), [request owner](#r-ptp-ingress), [vectors](#r-ptp-vectors), [status callbacks](#r-ptp-status), [handler banks](#r-ptp-handler-banks) |
@@ -40,15 +40,37 @@ does not resolve its owner or execution path.
 <a id="r-release-contract"></a>
 ## Resolve the release-control body's indirect consumers
 
-**Start from:** the [release body and caller profiles](firmware/RELEASE_CONTROL.md#release-body).
+**Start from:** the [release body and caller profiles](firmware/RELEASE_CONTROL.md#release-body)
+and [guarded action and carrier calls](firmware/RELEASE_CONTROL.md#guarded-action).
 
 **Question:** which concrete receivers and input profiles reach the conditional
-lookups and the helper at `0x6ebd9652`?
+lookups, the helper at `0x6ebd9652`, and the action's dynamic methods reached
+through source `0x0059a13c`?
 
 **Useful result:** trace arguments and register preservation through the selected
 calls to a bounded consumer or a capture/payload effect. Preserve the distinction
 between range coverage and the sparsely recorded caller instructions. A status
-return alone does not identify an image-producing operation.
+return alone does not identify an image-producing operation. For the guarded
+action, resolve preservation and object identity across slots `+16`, `+140`,
+`+144`, `+20`, and `+148`; keep the saved carrier distinct from the receiver
+returned by slot `+16`. Establish the pointer contract at writer source
+`0x0059a7a1`: the construction branch guards an earlier call, not this writer.
+
+<a id="r-caller-record"></a>
+## Identify the caller record's owner and consumers
+
+**Start from:** the [caller and record-writing body](firmware/RELEASE_CONTROL.md#caller-record)
+at sources `0x0058d8b3` and `0x005cbbe6`.
+
+**Question:** who supplies and retains the destination, what do its full-width
+members represent, and which consumers use them?
+
+**Useful result:** establish the wrapper-returned receiver and destination
+preservation through the caller and body helpers; trace a concrete field's
+producer, type, consumer, and lifetime. Verify scalar-helper preservation at
+source `0x005bee73` separately. Narrowed halfwords and a calculated scalar do
+not classify all other fields, and neither record writes nor normal return zero
+identifies a captured image or a host-transfer path.
 
 <a id="r-release-inputs"></a>
 ## Establish frontend input and receiver contracts
