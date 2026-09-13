@@ -16,7 +16,7 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 13,020 authenticated ranges and 52,048 reviewed MN103 instruction rows |
+| 0 | 13,025 authenticated ranges and 52,095 reviewed MN103 instruction rows |
 | 1 | 827 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
 | 3 | 35 authenticated ranges; no reviewed instructions yet |
@@ -201,6 +201,39 @@ instruction listing. A 110-byte range at `0x00860198` adds source coverage
 without instruction rows. The release-control label remains a research
 hypothesis: these spans establish neither a callable host API nor runtime
 capture, image ownership, transfer, or patch safety.
+
+### Six-input frontend and control-object accessor
+
+The 696-byte span at block-0 offset `0x005e36d0` covers the frontend at
+local `0x6ebe36b0`, using `source + 0x6e5fffe0`. At `0x6ebe36b7`,
+`cmp 9,d0` / `blt 0x6ebe36be` selects the lower-count arm; fallthrough
+jumps to `0x6ebe38bf`. That arm makes six calls to `0x6e8f6490`, with
+source pointers from incoming `a0` fields `+12..+32` and stack destinations
+`sp+16..sp+36`. No conversion-result branch occurs between these calls and
+the accessor call at `0x6ebe392b`. Successful conversion, failure writes,
+and initializedness of the destination words remain unproved.
+
+After the accessor, the current words at `sp+28`, `+32`, and `+36` are
+copied to outgoing stack slots `+4`, `+8`, and `+12`; words at `sp+16`,
+`+20`, and `+24` are loaded into `d0`, `d1`, and `a1`. The frontend
+loads a table through returned `a0`, selects slot `+304`, and executes
+`calls (a2)` at `0x6ebe394a`. There is no intervening call between those
+loads and that consumer. The indirect result is saved in `d2`, but the normal
+epilogue at `0x6ebe3960` explicitly clears `d0`: frontend return zero is
+not evidence of capture success.
+
+The accessor at `0x6eb8c86f` (offset `0x0058c88f`, 88 bytes) tests global
+`0x60357b54` and returns its current value. Its null path rechecks the
+global after helper calls, passes `d0=8` to `0x6ee1bc13`, and
+conditionally calls the 14-byte initializer at `0x6eb8c8c7` (offset
+`0x0058c8e7`). That initializer writes `0x6ee3f738` through `a0` and
+clears field `+4`. Allocation success, helper preservation, and runtime
+receiver readiness remain unresolved; the frontend does not check the
+returned pointer before dereferencing it. Additional ranges authenticate
+three bytes at `0x00871e53` and 76 bytes at `0x008747d4`, without adding
+instruction rows there. The installed word alone does not establish its
+runtime table mapping or the slot-`+304` target. These static relationships
+do not prove host ingress, still capture, image ownership, or transfer.
 
 ### Live-view object lifecycle
 
