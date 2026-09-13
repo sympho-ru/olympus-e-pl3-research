@@ -24,6 +24,8 @@ These files are updated by the maintainer. Refer to
   [RESEARCH.md](docs/RESEARCH.md) and follow [CONTRIBUTING.md](CONTRIBUTING.md).
 - For the exact canonical and incoming row formats, see
   [EVIDENCE.md](docs/EVIDENCE.md).
+- To interpret addresses and the strength of a finding, read the
+  [reference conventions](docs/firmware/READING.md).
 
 ## Quick start
 
@@ -31,7 +33,8 @@ Python 3.11 or newer is required.
 
 ```sh
 python3 -m venv .private/venv
-.private/venv/bin/pip install -e '.[test]'
+source .private/venv/bin/activate
+python -m pip install -e '.[test]'
 epl3-research check
 epl3-research verify-source --image .private/OLY_E_086_1600_0000_0000.BIN
 epl3-research check --source .private/OLY_E_086_1600_0000_0000.BIN
@@ -61,13 +64,8 @@ Overlapping rows require explicit adjudication. See [DECODING.md](docs/DECODING.
 for setup, the corpus screen, and the limits of the mechanical check. See
 [CONTRIBUTING.md](CONTRIBUTING.md) for submission and acceptance steps.
 
-Release mode additionally audits configured private terms and all blobs
-reachable from the checked-out `HEAD`. It fails while any incoming submission
-remains unconsumed:
-
-```sh
-epl3-research check --release --source .private/OLY_E_086_1600_0000_0000.BIN
-```
+For acceptance, release checks, and maintaining the reference, see
+[MAINTAINING.md](docs/MAINTAINING.md).
 
 ## Publication boundary
 

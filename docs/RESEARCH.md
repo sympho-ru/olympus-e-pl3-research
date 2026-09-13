@@ -1,632 +1,396 @@
 # Open firmware research
 
-This page gives contributors starting points for extending the verified
-Olympus E-PL3 Body 1.6 evidence. It is a research guide, not an additional
-source of truth: the canonical data remains `evidence/ranges.jsonl` and
-`evidence/instructions.jsonl`.
+Choose a question below, read its linked finding, and submit authenticated
+evidence through [CONTRIBUTING.md](../CONTRIBUTING.md). The
+[firmware map](FIRMWARE_MAP.md) summarizes what is established;
+[reading conventions](firmware/READING.md) explain addresses and claim limits.
 
-Research may overlap, and a well-supported negative result can still be
-useful. Contributors submit authenticated ranges and instructions through the
-workflow in [CONTRIBUTING.md](../CONTRIBUTING.md). A concise PR description may
-explain the covered region and conclusion; it is review context rather than
-canonical evidence or a semantic annotation.
+The practical request-to-image question is how a host request could select a
+controllable handler, initiate a still capture, identify its image, and return
+that image to the host. The release-control candidates provide input and caller
+boundaries to investigate. Image ownership and host transport remain separate
+missing connections. The questions below are durable evidence gaps, not a live
+work queue; overlapping contributions and well-supported negatives are useful.
 
-## How to use the addresses on this page
+## Choose a starting point
 
-Addresses such as `0x6f3307f5` are decoded runtime addresses written in
-hexadecimal for readability. Instruction JSON stores the same value as a
-decimal `address`. `block` and `offset` identify the authenticated bytes in a
-decoded firmware block and are the values accepted by `source-range`.
+| Interest | Questions |
+|---|---|
+| First contribution | [Extend a supported boundary](#r-first-contribution) |
+| Release interface and inputs | [Release body](#r-release-contract), [frontend inputs](#r-release-inputs), [key owner](#r-key-owner) |
+| Still-object ownership | [List consumer](#r-still-list), [nested receiver](#r-still-receiver), [field +100](#r-still-field-100) |
+| Live view and scalar records | [Frame owner](#r-live-view-owner), [ThroughImage record](#r-throughimage-record) |
+| PTP-adjacent ingress and dispatch | [Registration](#r-ptp-registration), [request owner](#r-ptp-ingress), [vectors](#r-ptp-vectors), [status callbacks](#r-ptp-status), [handler banks](#r-ptp-handler-banks) |
+| Storage and unjoined objects | [Queued storage](#r-ptp-storage), [descriptor consumer](#r-descriptor-consumer), [callback provider](#r-callback-provider), [descriptor tables](#r-ptp-descriptor-tables), [entry edges](#r-ptp-entry-edges) |
+| Layout and startup | [Address mappings](#r-address-mapping), [boot chain](#r-startup), [block 1](#r-block-1), [block 2](#r-block-2), [block 3](#r-block-3), [block 4](#r-block-4), [integrity](#r-integrity) |
+| Unassigned anchors | [Caller context](#r-unassigned-caller), [receiver prologue](#r-unassigned-receiver) |
 
-| Area | Runtime address | JSON address | Block | Offset | Reviewed instruction |
-|---|---:|---:|---:|---:|---|
-| Boot writer | `0x402c02fb` | `1076626171` | 0 | `0x0000031b` | `mov d0,(0x60504b24)` |
-| Boot reader | `0x402c0339` | `1076626233` | 0 | `0x00000359` | `mov (0x60504b24),d1` |
-| Boot sink | `0x402c093c` | `1076627772` | 0 | `0x0000095c` | `mov d1,d3` |
-| Still capture | `0x4096368d` | `1083586189` | 0 | `0x006a36ad` | `mov a0,a3` |
-| Live-view teardown | `0x40ab9dbd` | `1084988861` | 0 | `0x007f9ddd` | `mov a0,a2` |
-| Live-view callee | `0x40aba041` | `1084989505` | 0 | `0x007fa061` | `mov 1861203104,d0` |
-| PTP path | `0x6f3307f5` | `1865615349` | 0 | `0x00d30815` | `movm [d2,d3,a2,a3],(sp)` |
-| PTP record load | `0x6f3307fa` | `1865615354` | 0 | `0x00d3081a` | `mov -1602518580,a3` |
-| PTP initializer | `0x6f330905` | `1865615621` | 0 | `0x00d30925` | `clr d0` |
+<a id="r-first-contribution"></a>
+## Extend a supported instruction boundary
 
-## Good first contribution: extend instruction coverage
+**Start from:** a canonical caller or control-flow edge in a
+[mapped area](FIRMWARE_MAP.md#established-regions), after checking current
+coverage. The [analysis workflow](ANALYSIS.md) includes a reproducible example.
 
-Choose a bounded function or control-flow corridor and continue from an
-existing reviewed instruction boundary. Useful starting areas include:
+**Useful result:** a complete, authenticated continuation to a branch, return,
+indirect call, or existing boundary. Explain its relevance and any decoder or
+entry ambiguity in the PR. Another isolated decode of an already mapped body
+does not resolve its owner or execution path.
 
-- boot and startup around `0x402c02fb` and `0x402c093c`;
-- still capture around `0x409613d8` and `0x4096368d`;
-- live-view teardown around `0x40ab9dbd` and wrapper `0x40aba091`;
-- PTP selector handling around `0x6f32d60c` and record handling around
-  `0x6f3307f5`.
+<a id="r-release-contract"></a>
+## Resolve the release-control body's indirect consumers
 
-Stop at an explicit branch, return, indirect call, or already covered
-boundary. Submit only authenticated source ranges and instruction rows.
-Mention decoder disagreements in the PR rather than silently choosing one
-interpretation.
+**Start from:** the [release body and caller profiles](firmware/RELEASE_CONTROL.md#release-body).
 
-For the caller span starting at block-0 offset `0x006b0204`, use the accepted
-56-byte range through `0x006b023c` when reproducing the trailing call and
-return. The older 48-byte slice stops inside the call. Range acceptance does
-not establish the proposed event-30 identity or argument preservation through
-intervening calls; those require separate instruction and consumer evidence.
+**Question:** which concrete receivers and input profiles reach the conditional
+lookups and the helper at `0x6ebd9652`?
 
-## Resolve the release-control candidate's indirect consumers
+**Useful result:** trace arguments and register preservation through the selected
+calls to a bounded consumer or a capture/payload effect. Preserve the distinction
+between range coverage and the sparsely recorded caller instructions. A status
+return alone does not identify an image-producing operation.
 
-Accepted coverage now bounds the local `0x6ebc92d7` body and its helper
-`0x6ebd9652`, including the helper's null-argument rejection and the caller's
-zero-status branch. Use the source anchors and caller windows in
-[FIRMWARE_MAP.md](FIRMWARE_MAP.md#release-control-candidate-and-caller-profiles)
-to establish one concrete receiver/table edge and follow its argument values
-through intervening calls. The helper's indirect slots and the object passed
-to it remain the useful boundary. A zero return or a release-related label
-does not establish image production, a host-callable contract, or delivery.
-The three additional caller windows have range coverage and one instruction
-row each; do not treat them as complete canonical disassemblies.
+<a id="r-release-inputs"></a>
+## Establish frontend input and receiver contracts
 
-The six-input frontend now has an authenticated enclosing span and a
-reproduced stack-word handoff to indirect slot `+304` at `0x6ebe394a`.
-Use the [frontend and accessor map](FIRMWARE_MAP.md#six-input-frontend-and-control-object-accessor)
-to resolve conversion failure writes and destination initializedness, then
-establish the returned receiver's concrete table mapping and selected method.
-Keep the six current destination words distinct from successfully parsed
-inputs. The accessor's installed word and candidate table entries
-need an independently supported data/address relation; a code display mapping
-alone cannot establish runtime placement. Follow the selected method to a
-capture or payload effect before claiming a request-to-image path. The
-frontend's normal zero return supplies no such proof.
+**Start from:** the [six-input frontend](firmware/RELEASE_CONTROL.md#six-input-frontend).
 
-The [key-conversion owner candidate](FIRMWARE_MAP.md#release-key-conversion-owner-candidate)
-now has authenticated global-access and initializer spans, including a leaf
-that writes `0x6ee40528` and a helper sequence using key `0x02031902`.
-Establish the installed word's runtime table mapping and the connection from
-this candidate to the six-input conversion path. Trace register preservation
-through its helpers and destination writes on conversion failure; the new
-range-only coverage does not resolve those contracts or establish ownership
-of a capture operation.
+**Question:** what is written on conversion failure, and which concrete method
+does the returned control object's slot `+304` select?
 
-## Resolve the candidate receiver method beyond its prologue
+**Useful result:** establish destination initializedness, the installed table's
+data mapping, receiver readiness, and the selected method's consumer. Keep six
+current destination words distinct from six successfully parsed inputs; the
+frontend's normal zero return is not a capture-success result.
 
-The prologue at local address `0x6edc1104` (block 0, offset `0x007bfce4`,
-length 5) is now canonical. Its two instructions save `d2` and `a2` and
-allocate four stack bytes; they do not establish the proposed receiver-table
-match. A useful continuation supplies an authenticated caller or table edge
-selecting this source anchor and follows the body from `0x6edc1109`
-(offset `0x007bfce9`) to a bounded consumer. Establish argument definitions
-and register preservation through intervening calls before using the result
-to identify a stock receiver or an image path. Repeating the prologue decode
-alone adds no evidence of receiver identity, runtime readiness, or transfer.
+<a id="r-key-owner"></a>
+## Connect the candidate key-conversion owner
 
-## Connect the initializer to the selected runtime record
+**Start from:** the [owner candidate](firmware/RELEASE_CONTROL.md#key-conversion-owner).
 
-The accepted span at `0x6e76edd1..0x6e76ee1c` (block-0 offsets
-`0x0016d9b1..0x0016d9fc`, exclusive end) now covers receiver field writes
-and the trailing return around the previously recorded table installation.
-Use this source span to establish the caller's argument definitions and the
-intervening call's register effects before tracing a stored value to a consumer.
-The missing join is still between this initializer, the array rooted at
-`0x6034aff0`, and the live `0x2100` record's `+4` value. Neither the field
-writes nor the completed selector return identify an image owner or establish
-capture or transfer.
+**Question:** does this object implement the frontend's conversion contract?
 
-## Map decoded offsets to runtime addresses
+**Useful result:** establish the installed word's table mapping and the source
+connection to the frontend, including helper preservation and destination writes
+on failure. Code-display arithmetic alone cannot establish the data placement.
 
-The relationship between container offsets, decoded blocks, declared load
-addresses, copied regions, overlays, static pointers, and runtime addresses is
-only partly understood.
+<a id="r-still-list"></a>
+## Identify the still-corridor list consumer
 
-A useful result establishes one reproducible mapping relationship or clearly
-bounds one source of uncertainty. Submit the supporting ranges and
-instructions, and explain the mapping in the PR.
+**Start from:** [singleton dispatch and population](firmware/STILL_OBJECTS.md#singleton).
 
-## Recover the boot-entry and initialization chain
+**Question:** what is the list's runtime class, and which object receives the
+later slot-`+20` call?
 
-The authenticated instruction at `0x402c02fb` writes `d0` to runtime global
-`0x60504b24`, and `0x402c0339` reads that global. Nearby authenticated direct
-calls reach `0x402c093c`. The containing initializer entry, its caller,
-connection to reset or boot entry, object ownership, lifetime, and ordered
-subsystem startup remain unresolved.
+**Useful result:** a supported producer/consumer connection from the populated
+list to that dispatch. Object creation and list append do not establish exposure
+or image production.
 
-A useful result connects an existing boundary to an authenticated predecessor,
-successor, initialization owner, or task boundary without inferring execution
-from a raw address coincidence.
+<a id="r-still-receiver"></a>
+## Identify the nested receiver of the +2216 object
 
-The latest bounded block-0 census found no direct or full-width reference into
-initializer `0x402c0262`. The local-overlay handoff at block-0 offset `0xc9` /
-runtime `0x6e6000a9` is now mapped through its indirect target
-`0x6e6016a2`, backed by source offset `0x16c2`. The useful next result is the
-authenticated predecessor or runtime-built pointer that supplies this handoff
-and connects it to reset without treating the local overlay as a global load
-base. Repeating whole-block literal or direct-edge scans is unlikely to help.
+**Start from:** the [separate object path](firmware/STILL_OBJECTS.md#owner-2216),
+especially the nested call at `0x6ee1d52a`.
 
-## Continue the resolved still-corridor dispatch
+**Useful result:** establish the concrete receiver/table and the returned field's
+producer or consumer, then test whether it joins the singleton corridor. Preserve
+the getter's distinct local and canonical load-address anchors.
 
-The two calls at `0x40963771` and `0x409637d1` now resolve through the same
-singleton table slot to runtime `0x6ebdb422` / source offset `0x005da002`.
-For the caller-built argument, the recovered target selects tag `11780` and
-reaches `0x4089a625`; accepted coverage now continues through object
-initialization, value association, and append into the searched list through
-`0x4089a73b`. The useful next boundary is the list's runtime class and the
-object whose slot `+20` is invoked. The population path is not evidence of a
-shutter or image effect.
+<a id="r-still-field-100"></a>
+## Trace the pointer stored in field +100
 
-A separate accepted path stores an object at owner-relative field `+2216`,
-calls its slot `+0`, reloads it, and calls slot `+8` at `0x409613d8`. This is a
-distinct lazy object with table `0x6ee8d1d0`; slot `+0` resolves to
-`0x6ec1875c`, slot `+4` to `0x6ee1d507`, and slot `+8` to `0x6ee1d553`. The
-slot-`+8` body performs a guarded initialization of `0x6065949c` and, for this
-established object identity, its call at `0x6ee1d583` resolves back to slot
-`+4`. Continue from the slot-`+4` body's nested receiver call
-at `0x6ee1d52a` or its later slot-`+76` continuation. Identify the concrete
-runtime receivers and test whether either joins the established singleton corridor.
-The static calls alone do not prove capture or hardware behavior.
+**Start from:** the [getter, writer, and separate table candidate](firmware/STILL_OBJECTS.md#field-100)
+and their [dispatch continuations](firmware/STILL_OBJECTS.md#continuations).
 
-The six-byte source span at block-0 offset `0x0081a3a2` locally decodes at
-`0x6ee1b7c2` as a field-`+8` getter and return; the return at `0x6ee1b7c5`
-is now canonical. This bounds the proposed slot-`+12` target without proving
-that the nested call executes with that receiver. The existing load row has
-a different address anchor (`0x6ee1b7c8`), so keep source coordinates and
-local address views explicit. A useful next result establishes the concrete
-receiver/table provenance and the returned field's producer or consumer, or
-resolves the later slot-`+76` continuation's dynamic targets.
-Re-decoding this getter alone will not establish capture, a frame handle, or transfer.
+**Question:** who supplies the setter's incoming pointer, and which concrete
+parent and returned object reach the slot-`+8`/`+48` consumers?
 
-The accepted slot-`+72` candidate at `0x6ee1d38f` dispatches through the
-receiver's slot `+64`. For table `0x6ee8d1d0`, that successor is
-`0x6ee1d263`, whose bounded body performs helper calls and returns a scalar
-result. These authenticated bodies do not establish an image-producing effect.
-Slot `+76`, mapped to `0x6ee1d39e` and called at `0x6ee1d53a` when the
-earlier getter result is nonzero, now has an accepted body and direct successor
-at `0x6ee1db5b`. The stack-temporary preparation, helper calls, dynamic
-dispatch, and return do not establish capture or an image consumer.
+**Useful result:** prove those identities through the calls. Keep the parent
+saved in `a2`, other incoming object in `d3`, and getter result in `a3` distinct.
+Shared methods do not select a parent table; one table's slot-`+40` no-op does
+not resolve the other object's call at `0x6ee1db91`.
 
-For parent table `0x6ee8d1d0`, the slot-`+52` call at `0x6ee1db7f`
-resolves to the accepted field-`+100` getter at `0x6ee1dc28`. The accepted
-writer at `0x6ee1d588` stores incoming `a1` into both `+100` and `+92`.
-The next useful result must establish where that incoming pointer comes from,
-which concrete object/table is stored, and how the returned object reaches its
-later slot-`+8` or slot-`+48` consumer. Keep the parent saved in `a2`, the
-other incoming object saved in `d3`, and the getter result saved in `a3`
-distinct. A field getter and setter alone do not establish image ownership.
-
-A second accepted table candidate at local `0x6ee8a59c` (block-0 offset
-`0x0088a17c`, 160 bytes) shares getter/setter slots `+52`/`+56` and several
-continuations with `0x6ee8d1d0`, but has a different slot-`+40` target,
-`0x6edeeaf7`. The accepted initializer at `0x6ec0b717` (offset
-`0x0060b2f7`, 26 bytes) calls `0x6ee1a0ef`, installs `0x6ee8a59c` through
-post-call `a0`, and writes halfword `2204` at `+4`. Keep this local address
-view (`source + 0x6e600420`) explicit. Shared methods do not identify which
-parent reaches `0x6ee1db7f` or which object the getter returns. Establish
-that receiver join and the setter's incoming pointer before assigning the
-later indirect consumers or inferring image ownership.
-
-The parent table's slot-`+40` body at `0x6ee1d727` is an accepted return-only
-no-op. Do not apply that result to the other object's slot-`+40` call at
-`0x6ee1db91` without proving its receiver/table identity. Require complete
-supported instruction boundaries and a source-backed capture, image, file, or
-transfer effect before advancing the request-to-image claim.
-
+<a id="r-live-view-owner"></a>
 ## Identify the live-view frame owner
 
-The lazy singleton accessor at `0x40ab9cbd` constructs through `0x40ab9ceb`;
-the corridor beginning at `0x40ab9dbd` is its reverse-order destructor, not
-its constructor. Dispatch table `0x6eefb4a0` is mapped, with slot `+0x10`
-resolving to wrapper `0x40aba091`; the 16-slot table `0x6eef8128` is now mapped
-too, with slot `+0` conditionally resolving to `0x6edec9be`. No frame-buffer
-owner, format, or display/export consumer is established. Previous exact
-string-address scans did not produce an instruction-aligned owner reference,
-so another vocabulary scan is unlikely to help.
+**Start from:** the [collection and copy paths](firmware/LIVE_VIEW.md#collections).
 
-Accepted coverage now also ties table head `0x6ee3e908` to the bounded helper
-at `0x6eb7e2d8` and to a 12-byte temporary/three-word copy path reached through
-`0x40aac8d7`. A useful result identifies the owner of that helper's
-caller-supplied object or the destination of the three-word copy, then binds it
-to the `outer+132` collection or one concrete frame handle. The lifecycle,
-object binding, collection append, and mapped tables are already established.
+**Useful result:** identify the helper's caller-supplied object or the destination
+of the three-word copy, then connect it to `outer+132` or a concrete frame handle
+and consumer. Previous exact string-address scans did not find an
+instruction-aligned owner reference; another vocabulary scan alone is unlikely
+to answer the question.
 
-## Resolve the ThroughImage selector's runtime record
+<a id="r-throughimage-record"></a>
+## Find the producer of the ThroughImage record
 
-The accepted constructor-shaped body at `0x6edfc227` installs table
-`0x6eefbc84`; its slot `+0x20` selects the existing caller at `0x6edfc346`.
-The accepted span at `0x6e868efe` maps that caller's selector 4 to `0x2100`,
-passes a stack destination to `0x6e76d553`, and loads a 16-bit scalar into
-`d0`. The separately accepted `ret [d2],12` at `0x6e868f36`
-(block-0 offset `0x00267b16`) completes its local return boundary. The caller's
-saved scalar and return mechanics do not identify a JPEG or frame pointer.
+**Start from:** the [scalar lookup](firmware/LIVE_VIEW.md#throughimage) and
+[separate initializer](firmware/LIVE_VIEW.md#record-initializer).
 
-The accepted root-load rows explicitly locate the helper's runtime base at
-`0x6034aff0`. The separate initializer-shaped span at `0x6e76df43`
-references `0x2100` and `MENU_BG`, but does not establish a producer for
-that runtime array or the selected record's `+4` value. Matching the selector
-constant alone does not join this initializer to the live selected entry or
-the queued-copy frontier at `0x6e61fd8d` / `0x6e68939a`.
+**Question:** what populates the array at `0x6034aff0`, and what is the `0x2100`
+record's `+4` value?
 
-The useful next boundary is the producer and contents of the runtime record
-array at `0x6034aff0`: establish the `0x2100` record's `+4` value and follow
-it through `0x6e76efc8` / `0x6e76ee46` to the destination write or a concrete
-payload effect. The helper's key search, `0x2900` sentinel, and halfword
-status return are now bounded. Resolving a receiver table alone does not
-establish image ownership, capture, transfer submission, or wire completion.
+**Useful result:** authenticate a writer or establish/rule out the initializer
+connection with caller arguments and intervening register effects. Follow the
+selected value through `0x6e76efc8` / `0x6e76ee46` to a destination write or
+payload effect. Matching `0x2100` alone does not join the records; the scalar
+return does not identify an image pointer.
 
-## Resolve a read-only PTP request and response lifecycle
+<a id="r-ptp-registration"></a>
+## Place the registration callbacks
 
-The caller pair at block-0 source `0x00d30548..0x00d3056c` now supplies
-keys `0x100c`/`0x100d` and callback literals `0x6f33a684`/`0x6f33a805` to
-builder source `0x00d349fe`. The next useful result establishes this module's
-source-to-runtime placement and binds those literals to authenticated entry
-spans. The singleton module's `0x6e601420` delta alone cannot select candidate
-sources `0x00d39264`/`0x00d393e5`. Separately, trace the allocator's transitive
-calls before claiming that caller metadata 2 survives in `d3` to node `+2`.
-The accepted caller and source spans do not establish runtime registration,
-a selected host request, image ownership, or transfer.
+**Start from:** the [registration callers and builder](firmware/PTP.md#registration).
 
-The caller window `0x6f331fb7..0x6f332029` (end exclusive) now has
-47 contiguous, full-width instruction records after correcting eight truncated
-rows and removing five call-operand interior records. Those interior addresses
-are not established alternate entries; any such claim needs independent
-entry evidence. The corrected call targets are unchanged.
+**Useful result:** establish this module's source-to-runtime placement and bind
+the callback literals to authenticated entries. Separately establish whether
+caller metadata 2 survives the allocator's transitive calls in `d3` to node
+`+2`. The singleton module's delta is insufficient for this module.
 
-The owner/output-handoff width repair at `0x6f331cf3` and
-`0x6f334b62..0x6f334c0b` removes stale truncated rows and malformed `a0`
-fragments. The overlapping jump at `0x6f331cf4` is retained with its
-independently verified five-byte width; an alternate entry is still unproven.
-This correction does not establish transitive register preservation, response
-completion, or image/USB/PTP transfer.
+<a id="r-ptp-ingress"></a>
+## Connect the primary request owner to ingress
 
-The calls at `0x6f339800`, `0x6f339854`, and `0x6f33a8e0` now have
-verified complete lengths of seven, five, and five bytes. Their targets and
-instruction text are unchanged. These repairs do not establish caller
-reachability, register preservation across calls, host ingress, capture,
-image production, transfer, or patch safety.
+**Start from:** the [primary selector's caller](firmware/PTP.md#request-selector)
+and [FIFO](firmware/PTP.md#fifo).
 
-The load at `0x6f333527` now has its verified six-byte length and slice
-hash; the next instruction begins at `0x6f33352d`. This width repair does
-not establish dispatch activation, host ingress, capture, image production,
-transfer, or patch safety.
+**Useful result:** identify the stack-record owner's relationship to a transport
+receive boundary and the known FIFO. The `0x6e6860f7` contract on the bit-1-set
+path is a bounded subquestion. Record layout and the shared descriptor handoff
+alone do not establish live admission or wire completion.
 
-The large-buffer descriptor target now has a reviewed dispatcher at
-`0x6e74c425..0x6e74c495` and operation bodies at
-`0x6e74c631..0x6e74c67a` and `0x6e74c67a..0x6e74c77b` (ends exclusive).
-The entry's owner-state guard at `0x6e74c410` remains relevant. Keep the
-outer `+0` and nested `+2` switches separate: outer-1/nested-2 calls the
-first body at `0x6e74c468`, whereas outer-2 calls the second at
-`0x6e74c474`. A later outer-2 invocation can inherit state from outer-1;
-assuming freshly zeroed state would incorrectly exclude that path.
+<a id="r-ptp-vectors"></a>
+## Establish selector-vector placement and entry
 
-The first body initializes owner `+24/+28` from `+4/+8` before a helper
-call. The second conditionally writes owner `+112/+116/+120` and result
-halfword `+124`. The next useful boundary is an authenticated consumer of
-those fields, with the required owner state and helper outcomes traced from
-the caller. Establish the payload's identity and lifetime before describing
-it as an image or file. These spans establish neither an immediate owner
-consumer nor runtime reachability, capture, USB/PTP submission, or host
-transfer; the helper calls alone do not establish their complete behavior.
+**Start from:** the [neighboring vectors](firmware/PTP.md#selector-vectors).
 
-PTP handling around `0x6f3307f5` and `0x6f330905` accesses runtime data record
-`0xa07b81cc`, including its `+8` field at `0xa07b81d4`. These are runtime-memory
-addresses, not decoded-block offsets. At code address `0x6f3307fa`, the same
-32-bit record address is rendered as signed decimal `-1602518580` in the
-reviewed instruction. Its 16-record queue producer/consumer, count, cleanup
-drain, two-entry `0x40000`-byte backing-buffer pool, one bounded dynamic copy
-path, and one `0xbb02` reply lifecycle are established. Halfword
-`0xa07b82d0` is co-reset but is absent from the reviewed append, shift, drain,
-and completion paths; it is not the queue count. The operation ingress,
-product-level meaning of `0xbb02`, remaining selector targets, absolute dynamic
-storage object, wire-level completion, and runtime reachability remain
-unresolved. The callback value installed in `0xa07b81a0` is now statically
-identified as `0x6f33e485` through initializer `0x6f33c8f5`, with a direct call
-to that initializer at `0x6f32f856`. The complete containing initializer is
-now bounded at `0x6f32f6b5..0x6f32f864`; its runtime owner remains unresolved.
-The local callback consumer and its `d2` save/restore are now bounded below,
-but their execution for a live request is not established.
+**Useful result:** establish source placement and the caller/owner supplying
+`0x5001` to `0x6f33362c`. Keep the two runtime bases and neighboring interior
+targets distinct. A vector does not establish a common entry ABI.
 
-The fixed FIFO consumer now has a bounded internal handoff on its nonzero
-`0x8050` branch: a helper builds a stack descriptor with size word 128, passes
-it through `0x6e61fd8d` to storage at `0x6e68939a`, and later stops at the
-record-`+8`-selected indirect jump at `0x6f3309c6`. The selector is a full
-sequence value; the consumer advances it modulo 16 and probes 16 eight-byte
-slots in `[0x6f358d44,0x6f358dc4)`, comparing slot `+0` and loading the target
-from slot `+4`. The same-view source coordinate `0x00d58d44` is authenticated
-non-table data, so the table remains runtime-built or supplied through another
-unproved mapping. Paired routines at `0x6e681503` and `0x6e68150d` write the
-two fields of an eight-byte-stride array at base-relative offsets `+20` and
-`+24`. Their established callers populate both fields for matching indices,
-but no accepted instruction proves that their incoming base is `0x6f358d30`.
-The complete callers at `0x6e68002c`, `0x6e680246`, `0x6e68042c`, and
-`0x6e6809b8` preserve incoming `a1` in `a2` and pass it to the writers in
-`a0`; bounding those bodies does not resolve the object supplied by their
-callers. Their second-field constants (`0x1000`, `0x8000`, or zero) do not
-identify an executable handler. A useful continuation traces the incoming
-`a1` of these exact bodies to an authenticated producer and establishes its
-relationship to the consumer's table before resolving an indirect target.
-The present evidence does not establish table ownership, serialization, or
-wire completion.
+<a id="r-ptp-status"></a>
+## Resolve status callbacks and the skipped interior entry
 
-The complete body `[0x6f330ec2,0x6f330f3d)` now bounds the callback path
-through `0xa07b81a0`. Its nonzero-`0xa07b81c8` branch passes record fields
-`+0`, `+4`, and `+12` with `0xbb02` to `0x6f33113f`, then calls
-`0x6f331166` with an explicit `d2` save. The helper restores `d2` on return,
-so its internal assignment is not the value supplied to the indirect callback
-at `0x6f330f0b`. The fixed consumer initializes `d2` to post-prologue `sp+12`
-and supplies either FIFO base `0xa07b81cc` or that local frame object to
-`0x6f33093e`; the target arm at `0x6f330b53` forwards the record to this body.
-The zero-guard branch instead copies the record and sets two flag bytes.
-The status getter at `0x6f3311b2` reads unsigned halfword `0xa07b81a4`.
-After the initial bank search, status 2 selects the 16-slot bank
-`[0x6f358bc4,0x6f358c44)` through `0x6f330b16`, ending at the indirect jump
-`0x6f330b4d`. Statuses 0, 1, and 3 select banks at `0x6f358cc4`,
-`0x6f358c44`, and `0x6f358b44`. The five search windows and the four
-additional 128-byte same-view source windows are authenticated; source
-coordinates alone do not prove runtime slot contents. A useful continuation
-identifies a source-proven writer of the status-2 bank and shows that a
-matching slot's `+4` contains `0x6f330b53`, then distinguishes which record
-route executes and establishes its runtime owner.
-The local register contract does not establish a live handler or join this
-callback to the primary selector's descriptor output, USB/PTP, or capture.
+**Start from:** [status dispatch and callback installation](firmware/PTP.md#status-callbacks).
 
-A separate request-selector corridor is now authenticated at `0x6f32d60c`.
-It reads the selector from `a1+8` and dispatches each value from `0x1001`
-through `0x1008` to a distinct target. Reviewed `0x1001`, `0x1002`, `0x1007`,
-and `0x1008` paths reach the 12-byte descriptor handoff at `0x6e61fd8d`; this
-establishes a shared static response boundary, not live request admission or
-wire completion. The `0x1005` arm at `0x6f32d891` and `0x1006` arm at
-`0x6f32d8fa`/`0x6f32d900` now also have reviewed loads of owner pointer global
-`0xa07b7058`. The recovered switch still does not establish a `0x100e` arm.
+**Useful result:** identify the initializer's runtime owner/order, the writer
+of `0x60355a2c`, the callback contract through `0xa07b702c`, or a consumer of
+`0xa07b7030`. To connect the `0x5001` dispatcher, supply an authenticated
+predecessor selecting `0x6f33aaad`; the installed entry at `0x6f33aa63` skips it.
 
-The current X3C source-vector span is now authenticated over block-0
-`[0x00d58918,0x00d58988)` (28 four-byte entries). Its 40-byte tail overlaps
-the existing range beginning at `0x00d58960`; the adjacent vector begins at
-`0x00d58988`. Keep the accepted load at `0x6f333527`, which names runtime
-base `0x6f359d38`, separate from the `0x6f359da8` load below. Further
-research must establish the source-to-runtime placement and caller/owner
-relationship before treating either vector as a live request route.
+<a id="r-ptp-handler-banks"></a>
+## Identify the handler-bank producer and selection
 
-A distinct static dispatcher at `0x6f33362c` bounds selectors
-`0x5001..0x501c`, converts them to a four-byte index, and loads the selected
-target from runtime base `0x6f359da8`. The complete 28-word source vector at
-block-0 offset `0x00d58988` is now authenticated. Its selector-`0x5001` slot
-contains `0x6f334a8c`, whose reviewed body builds a descriptor and calls
-`0x6e61fd8d` at `0x6f334aab`. An authenticated 38-word enclosing vector at
-`0x00d58960..0x00d589f7` also contains neighboring value `0x6f334aef`; that
-address is the handoff call in a sibling body whose `mov 2,d0` is at
-`0x6f334acf`. The vector does not prove a shared entry ABI. The next useful
-result is an authenticated caller and owner that supplies `0x5001` to this
-dispatcher; these static relationships alone do not establish runtime
-reachability, ingress, serialization, or wire completion.
+**Start from:** the [paired writers and complete callers](firmware/PTP.md#handler-banks)
+and the [callback record route](firmware/PTP.md#callback-body).
 
-A separate authenticated table at block-0 offset `0x0008f0e0` consists of 17
-28-byte records keyed by `0x1001`, `0x1002`, and `0x100b..0x1019`. Its
-`0x100e` row contains positional words
-`(0x100e, 0, 3, 0x6e69e7cb, 5, 0x1000, 0)`. A locally supported code view of
-`0x6e69e7cb` reaches an owner-relative indirect call. Its direct helper at
-`0x6e69d892` is now authenticated as a complete nine-byte range at block-0
-offset `0x0009d892`: an unsigned byte read, two register clears, a comparison,
-and return. It does not establish operation meaning or an image path. The
-remaining target-side question is the concrete callee in slot `+20` of the
-object reached from `d2+24`, together with its owner and selection provenance.
-Positional word `+12`
-is now bounded as the common target field across the record family, but no
-authenticated consumer selects the table. A nearby four-byte indexed pointer
-lookup has incompatible geometry. Newly reviewed local-overlay routines pair
-that four-byte base with `0x6e690a50` under `0x8050`, while other routines use
-distinct 16- and 20-byte families around `0x6e690708` and `0x6e69081c`; none
-selects the 28-byte record table. A separate 34-word vector at block-0 offset
-`0x00090a98` still has no authenticated code reference. The table therefore
-narrows the alternate `0x100e` path question without proving registration,
-request admission, or a native response.
+**Useful result:** trace the callers' incoming `a1` and prove or rule out its
+base being `0x6f358d30`. Establish the executable handler value and the runtime
+selection of `0x6f330b53` before claiming a live handler. Field geometry and
+the fixed consumer's register route are insufficient without that connection.
 
-The nearest authenticated caller is now complete at
-`0x6f32d51a..0x6f32d5f8`. It builds stack-local records, first calls
-`0x6e61fc4b`, conditionally passes the stack-derived object through
-`0x6f32dc63`, and then supplies that object as selector `a1`. The caller's
-local source relation now identifies a 33-byte `0x6f32dc63` status adapter at
-block-0 offset `0x00d2dc83`: it writes two record words, calls `0x6e61fd33`,
-conditionally calls `0x6e682eea` after a negative status, and returns that
-status. This closes the caller-side adapter ABI while leaving its runtime owner
-and any join to the known FIFO or transport receive path unresolved.
+<a id="r-ptp-storage"></a>
+## Identify queued storage and its consumer
 
-The `0x6e61fc4b` path also has two direct calls to a complete routine at
-`0x6e689567`. That routine sets `a0=d2` before calling the complete 85-byte
-body at `0x6e6861ea`, which writes zero to `a0+64`, initializes other fields,
-links pointer fields, conditionally calls `0x6e6860f7`, then calls
-`0x6e687d3c` and returns. The later read of `d2+64` therefore observes the
-proved zero initialization. The next bounded question on this branch is the
-contract of `0x6e6860f7` on the bit-1-set path or the runtime owner of the
-pointed-to objects.
+**Start from:** the [reply and storage corridor](firmware/PTP.md#reply-storage).
 
-A separate caller-side continuation now reaches a status dispatcher at
-`0x6f32d9dc`. Record `+8` values 0, 1, 2, and 3 select landing points
-`0x6f32d9f1`, `0x6f32d9f8`, `0x6f32d9ff`, and `0x6f32da06` respectively.
-The reviewed status-0 path calls the descriptor builder at `0x6f32da0e` and
-reaches `0x6e61fd8d`; status 1 calls `0x6f32da3f` and stops at the indirect
-call through global `0xa07b702c` at `0x6f32dab1`; status 2 calls
-`0x6f32dacd`; and status 3 calls `0x6f32dae1`. The status-1 body makes four
-direct calls to the complete leaf at `0x6f32db27`. That leaf reads unsigned
-halfword global `0x60355a2c` into `d0`, returns, and does not write `d2`.
-The global's writer, owner, and runtime value remain unresolved, and the leaf
-does not produce the separate selector later consumed at `0x6f33aaad`.
-The initializer sequence `0x6f32f824..0x6f32f862` can install `0x6f33aa63`
-into that global
-and `0x6f33e38f` into sibling global `0xa07b7030`. The setup writes
-`0xa07b7044` into pointer global `0xa07b7058`, so the continuation's status-3
-store of fixed firmware receiver `0x6f3581f0` at record `+12` resolves to
-`0xa07b7050`; the same receiver is later passed as callback context. Three
-additional selector-arm reads of the pointer global are now reviewed, but no
-allocation, scheduler, or runtime ordering is established.
+**Useful result:** identify the concrete object selected by `(d0 & 0x7000) >> 12`,
+its queue allocation, and the caller of the source-only writer at `0x000a9736`,
+including the object supplied in `a1`. Then establish the storage consumer.
+A copied reply buffer does not establish USB submission or wire completion.
 
-The normal installed entry at `0x6f33aa63` does not supply the missing
-`0x5001..0x501c` join: its unconditional branch at `0x6f33aaa6` skips the
-interior selector setup at `0x6f33aaad` and the call to `0x6f33362c`. A useful
-continuation would need an authenticated predecessor that selects the interior
-entry; entering at `0x6f33aa63` itself is now a bounded negative.
+<a id="r-descriptor-consumer"></a>
+## Find the descriptor owner's output consumer
 
-The sibling target `0x6f33e38f` now has a bounded fixed-status entry: it sets
-`d2=24`, reaches `0x6e6050e5`, and returns 24. The helper's nonzero-`0x8050`
-path builds a size-128 descriptor and reaches `0x6e61fd8d`. This entry shape is
-not interchangeable with the record-populating `0x6f33aa63` shape, and the
-canonical block-0 instruction rows contain no direct load of `0xa07b7030`.
-The containing initializer's runtime owner and ordering, the receiver's type,
-the contract reached through `0xa07b702c`, and any indirect consumer of the
-sibling global remain unproved.
+**Start from:** the [owner-state operations](firmware/PTP.md#descriptor-owner).
 
-A separate object family now has a guarded callback setter at `0x6e6a9707`
-and paired indirect consumer at `0x6e6a9720`. The setter uses owner fields
-`+0x1c` (guard), `+0x3c` (callback), and `+0x48` (context); the consumer calls
-the stored target with that context only when the callback field is non-null.
-Two direct caller fragments reach the setter after loading the callback and
-context from another object's `+172` and `+244` fields. The upstream path at
-`0x6e69ed55` forwards its incoming object into `0x6e6a0a58`, which reads an
-owner candidate from field `+288` before those callback/context loads. Related
-paths write an incoming object to field `+288` at `0x6e6a0783` and later read
-that field at `0x6e6a237c` before indirect dispatch through `0x6e6a224e`.
+**Useful result:** authenticate a consumer of owner `+112/+116/+120` and result
+halfword `+124`, tracing required state and helper outcomes from the caller.
+Keep outer `+0` and nested `+2` switches distinct; a later outer-2 invocation
+may inherit outer-1 state. Identify payload type and lifetime before calling
+the result an image or file.
 
-The local producer at `0x6e6a0742` now pairs incoming objects `O` and `S`:
-its guarded path writes `O` to `S+0x30` and `S` to `O+0x120` before calling
-`0x6e6a224e`, whose registration path loads callback/context from `O+0xac`
-and `O+0xf4`. Thunks at `0x6e6ae092` and `0x6e6ae95e` load `O` from the
-pointer stored at `parent+0x24`; they do not establish `S`'s allocation.
-Direct callers at `0x6e6caa8c` and `0x6e6d829e` now reach `0x6e6ae092`
-after loading the source pointer through `a1`; these edges still do not identify
-its class. A local provider-aggregate setup now establishes
-`O=outer+0x1b0`, `P=outer+0xe8`, and `*(O+0x128)=P`, supported by block-0
-spans at `0x00653ab2`, `0x00653f9d`, `0x006540de`, `0x00654340`, and
-`0x00654fe6`. The factory at `0x6e6a0a9d` calls the pointer stored directly
-at `P+0x20` after loading `P=*(O+0x128)`. It does not first load `*(P)`
-as a dispatch table; a candidate selected by that extra dereference is not a
-supported target.
+<a id="r-callback-provider"></a>
+## Resolve the separate callback provider
 
-The useful next result resolves the writer and value of `P+0x20`, identifies
-the parent field's producer or the callers' source class, or proves a writer
-of `O+0xac` or `O+0xf4` belongs to this same object. Matching field offsets
-in another object are insufficient evidence of identity.
-A supported owner edge to an established PTP selector, queue, or transport
-boundary also remains useful. The local pairing and indirect calls do not
-establish a concrete callback routine, runtime reachability, or that join.
+**Start from:** the [callback object family](firmware/PTP.md#callback-objects).
 
-The storage corridor at `0x6e6893ae` now has a field-level owner relation.
-`0x8050` makes one four-byte-indexed selection from table `0x8ff00004`; a
-second index is derived as `(d0 & 0x7000) >> 12`. The latter selected owner's
-`+0x3c` field supplies a queue pointer, and queue `+0x1a` supplies an unsigned
-bound.
-A source-only leaf at block-0 offset `0x000a9736` can store an incoming pointer
-at owner `+0x3c`, but its runtime address, caller, and the queue allocation are
-not established. A useful result identifies that writer's authenticated caller
-and the concrete object supplied in `a1`.
+**Useful result:** resolve the writer/value of `P+0x20`, the parent field's
+producer or source class, or same-object writers of `O+0xac` and `O+0xf4`.
+The factory calls the pointer stored directly at `P+0x20`; an extra dispatch-table
+dereference is unsupported. A connection to a known selector, queue, or transport
+owner also needs independent evidence.
 
-The highest-leverage next direction is to prove whether the paired field
-writers receive base `0x6f358d30`: trace the incoming `a1` of the four
-complete caller bodies above, then identify that object's runtime owner
-before resolving the target selected at `0x6f3309c6`. Alternatively, identify
-the consumer and runtime owner of the 17-record table and prove whether it
-selects the `0x100e` row, or bind the `0x6e6a9707`/`0x6e6a9720` callback object
-to an established PTP owner and resolve its selected target. Another broad
-opcode or table scan is not the smallest next step.
+<a id="r-ptp-descriptor-tables"></a>
+## Find consumers of the unjoined descriptor tables
 
-A useful result now joins one of those exact owners or consumers to an
-authenticated transport receive boundary. Resolving the concrete object and
-queue reached through the `(d0 & 0x7000) >> 12` storage index is also useful.
-Do not infer operation names or wire completion from record layout alone.
+**Start from:** the [17-record and 66-record tables](firmware/PTP.md#descriptor-tables).
 
-The late handler at `0x6f33fb8e` now has a reviewed direct call to
-`0x6f33faec` and return, with an established incoming load mapping a selected
-vector tail into the span. The useful next step is its authenticated producer
-or runtime owner, not another isolated decode of the handler body.
+**Useful result:** identify the runtime owner and selection of the 17-record
+table, including whether it selects `0x100e`, and resolve slot `+20` of the
+object reached from `d2+24`. For the separate key-`0x4e` table, establish its
+runtime placement, key selection, and indirect invocation. The neighboring
+lookup families and raw alignment false positives do not supply those edges.
 
-A separate 66-record table at block-0 offset `0x0008b300` has a key-`0x4e`
-record whose first word points to reviewed interior call `0x6e708fa2` within
-the authenticated body at `0x6e708f9f`. Enclosing source ranges now exclude the
-two other raw four-byte hits as alignment false positives: one begins inside a
-little-endian vector word and the other crosses three MN103 instructions. They
-are not pointer-bearing leads. A useful continuation identifies the table's
-runtime address and owner, then proves the key-selection and indirect call
-path; the remaining static pointer alone does not establish registration,
-runtime reachability, or a live-handler identity.
+<a id="r-ptp-entry-edges"></a>
+## Establish entry edges for isolated handlers and alternate starts
 
-Three uncovered byte starts at `0x6f331e20`, `0x6f331e30`, and `0x6f331e58`
-now have authenticated alternate decodes, but no accepted control-flow or table
-edge selects them. A useful result for this branch must establish such an edge;
-the isolated starts alone do not identify an entry or prove runtime execution.
+**Start from:** the [handler and byte-gap starts](firmware/PTP.md#unselected-entries)
+and [current decode boundaries](firmware/PTP.md#decode-boundaries).
 
+**Useful result:** identify the late handler's producer/runtime owner or a
+supported caller/table edge selecting an alternate start. Complete instruction
+widths and independently reproducible overlapping decodes do not prove entry.
+
+<a id="r-address-mapping"></a>
+## Establish a local address mapping
+
+**Start from:** the [coordinate conventions and examples](firmware/READING.md#coordinates).
+
+**Useful result:** authenticate a relationship between decoded offsets, copied
+regions, overlays, or runtime addresses, or bound why competing views remain.
+An arithmetic match without a supported caller, table, or relocation context
+is not placement evidence.
+
+<a id="r-startup"></a>
+## Connect the startup chain to reset
+
+**Start from:** the [state accesses](firmware/STARTUP.md#state-access) and
+[local overlay handoff](firmware/STARTUP.md#overlay-handoff).
+
+**Useful result:** authenticate a predecessor, initialization owner, task
+boundary, or runtime-built pointer connecting the handoff to reset. The bounded
+block-0 direct/literal census is already negative; repeat it only with a new
+reason it would answer the missing connection.
+
+<a id="r-block-1"></a>
 ## Resolve block 1's delegated materializer
 
-The 69-record block-1 layout and its three block-0 materializer paths are now
-established. The data also has a 34-resource UTF-16LE localization bundle, a
-matching fixed-width name table, a 239-entry affine descriptor index, 34
-monotonic tables, and authenticated coverage for 374 token-bearing strings.
-Record 0 supplies source `0x42700800`, length `0x547c00`, decoded image offset
-`0x7e0`, and a request that remains conditional on `a3 == 0`. One observation
-at delegated service `0x402e90bc` would distinguish copy/DMA from address
-mapping and begin to connect these file-relative structures to a parser or
-renderer. Accepted rows now extend the selector setup across block-0 offsets
-`0x00257798..0x00257817`, including 16-byte record scaling and a high-view call
-at `0x6e8577f7`, but the same source corridor retains competing runtime views.
-The useful next result is an independently anchored complete caller context
-that selects the applicable view and follows the request through
-`0x402e90bc` to a proved payload effect. Broad rescans of block 1 are no longer
-the smallest useful step.
+**Start from:** [block 1's record and request layout](firmware/BLOCKS.md#block-1).
 
+**Useful result:** independently anchor the complete caller context, select the
+applicable address view, and follow the service below `0x402e90bc` to a payload
+effect that distinguishes copying, DMA, or address mapping. Preserve record 0's
+`a3 == 0` condition. Broad structural rescans alone do not identify a consumer.
+
+<a id="r-block-2"></a>
 ## Find block 2's consumer
 
-The candidate `(0x00240000, 0x43d00400)` header, `0xff` boundaries, and exact
-`0x240000`-byte low-six-bit payload geometry are authenticated. Direct text,
-conventional six-bit packing, named compression/transform signatures, exact
-cross-block copies, and canonical direct operands did not identify a consumer.
-A new static parameter path ties selector `0x101` to
-`a0=0x43d00400`, `a1=0x43d00000`, length `0x400`, and attribute `0x101`, so
-the base plus length reproduces the second header word. It stops before the
-delegated call and does not access the payload. The next useful result follows
-that exact boundary into a proved payload read, copy, mapping, or consumer
-effect without treating the parameter equality itself as consumption.
+**Start from:** [block 2's boundaries and parameter path](firmware/BLOCKS.md#block-2).
 
+**Useful result:** follow the delegated boundary to a payload read, copy,
+mapping, or consumer effect. The equality between base-plus-length and a header
+word is insufficient. Prior text, packing, compression/transform, cross-block
+copy, and canonical-operand searches did not identify a consumer.
+
+<a id="r-block-3"></a>
 ## Find the block 3 resource consumer
 
-Block 3 is now structurally mapped as an eight-entry index followed by eight
-contiguous prefixed baseline-JFIF JPEG records and a zero tail. The exact JPEG
-extents and dimensions are established, but the index-field meanings and
-firmware consumer are not.
+**Start from:** the [JPEG bundle](firmware/BLOCKS.md#block-3).
 
-A useful result binds one index entry or 16-byte record prefix to an
-authenticated block-0 read, copy, decode, or display path. Visual similarity,
-address-shaped words, or a guessed UI role without a consumer edge is not
-enough.
+**Useful result:** connect an index entry or 16-byte record prefix to an
+authenticated block-0 read, copy, decode, or display path. Exact extents and
+dimensions are established; visual similarity does not establish a UI role.
 
-## Identify decoded block 4's external owner
+<a id="r-block-4"></a>
+## Resolve block 4's decoder and external owner
 
-Block 4 is classified as a flat big-endian H8-compatible image, with an
-internal 420-byte source-to-runtime copy/call relationship and a bounded
-70-entry dispatch consumer. Its `E. Munch` literal at block-4 offset `0x34`
-also appears uniquely at block-0 offset `0x00338a80` immediately before
-firmware-update and ID-check text. Additional authenticated ranges reach the
-common dispatch target at offset `0x122a`, but conflicting H8 decodes mean no
-block-4 instruction semantics are canonical. This narrows the search but still
-does not identify an external owner.
+**Start from:** the [H8-compatible image](firmware/BLOCKS.md#block-4).
 
-A useful result first provides one independently reproducible H8 decode for
-the common target at offset `0x122a`, then traces the producer of selector
-`0x004003c1`. Following the surrounding block-0 structure at `0x00338a80` to a
-fifth-body descriptor, transfer, or start operation remains useful after that
-decoder boundary is established. Repeating the string match alone is not
-useful.
+**Useful result:** reproduce the common target at offset `0x122a` with an
+independently supported H8 decode, then trace the producer of selector
+`0x004003c1`. Investigate whether the block-0 context at `0x00338a80` leads to
+a fifth-body descriptor, transfer, or start. The shared literal alone supplies
+no such connection, and no block-4 instruction row is canonical.
 
-## External evidence wanted: integrity and authentication
+<a id="r-integrity"></a>
+## Establish updater or device authentication
 
-The official image can be decoded and reconstructed byte-identically. A
-same-size nonempty body change can also be rescrambled and its additive tail
-checksum repaired so the supplied host parser accepts the complete container.
-That does not answer updater or device-side validation and authentication.
+**Start from:** the [host-visible container result](firmware/BLOCKS.md#container-integrity).
 
-Useful evidence would be an independently inspectable verifier, an updater or
-device validation path, technical documentation, or another reproducible
-static artifact. Product pages, filenames, generic Olympus firmware behavior,
-and requester-side access controls are not evidence of E-PL3 image
-authentication.
+**Useful result:** independently inspect a verifier, updater/device validation
+path, technical documentation, or reproducible static artifact. Host parser
+acceptance of a repaired checksum does not establish device acceptance; product
+pages, filenames, and requester-side access controls do not answer this question.
 
-## Maintaining this page
+<a id="r-unassigned-caller"></a>
+## Establish the unassigned caller's context
 
-Open questions stay here until the maintainer accepts enough evidence to
-answer or narrow them. Established relationships may then move into the small
-reviewed [firmware map](FIRMWARE_MAP.md), while the canonical JSONL remains
-firmware-only. Keep one durable frontier per established boundary rather than
-mirroring private campaign cards or live queue state. Coordination and
-temporary ownership belong in GitHub issues or PRs, not in this file.
+**Start from:** the [complete caller span](firmware/UNASSIGNED.md#complete-caller).
+
+**Useful result:** establish an authenticated entry/caller and argument
+preservation through the call. Use the complete 56-byte source range for
+reproduction; the shorter range ends inside a call. The event label alone
+does not establish an event identity.
+
+<a id="r-unassigned-receiver"></a>
+## Continue the unassigned receiver prologue
+
+**Start from:** the [five-byte prologue](firmware/UNASSIGNED.md#receiver-prologue).
+
+**Useful result:** authenticate a caller or table edge selecting the anchor,
+then follow the body from `0x6edc1109` (source `0x007bfce9`) to a bounded
+consumer with argument definitions and call effects. Repeating the prologue
+decode does not establish a stock receiver or image path.
+
+## Maintaining questions
+
+Use stable descriptive IDs in links. Update the existing question when accepted
+evidence narrows it, and close it with a link to the resulting finding when it
+is answered. Keep the substantive question in this file and its established
+facts in the topic reference. Follow [the maintainer rules](MAINTAINING.md#documentation-updates).
+
+<details>
+<summary>Links from earlier versions of this page</summary>
+
+<a id="how-to-use-the-addresses-on-this-page"></a>
+
+[How to use the addresses on this page](firmware/READING.md#coordinates)
+
+<a id="good-first-contribution-extend-instruction-coverage"></a>
+
+[Good first contribution: extend instruction coverage](#r-first-contribution)
+
+<a id="resolve-the-release-control-candidates-indirect-consumers"></a>
+
+[Resolve the release-control candidate's indirect consumers](#r-release-contract)
+
+<a id="resolve-the-candidate-receiver-method-beyond-its-prologue"></a>
+
+[Resolve the candidate receiver method beyond its prologue](#r-unassigned-receiver)
+
+<a id="connect-the-initializer-to-the-selected-runtime-record"></a>
+
+[Connect the initializer to the selected runtime record](#r-throughimage-record)
+
+<a id="map-decoded-offsets-to-runtime-addresses"></a>
+
+[Map decoded offsets to runtime addresses](#r-address-mapping)
+
+<a id="recover-the-boot-entry-and-initialization-chain"></a>
+
+[Recover the boot-entry and initialization chain](#r-startup)
+
+<a id="continue-the-resolved-still-corridor-dispatch"></a>
+
+[Continue the resolved still-corridor dispatch](#r-still-list)
+
+<a id="resolve-the-throughimage-selectors-runtime-record"></a>
+
+[Resolve the ThroughImage selector's runtime record](#r-throughimage-record)
+
+<a id="resolve-a-read-only-ptp-request-and-response-lifecycle"></a>
+
+[Resolve a read-only PTP request and response lifecycle](firmware/PTP.md)
+
+<a id="identify-decoded-block-4s-external-owner"></a>
+
+[Identify decoded block 4's external owner](#r-block-4)
+
+<a id="external-evidence-wanted-integrity-and-authentication"></a>
+
+[External evidence wanted: integrity and authentication](#r-integrity)
+
+<a id="maintaining-this-page"></a>
+
+[Maintaining this page](MAINTAINING.md#documentation-updates)
+
+</details>

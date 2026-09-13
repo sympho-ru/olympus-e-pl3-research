@@ -128,5 +128,7 @@ content-addressed files under `incoming/` as documented in
 [CONTRIBUTING.md](../CONTRIBUTING.md).
 
 Temporary conclusions and unsuccessful leads stay in `.private/` or the PR
-discussion. New established subsystem meaning belongs in this small reviewed
-map only after the maintainer accepts the underlying canonical evidence.
+discussion. New established subsystem meaning belongs in the topic reference linked from
+[FIRMWARE_MAP.md](FIRMWARE_MAP.md) only after the maintainer accepts the
+underlying canonical evidence. Follow the
+[documentation update rules](MAINTAINING.md#documentation-updates).
