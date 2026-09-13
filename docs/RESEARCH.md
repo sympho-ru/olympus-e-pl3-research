@@ -77,6 +77,15 @@ alone cannot establish runtime placement. Follow the selected method to a
 capture or payload effect before claiming a request-to-image path. The
 frontend's normal zero return supplies no such proof.
 
+The [key-conversion owner candidate](FIRMWARE_MAP.md#release-key-conversion-owner-candidate)
+now has authenticated global-access and initializer spans, including a leaf
+that writes `0x6ee40528` and a helper sequence using key `0x02031902`.
+Establish the installed word's runtime table mapping and the connection from
+this candidate to the six-input conversion path. Trace register preservation
+through its helpers and destination writes on conversion failure; the new
+range-only coverage does not resolve those contracts or establish ownership
+of a capture operation.
+
 ## Resolve the candidate receiver method beyond its prologue
 
 The prologue at local address `0x6edc1104` (block 0, offset `0x007bfce4`,

@@ -16,7 +16,7 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 13,025 authenticated ranges and 52,095 reviewed MN103 instruction rows |
+| 0 | 13,030 authenticated ranges and 52,095 reviewed MN103 instruction rows |
 | 1 | 827 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
 | 3 | 35 authenticated ranges; no reviewed instructions yet |
@@ -234,6 +234,34 @@ three bytes at `0x00871e53` and 76 bytes at `0x008747d4`, without adding
 instruction rows there. The installed word alone does not establish its
 runtime table mapping or the slot-`+304` target. These static relationships
 do not prove host ingress, still capture, image ownership, or transfer.
+
+### Release key-conversion owner candidate
+
+Five additional block-0 ranges authenticate offsets `0x0058ee49` (93
+bytes), `0x0058f0d4` (68 bytes), `0x0058f159` (35 bytes),
+`0x00592d8b` (10 bytes), and `0x0083f108` (28 bytes). These add no
+canonical instruction rows. Reproduction of the first four spans uses the
+local code relation `source + 0x6e5fffe0`.
+
+The body at local `0x6eb8ee29` tests global `0x60357b60`, rechecks it
+after helper calls, and on the remaining null arm passes `d0=28` to
+`0x6ee1bc13`. It conditionally calls `0x6eb8f0b4`, stores the resulting
+`a0` in the global, and later reloads the global before calling
+`0x6eb8f15c`. The latter entry lies beyond the accepted 35-byte span;
+its behavior is not established by this intake.
+
+The initializer-shaped body at `0x6eb8f0b4` saves incoming `a0` in
+`a2`, calls `0x6eb92d6b`, and forms subsequent helper arguments from
+`a2` at offsets `+4`, `+8`, `+12`, `+16`, `+20`, and `+24`.
+The ten-byte leaf at `0x6eb92d6b` writes literal `0x6ee40528` through
+`a0`. The body at `0x6eb8f139` passes `d0=0x02031902`, `d1=1`,
+`a0=6`, and `a1=5` to `0x6e872f9d`, then reloads that key in `d0`
+before calling `0x6e872f3d`. Preservation through intervening helpers,
+allocation success, and the concrete receiver/table relation remain
+unresolved. The 28-byte range at `0x0083f108` supplies source coverage
+only; the code display relation does not establish its runtime data mapping.
+These spans do not prove conversion failure writes, initialized destination
+words, runtime ownership, host ingress, capture, or image transfer.
 
 ### Live-view object lifecycle
 
