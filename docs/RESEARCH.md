@@ -65,6 +65,18 @@ does not establish image production, a host-callable contract, or delivery.
 The three additional caller windows have range coverage and one instruction
 row each; do not treat them as complete canonical disassemblies.
 
+The six-input frontend now has an authenticated enclosing span and a
+reproduced stack-word handoff to indirect slot `+304` at `0x6ebe394a`.
+Use the [frontend and accessor map](FIRMWARE_MAP.md#six-input-frontend-and-control-object-accessor)
+to resolve conversion failure writes and destination initializedness, then
+establish the returned receiver's concrete table mapping and selected method.
+Keep the six current destination words distinct from successfully parsed
+inputs. The accessor's installed word and candidate table entries
+need an independently supported data/address relation; a code display mapping
+alone cannot establish runtime placement. Follow the selected method to a
+capture or payload effect before claiming a request-to-image path. The
+frontend's normal zero return supplies no such proof.
+
 ## Resolve the candidate receiver method beyond its prologue
 
 The prologue at local address `0x6edc1104` (block 0, offset `0x007bfce4`,
