@@ -66,13 +66,18 @@ frontend's normal zero return is not a capture-success result.
 <a id="r-key-owner"></a>
 ## Connect the candidate key-conversion owner
 
-**Start from:** the [owner candidate](firmware/RELEASE_CONTROL.md#key-conversion-owner).
+**Start from:** the [owner candidate](firmware/RELEASE_CONTROL.md#key-conversion-owner)
+and [bounded selector-to-key lookups](firmware/RELEASE_CONTROL.md#key-lookup).
 
 **Question:** does this object implement the frontend's conversion contract?
 
 **Useful result:** establish the installed word's table mapping and the source
 connection to the frontend, including helper preservation and destination writes
-on failure. Code-display arithmetic alone cannot establish the data placement.
+on failure. For the lookup leaves, establish runtime placement of the candidate
+key tables and a concrete caller's receiver and selector values. Their bounded
+scalar results do not establish parsing, destination writes, or the owner's
+connection to the frontend. Code-display arithmetic alone cannot establish data
+placement.
 
 <a id="r-still-list"></a>
 ## Identify the still-corridor list consumer

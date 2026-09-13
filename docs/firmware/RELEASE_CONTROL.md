@@ -10,6 +10,7 @@ normal return does not yet identify an image-producing operation.
 - [Release body and direct callers](#release-body)
 - [Six-input frontend and control-object accessor](#six-input-frontend)
 - [Candidate key-conversion owner](#key-conversion-owner)
+- [Bounded selector-to-key lookups](#key-lookup)
 
 <a id="release-body"></a>
 ## Release body and direct callers
@@ -134,6 +135,63 @@ unresolved. The 28-byte range at `0x0083f108` supplies source coverage only;
 the code display relation does not establish its runtime data mapping. These
 spans do not prove conversion failure writes, initialized destination words,
 runtime ownership, host ingress, capture, or image transfer.
+
+**Next evidence:** [Connect the candidate key-conversion
+owner](../RESEARCH.md#r-key-owner).
+
+<a id="key-lookup"></a>
+## Bounded selector-to-key lookups
+
+Two leaves search eight-byte records for a selector and return a scalar key,
+with zero on a miss. They contain no calls or destination-buffer writes. The
+candidate source tables bound the possible keys only if their runtime placement
+matches the literals read by these leaves; the caller and object connection
+remain unresolved.
+
+| Role | Recorded local address / data literal | Block | Offset | Length |
+|---|---|---:|---|---:|
+| Null-return leaf | `0x6eb941b5` | 0 | `0x00592d95` | 5 |
+| First lookup | `0x6eb942fe` | 0 | `0x00592ede` | 41 |
+| Second lookup | `0x6eb94327` | 0 | `0x00592f07` | 38 |
+| First candidate key table | `0x6ee40408`, placement conditional | 0 | `0x0083efe8` | 160 |
+| Second candidate key table | `0x6ee404a8`, placement conditional | 0 | `0x0083f088` | 128 |
+
+The instruction rows use `source + 0x6e601420`, distinct from the
+`source + 0x6e5fffe0` code view in the owner section. Adding the former delta
+to the candidate data offsets matches the two literals, but this arithmetic
+does not prove data placement or a call between the two code views.
+
+The first leaf saves `d2`, clears it, and tests incoming selector `d0` at
+`0x6eb94301`: `cmp d2,d0` / `blt 0x6eb94323` returns zero for a signed
+negative selector. At `0x6eb94310`, `cmp d2,d1` / `bls 0x6eb94323` also
+returns zero when the first record's key is zero. Otherwise the loop compares
+record `+4` with `d0` at `0x6eb94318`. Inequality advances the record pointer
+by eight at `0x6eb9431e`; equality loads the record's key into `d2` and exits
+to `0x6eb94323`. The `cmp d2,d1` / `lhi` continuation repeats while the next
+key is unsigned greater than zero. The exit copies the selected key or zero
+to `d0` and restores the caller's `d2`.
+
+The second leaf saves the selector in `d2` and clears result `d0`. Its
+`cmp d0,d1` / `bls 0x6eb9434a` at `0x6eb94331` tests the first key; it has
+no signed-negative input guard. The comparison at `0x6eb9433f` selects either
+the matching key load into `d0` followed by exit to `0x6eb9434a`, or advancement
+by eight at `0x6eb94345`. Its `cmp d0,d1` / `lhi` continuation stops on a
+zero key, and the return restores `d2`. The seven conditional/unconditional
+branch decodes in these two bodies are reproduced from the authenticated
+ranges; they are not canonical instruction rows.
+
+Interpreted as little-endian `(key, selector)` pairs, the first candidate table
+has 19 nonzero records followed by `(0,0)`. Its selectors cover 1 through 18;
+selector 13 appears twice. In source order its first match returns `0x02001707`,
+so the later `0x0200170b` record is shadowed. The second candidate table has
+15 nonzero records with selectors 1 through 15, followed by `(0,0)`. Conditional
+on these being the runtime tables, selectors outside each domain return zero.
+Neither leaf tests an explicit upper bound; the finite domains follow from the
+candidate records and first-match search.
+
+The separate five-byte leaf sets `a0=0` and returns without defining a key in
+`d0`. None of these leaves establishes text-conversion success, initialized
+frontend destinations, receiver readiness, or a capture effect.
 
 **Next evidence:** [Connect the candidate key-conversion
 owner](../RESEARCH.md#r-key-owner).
