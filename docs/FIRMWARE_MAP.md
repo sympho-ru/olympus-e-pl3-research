@@ -16,7 +16,7 @@ particular device state.
 
 | Decoded block | Canonical public coverage |
 |---:|---|
-| 0 | 13,008 authenticated ranges and 51,679 reviewed MN103 instruction rows |
+| 0 | 13,020 authenticated ranges and 52,048 reviewed MN103 instruction rows |
 | 1 | 827 authenticated ranges; no reviewed instructions yet |
 | 2 | 4 authenticated ranges; no reviewed instructions yet |
 | 3 | 35 authenticated ranges; no reviewed instructions yet |
@@ -169,6 +169,38 @@ transferred to this table. These source spans establish a separate table
 candidate with shared methods. They do not prove the allocator/helper's
 behavior, the field-`+100` value's provenance, or the runtime receiver at a
 later indirect call. The local address relation is not a global load base.
+
+### Release-control candidate and caller profiles
+
+The accepted block-0 spans at offsets `0x005c92f7` (528 bytes) and
+`0x005c950c` (82 bytes) extend the local body at `0x6ebc92d7` through
+its return at `0x6ebc953b`. These local addresses use `source + 0x6e5fffe0`;
+they are not a global block mapping. The body contains conditional slot-`+12`
+lookups, a direct call to `0x6ebd10b3` at `0x6ebc94e7`, and a call to
+`0x6ebd9652` at `0x6ebc94ef`. At `0x6ebc94f6`, `cmp 0,d0` followed by
+`beq 0x6ebc9521` selects the zero-status continuation; the other arm calls
+helpers and jumps to the error return at `0x6ebc9444`. Neither outcome proves
+that an image was produced.
+
+The 153-byte helper span at offset `0x005d9672`, local `0x6ebd9652`,
+rejects null incoming `a1`: `cmp 0,a2` / `bne 0x6ebd9662` follows
+`mov a1,a2`, and the fallthrough returns `-268435434`. The remaining body
+contains indirect slots `+16`, `+140`, `+144`, `+20`, and `+148` with
+conditional branches. Concrete receiver identities and register preservation
+through those calls remain unresolved. Supporting spans authenticate the
+initializer at `0x6ec06fd8` (offset `0x00606ff8`, 17 bytes), the global-access
+window at `0x6ebd1ddd` (offset `0x005d1dfd`, 95 bytes), and the seven-byte
+`a0 += 224` / return at `0x6ebd1e73` (offset `0x005d1e93`).
+
+Caller coverage includes the 145-byte body at `0x6eb8d802` (offset
+`0x0058d822`) and the ten-byte call/return wrapper at `0x6eb8cc42`
+(offset `0x0058cc62`). Additional authenticated caller windows begin at
+`0x0058e1b9` (149 bytes), `0x0058e785` (142 bytes), and `0x005c9a66`
+(381 bytes); each adds only one canonical instruction row, not a complete
+instruction listing. A 110-byte range at `0x00860198` adds source coverage
+without instruction rows. The release-control label remains a research
+hypothesis: these spans establish neither a callable host API nor runtime
+capture, image ownership, transfer, or patch safety.
 
 ### Live-view object lifecycle
 
