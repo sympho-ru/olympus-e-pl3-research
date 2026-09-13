@@ -63,83 +63,14 @@ decoder fixes from [Reko PR #1370](https://github.com/uxmal/reko/pull/1370) for
 full-width `(d32,SP)` operands and PC-relative d32 `CALLS`, or independently
 cross-check those instruction boundaries.
 
-## Maintainer verification and acceptance
+<a id="maintainer-verification-and-acceptance"></a>
+## After submission
 
-Treat every PR as untrusted. Pin its base and head commits, create an isolated
-checkout, and inspect the complete diff before running anything from it. A
-normal contribution changes only content-addressed `incoming/*.jsonl` files.
-Run tests in the trusted target checkout, then use the trusted target-branch
-installation to inspect the isolated PR checkout without importing or executing
-code from the PR:
-
-```sh
-pytest
-epl3-research check --root "$PR_ROOT"
-epl3-research check-contribution \
-  --root "$PR_ROOT" \
-  --base "$BASE_SHA" \
-  --source .private/OLY_E_086_1600_0000_0000.BIN
-```
-
-Review every new instruction decode against the authenticated source slice. If
-a row cannot be reproduced, remove it on the contributor branch and give the
-corrected file a fresh content-addressed name. Re-run all contributor checks on
-the exact head that will be merged.
-
-Merge the verified intake into the target branch with **Create a merge commit**.
-Do not squash: keeping the contributor commits preserves their public authorship
-and the reviewed head in repository history.
-
-On the updated target branch, accept the files that passed review:
-
-```sh
-epl3-research accept-contribution \
-  --source .private/OLY_E_086_1600_0000_0000.BIN \
-  "$RANGE_FILE" \
-  "$INSTRUCTION_FILE"
-```
-
-Pass only files being accepted; either file type may be omitted. This command
-reverifies every selected file, performs a sorted set union into the canonical
-files, ignores exact duplicates, fails before mutation on conflicts, and
-deletes the consumed incoming files. It is intentionally a maintainer-only,
-mutating command. Integrate immediately after the intake merge: release mode
-rejects unconsumed incoming files, and a pending intake is not a suitable base
-for another contribution.
-
-Update the pinned corpus count, `AUTHORS.md`, the firmware map, and any factual
-documentation affected by the accepted evidence. Keep research proposals and
-semantic interpretations separate from mechanical evidence acceptance. Inspect
-the complete integration diff, commit it, and run the final gates on that
-committed `HEAD`:
-
-```sh
-pytest
-epl3-research check
-epl3-research check --source .private/OLY_E_086_1600_0000_0000.BIN
-epl3-research check --release \
-  --source .private/OLY_E_086_1600_0000_0000.BIN
-```
-
-Release mode fails if any unconsumed incoming file remains. Push the accepted
-integration only after all four commands pass and the working tree is clean.
-
-An exact duplicate needs no canonical change and is simply consumed. A claimed
-correction intentionally conflicts with canonical evidence: review it
-separately, edit the canonical row manually if the correction is established,
-and remove the incoming file. Automatic acceptance never replaces or deletes
-canonical evidence.
-
-Do not commit firmware images, decoded blocks, byte dumps, private identifiers,
-local paths, or analysis notes. Semantic interpretations do not yet have a
-public schema and must not be inserted into evidence rows.
-
-## Contribution licensing
-
-By submitting a contribution for inclusion in this project, you agree to
-license code under [Apache-2.0](LICENSE) and authored documentation and evidence
-metadata under [CC BY 4.0](LICENSE-DOCUMENTATION). You also confirm that you
-have the right to submit the contribution under those terms.
+The maintainer verifies the exact contribution, merges the reviewed intake,
+and consumes the selected incoming files into canonical evidence. See
+[maintainer verification and acceptance](docs/MAINTAINING.md#maintainer-verification-and-acceptance)
+for that procedure. Contributors do not update canonical files or the reviewed
+topic references as part of an incoming-evidence PR.
 
 ## Contextual instruction gate
 
@@ -153,3 +84,10 @@ For decisive semantic conclusions, explicitly reproduce branch outcomes and
 argument/register definitions through intervening calls to the consumer. A
 valid decode or known call target does not establish register preservation.
 State unresolved anchors or joins and withhold unsupported conclusions.
+
+## Contribution licensing
+
+By submitting a contribution for inclusion in this project, you agree to
+license code under [Apache-2.0](LICENSE) and authored documentation and evidence
+metadata under [CC BY 4.0](LICENSE-DOCUMENTATION). You also confirm that you
+have the right to submit the contribution under those terms.

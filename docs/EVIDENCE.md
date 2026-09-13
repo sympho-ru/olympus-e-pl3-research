@@ -81,6 +81,7 @@ Instruction contribution checks and acceptance additionally enforce the shared
 their content-addressed names, scans them for prohibited payloads and private
 paths, and proves the contributor did not modify canonical evidence.
 
-Reviewed semantic relationships are documented separately in
-[FIRMWARE_MAP.md](FIRMWARE_MAP.md); they never add fields to the canonical
-evidence rows.
+Reviewed semantic relationships are documented in the topic references linked
+from [FIRMWARE_MAP.md](FIRMWARE_MAP.md), using the shared
+[reading conventions](firmware/READING.md). They never add fields to canonical
+evidence rows. Open questions have a separate home in [RESEARCH.md](RESEARCH.md).

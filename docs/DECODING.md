@@ -1,6 +1,6 @@
 # Contextual instruction verification
 
-`check-contribution` and `accept-contribution` now enforce a shared MN103
+`check-contribution` and `accept-contribution` enforce a shared MN103
 instruction check before acceptance writes any canonical rows. Range-only
 contributions do not require a decoder. Existing structural, source-hash and
 release checks retain their documented meaning; none certifies instruction
@@ -102,7 +102,9 @@ all overlaps for maintainer adjudication. No database or claims ledger is needed
 
 The standard test suite uses synthetic instructions and needs no firmware.
 Setting `OLYMPUS_IMAGE` and `MN103_OBJDUMP` also runs the byte-free original and
-repaired PR 66/70/72 regression fixtures against the verified official source.
-It checks that defective records are rejected or flagged as intersecting starts,
+repaired regression fixtures against the verified official source.
+The [fixture notes](../tests/fixtures/decode-regressions/README.md) describe
+the correction provenance. The regression checks that defective records are
+rejected or flagged as intersecting starts,
 while full-width replacements reproduce. Alternate-entry reachability remains
 a separate review question.
