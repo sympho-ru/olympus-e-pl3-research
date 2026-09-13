@@ -8,6 +8,8 @@ still capture. The release-control name is a research hypothesis. A call or a
 normal return does not yet identify an image-producing operation.
 
 - [Release body and direct callers](#release-body)
+- [Guarded action and carrier calls](#guarded-action)
+- [Caller record and scalar consumer](#caller-record)
 - [Six-input frontend and control-object accessor](#six-input-frontend)
 - [Candidate key-conversion owner](#key-conversion-owner)
 - [Bounded selector-to-key lookups](#key-lookup)
@@ -56,6 +58,134 @@ from the release-control candidate to capture or an image owner.
 
 **Next evidence:** [Resolve the release-control body's indirect
 consumers](../RESEARCH.md#r-release-contract).
+
+<a id="guarded-action"></a>
+## Guarded action and carrier calls
+
+The action at source `0x005c9e20` checks two helper results, prepares a carrier,
+and calls methods through unresolved receivers. Its direct callers establish
+local entry edges, but the method effects do not identify capture initiation.
+These relationships have authenticated range support; this action and its
+carrier helpers do not have canonical instruction listings.
+
+| Role | Local address | Block | Offset | Length |
+|---|---|---:|---|---:|
+| Preceding return and action prologue | `0x6ebc9df8` | 0 | `0x005c9e18` | 8 |
+| Action body through return | `0x6ebc9e00` | 0 | `0x005c9e20` | 174 |
+| First guard helper | `0x6ebd1a61` | 0 | `0x005d1a81` | 14 |
+| Second guard helper | `0x6ebd1aa6` | 0 | `0x005d1ac6` | 15 |
+| Carrier construction | `0x6ebd2634` | 0 | `0x005d2654` | 70 |
+| Nested field writer | `0x6eb9a781` | 0 | `0x0059a7a1` | 19 |
+| Dynamic-call body | `0x6eb9a11c` | 0 | `0x0059a13c` | 77 |
+| Conditional state helper | `0x6ebd8569` | 0 | `0x005d8589` | 30 |
+| Direct wrapper | `0x6ebe6b0a` | 0 | `0x005e6b2a` | 28 |
+| Wrapper's accessor chain | `0x6ebd1b56` | 0 | `0x005d1b76` | 13 |
+| Conditional caller fragment | `0x6ebd3595` | 0 | `0x005d35b5` | 85 |
+
+This section uses local code view `source + 0x6e5fffe0`. The action's prologue
+starts at source `0x005c9e1b`; the 174-byte body ends at `0x005c9ece`, with its
+final return starting at `0x005c9ecb`. The wrapper calls the accessor chain,
+then the action at source `0x005e6b34`, and later clears its own return `d0`.
+The other fragment loads field `+176` from the current stack-supplied object
+before its action call at `0x005d35de`; the earlier slot-`+8` result must differ
+from current `d2` at `0x005d35d5` to reach this arm. The fragment does not define
+that comparison's original `d2` value.
+
+The action saves incoming `a0` in `a2`. At source `0x005c9e26` and
+`0x005c9e39`, each `cmp 0,d0` / `beq` continues only on zero. The nonzero
+arms return `-268435455` and `-268435422`, respectively. Each guard helper
+loads receiver field `+4` and calls local `0x6ec0672d`, with `d0=0` or `5`;
+the meaning of those checks remains unresolved.
+
+On the continuation, the action prepares `sp+12` in `a3`, loads through the
+current `a2+52`, and calls two helpers. Immediately before construction at
+source `0x005c9e76`, it supplies current `a3` in `a0`, current `d2` in `a1`,
+`d0=33`, and the second helper's returned `a0` in `d1`. Preservation of the
+earlier receiver and helper result through intervening calls is not established.
+
+Construction saves its inputs, calls a helper, writes a literal word through
+returned `a0`, and requests 172 bytes. Its `beq` at source `0x005d267a` skips
+only the call to source `0x005d47d4` when the returned pointer is zero. Both
+arms call local `0x6ebd26c6`, load the current pointer through `a2`, and reach
+the writer at source `0x005d268f`. That leaf writes current `a1` and `d1` to
+receiver fields `+152` and `+148`; `cmp 0,d0` / `beq` skips the `+144` write
+on zero. The earlier guard does not establish null safety at this writer.
+
+The action next requests 32 bytes and conditionally prepares an argument for
+the dynamic-call body. That body saves its carrier `a0` at `sp+4`; null `a1`
+returns `-268435434`. Otherwise it calls slot `+16`, saves returned `a0` in
+`a3`, and uses that receiver for slots `+140` and `+144`, subject to intervening
+call effects. The slot-`+144` result is saved in `d2`: `cmp 0,d2` / `bne`
+at source `0x0059a168` skips the reloaded carrier's slot-`+20` call on nonzero.
+Both arms reload the saved carrier and write 1 to its field `+20` at
+`0x0059a179`. The subsequent slot-`+148` call uses current `a3`, initially
+the slot-`+16` result, rather than that reloaded carrier. These receiver roles
+must not be equated; preservation through the dynamic calls remains unproved.
+
+Back in the action, `cmp 0,d2` / `bne` at source `0x005c9ea5` skips the state
+helper on nonzero. The zero arm calls a helper that writes byte 1 to
+`0x60358db4`, calls two further helpers, then writes byte 0. The action later
+calls local `0x6ebd2694` with current `a3` in `a0` and returns current `d2`.
+Neither the temporary
+state writes nor the scalar return establishes exposure or an image owner.
+
+**Next evidence:** [Resolve the release-control body's indirect
+consumers](../RESEARCH.md#r-release-contract).
+
+<a id="caller-record"></a>
+## Caller record and scalar consumer
+
+The body at source `0x005cbbe6` writes a record through addresses derived from
+`d3`, initially supplied in `a1`, and uses some fields in a scalar calculation.
+The output contains narrowed halfwords, bounded scalar choices, and full-width
+copies whose types are unresolved. None identifies an image buffer or payload.
+
+| Role | Local address | Block | Offset | Length |
+|---|---|---:|---|---:|
+| Caller | `0x6eb8d893` | 0 | `0x0058d8b3` | 101 |
+| Record-writing body | `0x6ebcbbc6` | 0 | `0x005cbbe6` | 2871 |
+| Scalar consumer | `0x6ebbee53` | 0 | `0x005bee73` | 60 |
+
+These ranges and their selected canonical instructions use local code view
+`source + 0x6e5fffe0`. The caller initially saves `a0` in `a3` and `a1` in
+`a2`. After several calls, it moves current `a3` to `a0` and invokes wrapper
+`0x6eb8cc42`. It then moves current `a2` to `a1` and calls the record body at
+source `0x0058d8fb`, using the wrapper-returned `a0`. Complete preservation of
+the original receiver and destination through those calls is not established.
+
+At entry, `mov a1,d3` / `cmp 0,d3` / `bne` rejects a null destination with
+`-268435434`. The next check loads receiver field `+20`: `cmp 0,d0` at source
+`0x005cbbf8`, local `0x6ebcbbd8`, branches on nonzero to the continuation;
+zero returns `-268435368`. The receiver itself has no preceding null check.
+The body obtains another object in `a2` through local `0x6eb917e0`, then calls
+two more helpers before reading its fields. The first output stores at sources
+`0x005cbc34` and `0x005cbc3f` narrow current source words to destination
+halfwords `+0` and `+2`. Subsequent branches constrain some output choices;
+other stores copy full-width members without establishing their types.
+The extended flow is reproduced from the range, not a complete canonical
+instruction listing. Record identity and source-object preservation through
+helpers remain qualifications on these field relationships.
+
+At source `0x005cc2bf..0x005cc2c9`, current values from saved field addresses
+and `a3` define `d0`, `d1`, and `a0` for the scalar consumer. Its entry saves
+these in `d3`, `a2`, and `a3`. After a helper call it selects arithmetic
+alternatives `47+d3`, `5+a2`, or `a3+1`: `cmp 0,d3` / `bne` at source
+`0x005bee8a` keeps the first on nonzero; otherwise `cmp 0,a2` / `bne` at
+`0x005bee92` keeps the second on nonzero, with the third on fallthrough.
+After another helper it returns current `d2`. The record body sets
+`a2=24` before this call, whose return restores `a2` and `d3`, then adds
+current `d3` and stores returned `d0` at source `0x005cc2d2`. The helper calls'
+effects on the scalar inputs and result still need verification.
+
+The later `btst 4,d0` on global `0x6064c4e4` branches to local `0x6ebcc2cc`
+when nonzero. Otherwise local `0x6eb90fde` is called; return 1 selects that
+same continuation, while other values jump to the normal epilogue at source
+`0x005cc719`. That epilogue clears `d0` and returns. This zero return, the
+scalar field, and the unknown full-width members do not establish image
+creation, ownership, lifetime, or host transfer.
+
+**Next evidence:** [Identify the caller record's owner and
+consumers](../RESEARCH.md#r-caller-record).
 
 <a id="six-input-frontend"></a>
 ## Six-input frontend and control-object accessor
