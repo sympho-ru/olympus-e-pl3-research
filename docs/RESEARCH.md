@@ -52,6 +52,19 @@ return. The older 48-byte slice stops inside the call. Range acceptance does
 not establish the proposed event-30 identity or argument preservation through
 intervening calls; those require separate instruction and consumer evidence.
 
+## Resolve the release-control candidate's indirect consumers
+
+Accepted coverage now bounds the local `0x6ebc92d7` body and its helper
+`0x6ebd9652`, including the helper's null-argument rejection and the caller's
+zero-status branch. Use the source anchors and caller windows in
+[FIRMWARE_MAP.md](FIRMWARE_MAP.md#release-control-candidate-and-caller-profiles)
+to establish one concrete receiver/table edge and follow its argument values
+through intervening calls. The helper's indirect slots and the object passed
+to it remain the useful boundary. A zero return or a release-related label
+does not establish image production, a host-callable contract, or delivery.
+The three additional caller windows have range coverage and one instruction
+row each; do not treat them as complete canonical disassemblies.
+
 ## Resolve the candidate receiver method beyond its prologue
 
 The prologue at local address `0x6edc1104` (block 0, offset `0x007bfce4`,
