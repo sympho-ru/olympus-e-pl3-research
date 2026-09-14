@@ -62,6 +62,11 @@ action, resolve preservation and object identity across slots `+16`, `+140`,
 `+144`, `+20`, and `+148`; keep the saved carrier distinct from the receiver
 returned by slot `+16`. Establish the pointer contract at writer source
 `0x0059a7a1`: the construction branch guards an earlier call, not this writer.
+The two action guards test bits 0 and 5 of a word at the field-`+4`
+pointee's `+16`; set bits select their respective error returns. Identify that
+pointee's owner and validity, the bit producers and meanings, and the conditions
+under which both bits are clear. The Boolean leaf alone does not establish
+image readiness or capture initiation.
 For the constructed service, establish the cached root's validity and lifetime,
 the concrete receiver selected from the `+1868` subobject's current field `+140`,
 and its table's `+4` consumer. Verify `d2` preservation through selector slot
