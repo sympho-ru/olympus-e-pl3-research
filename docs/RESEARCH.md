@@ -81,7 +81,12 @@ zero/nonzero branch from pointer-used `P` and its table-`+12` return. Verify
 preservation and actual indirect effects on the exclusive `+76` versus
 `P+4`/`E+72` paths and in the shared continuation, whose later global compare
 uses current `d2`. A zero P or numeric opcode alone does not establish a safe
-input contract or capture effect.
+input contract or capture effect. The conditional table `+64/+72/+76` targets
+and their native argument/record formation narrow the input-layout question;
+establish actual live E/Q, the fixed literal owner's validity, record table
+validity, endpoint retention/lifetime and the direct predicate/indirect method
+effects. A native stack record and returned scalar are not capture or
+completion proofs, and do not justify bypassing those obligations with a patch.
 
 <a id="r-caller-record"></a>
 ## Identify the caller record's owner and consumers

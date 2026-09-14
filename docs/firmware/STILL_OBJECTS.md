@@ -90,20 +90,67 @@ called at `0x6ee1d53a` when the earlier getter result is nonzero.
 | Direct successor | `0x6ee1db5b` | 0 | `0x0081c73b` | 103 |
 
 For the established table `0x6ee8d1d0`, slot `+72` resolves to `0x6ee1d38f`
-(block-0 offset `0x0081bf6f`, 15 bytes). This wrapper loads `*(a0)`, calls
-that receiver table's slot `+64`, and returns. Under the same table identity,
-slot `+64` resolves to `0x6ee1d263` (offset `0x0081be43`, 57 bytes). That body
-branches on `d0`, calls `0x6ee1db5b` on both paths, uses `0x6ee1b795` and
-`0x6ee1b7a6` around the zero-input path, and returns the saved scalar result in
-`d0`. Both spans have canonical instruction support; the two-byte boundary at
-`0x6ee1d281` has range coverage only.
+(block-0 offset `0x0081bf6f`, 15 bytes). Before any intervening call, it loads
+`*(a0)`, selects that receiver table's slot `+64` at source `0x0081bf76`,
+and calls it at `0x0081bf79` with unchanged entering `a0/a1/d0`. It forms no
+local record and returns `ret [a2],8` at `0x0081bf7b`. Under the same table
+identity, slot `+64` resolves to `0x6ee1d263` (offset `0x0081be43`, 57 bytes).
+Both spans have canonical instruction support; the two-byte boundary at
+`0x6ee1d281` has range coverage only. A source-anchored replay does not add an
+instruction row at that boundary.
+
+Name this native profile's entering `a0/a1/d0` as `E/Q/B`, without implying
+recovered types. Slot `+64` saves `E` in `a2` and `Q` in `a3`.
+Source `0x0081be4a` compares `0,d0`; `beq` at `0x0081be4c` takes `B=0` to
+`0x0081be5c`. That arm forms `P=sp+4` in `d3`, initializes the local record
+with field `+4=0`, restores `E/Q` from saved `a2/a3`, and supplies `P` in
+`d0` to source `0x0081c73b` at `0x0081be6b`. Nonzero instead supplies
+literal `0x60659490` in `d0` at `0x0081be4e` and directly calls the same
+continuation at `0x0081be54`, without a prior call or overwrite of entering
+`a0/a1`. That literal is not a source offset or an identified live owner.
+Both arms save returned `d0` in `d2`; only the local-record arm resets `P`.
+Source `0x0081be78` copies saved `d2` to `d0` before the 32-byte-frame return.
 
 **Unresolved:** the runtime dispatch and
 whether this scalar-returning continuation has any image-producing effect.
 
 The adjacent slot `+76` maps to `0x6ee1d39e` (block-0 offset `0x0081bf7e`, 45
-bytes). Its canonical body prepares a stack temporary through `0x6ee1b795`,
-passes it to `0x6ee1db5b`, calls `0x6ee1b7a6`, and returns the saved result.
+bytes). It saves entering `Q` at `sp+4`, `E` in `a3`, and copies entering
+`B=d0` to `d1` at source `0x0081bf86`. It forms `P=sp+8` in `a2` and clears
+`d0`. The compare `d0,d1` at `0x0081bf8c` / `beq` at `0x0081bf8d` takes
+`B=0` to initializer call `0x0081bf91`; nonzero falls through to
+`mov 1,d0` at `0x0081bf8f`. Thus the initializer receives `(B != 0)`, not
+an unchanged scalar or an independently entering `d1` argument. With saved
+`a2/a3` preserved by the complete local initializer, it reloads `Q`, restores
+`E`, and passes `P` in `d0` to `0x0081c73b [d2,d3,a2,a3],24` at
+`0x0081bf9b`. It saves returned `d0` in `d2`, resets the local record, copies
+saved `d2` to `d0`, and returns `ret [d2,a2,a3],32` at `0x0081bfa8`.
+
+| Local record support | Block | Offset | Length |
+|---|---:|---|---:|
+| Complete initializer | 0 | `0x0081a375` | 17 |
+| Reset pre-return prefix | 0 | `0x0081a386` | 13 |
+| Reset return | 0 | `0x0081a393` | 3 |
+
+The complete initializer (`0x6ee1b795` in this local view) spans
+`[0x0081a375,0x0081a386)`, including `retf [],0` at `0x0081a383`.
+It writes `P+0=0x6eeffee4`, `P+4=entering d0`, and `P+8=0`; it has no calls
+or writes to `a2/a3/d3`, supporting the native wrappers' pre-call argument
+restoration. The 14-byte range at the same start is only its pre-return
+prefix. The complete reset (`0x6ee1b7a6`) spans
+`[0x0081a386,0x0081a396)`: it writes current `P+0` and `P+8`, clears `a0`,
+and includes the return at `0x0081a393`. It does not write `P+4` or saved
+result `d2`. These extents are assembled from the stated canonical context,
+not evidence corrections. The continuation's listed return mask restores
+the wrappers' saved record-address registers; the local reset does not
+change their saved scalar result.
+
+These native input profiles are also nominated by the separately conditional
+[E-table slots](RELEASE_CONTROL.md#conditional-receiver-endpoint), without
+establishing shared object identity. Stack validity during initialization and
+the call does not prove safe retention after return, live table validity,
+capture, image ownership, or completion.
+
 The direct successor `0x6ee1db5b` (offset `0x0081c73b`, 103 bytes) also has
 canonical coverage and is shared by the [conditional receiver-table
 endpoint](RELEASE_CONTROL.md#conditional-receiver-endpoint). The source
