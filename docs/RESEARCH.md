@@ -42,6 +42,7 @@ does not resolve its owner or execution path.
 
 **Start from:** the [release body and caller profiles](firmware/RELEASE_CONTROL.md#release-body)
 and [guarded action and carrier calls](firmware/RELEASE_CONTROL.md#guarded-action).
+Also inspect the distinct [constructed service dispatch](firmware/RELEASE_CONTROL.md#constructed-service).
 
 **Question:** which concrete receivers and input profiles reach the conditional
 lookups, the helper at `0x6ebd9652`, and the action's dynamic methods reached
@@ -55,6 +56,14 @@ action, resolve preservation and object identity across slots `+16`, `+140`,
 `+144`, `+20`, and `+148`; keep the saved carrier distinct from the receiver
 returned by slot `+16`. Establish the pointer contract at writer source
 `0x0059a7a1`: the construction branch guards an earlier call, not this writer.
+For the constructed service, establish the cached root's validity and lifetime,
+the concrete receiver selected from the `+1868` subobject's current field `+140`,
+and its table's `+4` consumer. Verify `d2` preservation through selector slot
+`+156` before equating the forwarded scalar with the incoming request. Resolve
+field `+140` production through base/setup and indirect effects; the selected
+constructor bodies do not establish an exhaustive producer census. Keep this
+service distinct from the guarded action's carrier until a source-supported
+join is established.
 
 <a id="r-caller-record"></a>
 ## Identify the caller record's owner and consumers
