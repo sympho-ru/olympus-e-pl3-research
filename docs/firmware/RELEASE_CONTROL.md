@@ -209,6 +209,10 @@ unresolved; this is not an established host request or capture interface.
 | Receiver selector | 0 | `0x007eea1b` | 36 |
 | +1868 constructor | 0 | `0x007efc1a` | 134 |
 | Its base constructor | 0 | `0x007ed056` | 44 |
+| Directly selected base setup | 0 | `0x007ee993` | 72 |
+| Root wiring | 0 | `0x007ef127` | 97 |
+| Current receiver +272 setter | 0 | `0x007f02dd` | 7 |
+| Current receiver +276 setter | 0 | `0x007f02eb` | 7 |
 | +128 constructor | 0 | `0x007f17e3` | 108 |
 | Its base constructor | 0 | `0x007eaf27` | 95 |
 | Candidate table suffix | 0 | `0x008f7560` | 24 |
@@ -242,9 +246,28 @@ to the original root across intervening calls is not implied by field layout.
 The `+1868` constructor installs `0x6eef8af8` through its base constructor's
 return; the `+128` constructor installs `0x6eef8d90` through its own base
 return. The latter base directly clears its current owner's field `+140`.
-The selected `+1868`/base bodies contain no direct `+140` store. That absence
-establishes neither initializedness nor that all possible producers lie behind
-an indirect slot.
+The outer `+1868`/base bodies do not themselves write `+140`, but the base
+directly calls setup source `0x007ee993`. That setup saves its helper's returned
+`a0` in `a2`, installs a table literal, clears `d0`, and writes zero to that
+current owner's `+140` and `+144` at `0x007ee9a4` / `0x007ee9a8`. It then calls
+source `0x007ec885` with current owner offsets `+148`, `+168`, and `+188`.
+The copies at `0x007ee9c7`, `0x007ee9d1`, and `0x007ee9d7` are `mov a2,a0`,
+not rebindings of `a2` from helper returns. The listed call masks preserve `a2`
+around those three calls and source `0x0081c176`; the later unmasked tail at
+`0x007eeaba` still needs its actual register/storage contract. These initial
+zero writes do not yet identify the outer constructor's returned owner or
+establish the field's value after construction or at live selection.
+
+Root source `0x007eefe7` explicitly copies current saved `a2` to `a0` before
+calling wiring source `0x007ef127`, whose first instruction defines its own
+`a3` from incoming `a0`. Its initial `d2` formation is that current root plus
+1868. Calls at `0x007ef134` and `0x007ef140` select the complete leaves
+`0x007f02dd` and `0x007f02eb`, writing entering `a1` to current receiver
+`+272` and `+276`. Other calls select the `+160` setter at source
+`0x007eb22f`, covered by canonical range `[0x007eb216,0x007eb242)`.
+Those leaves write their stated fields, not `+140`. Relating every later wiring
+expression to the original allocated root still requires the intervening
+helper contracts; an empty mask alone proves neither clobbering nor preservation.
 
 The selector reads current receiver field `+140`. At source `0x007eea21`,
 `cmp a2,d0` / `beq` selects `0x007eea29` when it equals the saved receiver;
