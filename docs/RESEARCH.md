@@ -245,12 +245,23 @@ error does not identify the firmware's actual operation-acceptance boundary.
 ## Distinguish USB mode from shooting-state restrictions
 
 **Start from:** the [session and capture observations](observations/USB_AND_MEDIA.md#remaining-validation)
-and the [named USB-state reporting wrapper](firmware/PTP.md#usb-state-wrapper).
+and the [named USB-state reporting wrapper](firmware/PTP.md#usb-state-wrapper)
+and [candidate connection callback stores](firmware/PTP.md#usb-connect-stores).
 
 The wrapper clears `d0` on normal return and branches on current `d2` to two
 labels. It does not settle live USB state: receiver/slot-40 ownership, value
 production, and preservation across the reporting calls remain unresolved.
 The conditional DATA-local mapping does not establish runtime placement.
+
+The source `0x00acfa9b` candidate supplies explicit conditional byte writes to
+`0x60353190..0x60353193`, but not their live registration, numeric meanings,
+or consumers. Its tests use current registers after intervening calls, not
+proven preserved entry arguments. A bounded static result would identify a
+concrete read of one written byte and its branch/action consequence, with
+source/address support, caller contract, and intervening effects. Neither the
+store constants nor a join inferred from naming establishes shooting permission
+or the wrapper's slot-40 producer. Opaque calls also prevent an unchanged-state
+claim for arms without explicit stores.
 
 **Question:** is ordinary shooting suppressed by the selected USB personality,
 an open PTP session, host interface ownership, or another camera state?
