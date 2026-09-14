@@ -10,6 +10,7 @@ normal return does not yet identify an image-producing operation.
 - [Release body and direct callers](#release-body)
 - [Guarded action and carrier calls](#guarded-action)
 - [Caller record and scalar consumer](#caller-record)
+- [Constructed service and receiver selection](#constructed-service)
 - [Six-input frontend and control-object accessor](#six-input-frontend)
 - [Candidate key-conversion owner](#key-conversion-owner)
 - [Bounded selector-to-key lookups](#key-lookup)
@@ -186,6 +187,88 @@ creation, ownership, lifetime, or host transfer.
 
 **Next evidence:** [Identify the caller record's owner and
 consumers](../RESEARCH.md#r-caller-record).
+
+<a id="constructed-service"></a>
+## Constructed service and receiver selection
+
+A cached service stores an accessor result in field `+8`, then dispatches a
+scalar and object argument through a selected receiver. On a valid cached-root
+path, the accessor supplies the root's `+1868` subobject, not its separately
+constructed `+128` subobject. The selected receiver and method effect remain
+unresolved; this is not an established host request or capture interface.
+
+| Role | Block | Offset | Length |
+|---|---:|---|---:|
+| Service factory | 0 | `0x007eede0` | 48 |
+| Service constructor | 0 | `0x007eee10` | 34 |
+| Dispatch body | 0 | `0x007eee99` | 27 |
+| Root accessor | 0 | `0x007eeed2` | 59 |
+| Root constructor | 0 | `0x007eef39` | 192 |
+| Subobject getter | 0 | `0x007ef08c` | 7 |
+| Root aggregate check | 0 | `0x007ef0d6` | 81 |
+| Receiver selector | 0 | `0x007eea1b` | 36 |
+| +1868 constructor | 0 | `0x007efc1a` | 134 |
+| Its base constructor | 0 | `0x007ed056` | 44 |
+| +128 constructor | 0 | `0x007f17e3` | 108 |
+| Its base constructor | 0 | `0x007eaf27` | 95 |
+| Candidate table suffix | 0 | `0x008f7560` | 24 |
+
+The recorded code view is `source + 0x6e5fffe0`; branch targets below use
+source offsets to avoid confusing them with the recorded CODE addresses.
+Data placement does not follow automatically from this code view. The table
+suffix has range-only support, not a canonical instruction listing or proven
+connection to the installed service table.
+
+The factory tests global `0x6035afd4`, requests 12 bytes on zero, and skips
+construction when the allocation result is zero. Both paths store current
+`a0` and return the reloaded global. The constructor calls source `0x007f277f`,
+uses its returned `a0` as the service base, installs literal `0x6eef8980`,
+clears field `+8`, and fills it with the root accessor's return. Preservation
+of the saved input through the factory's allocation remains a qualification.
+
+The root accessor tests `0x6035afd8`, requests 2644 bytes on zero, conditionally
+constructs the root, stores current `a0`, and calls the aggregate check on that
+arm. It then reloads the cached root and calls the getter. The getter
+unconditionally adds 1868; a zero cached root does not produce a safe null
+return. The aggregate check calls separate subobject checks and ANDs current
+results, with intervening register effects still requiring verification.
+
+The root constructor saves the base helper's returned `a0` in `a2` and installs
+`0x6eef8998`, distinct from the service literal. Source `0x007eef54` calls the
+`+128` constructor at `0x007f17e3`; source `0x007eef81` calls the `+1868`
+constructor at `0x007efc1a`. It also constructs objects at `+460`, `+880`,
+`+2180`, and `+2204`. These expressions use current saved registers: equality
+to the original root across intervening calls is not implied by field layout.
+The `+1868` constructor installs `0x6eef8af8` through its base constructor's
+return; the `+128` constructor installs `0x6eef8d90` through its own base
+return. The latter base directly clears its current owner's field `+140`.
+The selected `+1868`/base bodies contain no direct `+140` store. That absence
+establishes neither initializedness nor that all possible producers lie behind
+an indirect slot.
+
+The selector reads current receiver field `+140`. At source `0x007eea21`,
+`cmp a2,d0` / `beq` selects `0x007eea29` when it equals the saved receiver;
+the following zero test also falls through to that load for zero. That arm
+returns the field itself, including zero. A different nonzero field reaches
+`0x007eea2d` and calls its table slot `+156`. A nonzero returned `a0` exits
+at `0x007eea3c`; zero falls through to `mov a2,a0` at `0x007eea3b`, using
+current saved `a2`. Preservation across the indirect call remains necessary.
+
+The dispatch body loads service field `+8`, saves incoming `d0` in `d2` and
+`a1` in `a2`, and calls the selector. It then forwards current `d2` as `d0`
+and restored `a2` as `a1`, dereferences the returned receiver's table, and
+calls slot `+4` without a null guard. The selector restores `a2`, but its
+indirect arm does not establish `d2` preservation; its `[a2]` return mask alone
+cannot justify calling the forwarded scalar the original request. The dispatch
+epilogue restores its caller's `d2` and `a2` separately from those arguments.
+
+**Unresolved:** runtime table placement/selection, allocation and current-pointer
+validity, transitive preservation, field `+140` production, and the selected
+receiver's effect and lifetime. Neither construction nor this indirect call
+identifies still capture, an image owner, or host transfer.
+
+**Next evidence:** [Resolve the release-control body's indirect
+consumers](../RESEARCH.md#r-release-contract).
 
 <a id="six-input-frontend"></a>
 ## Six-input frontend and control-object accessor

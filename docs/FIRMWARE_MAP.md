@@ -30,7 +30,7 @@ evidence of newly captured images.
 | Topic | What the current evidence explains |
 |---|---|
 | [Startup](firmware/STARTUP.md) | Shared state words and a local overlay handoff; reset ownership is unresolved |
-| [Release-control candidates](firmware/RELEASE_CONTROL.md) | Release and guarded action callers, carrier methods, caller record writes, six-input frontend, candidate key owner, and bounded selector-to-key lookups |
+| [Release-control candidates](firmware/RELEASE_CONTROL.md) | Release and guarded action callers, carrier methods, caller record writes, constructed service/receiver selection, six-input frontend, and bounded selector-to-key lookups |
 | [Still-corridor objects](firmware/STILL_OBJECTS.md) | Singleton dispatch, list population, separate object tables, and field getter/setter relationships |
 | [Live view and ThroughImage](firmware/LIVE_VIEW.md) | Object lifecycle, collection operations, and a selector returning a scalar through a record lookup |
 | [PTP-adjacent records and dispatch](firmware/PTP.md) | Registration callers, FIFO mechanics, selectors, callbacks, descriptors, and queued storage |
@@ -52,7 +52,7 @@ findings do not yet form an end-to-end route.
 | Required connection | Available static starting point | What remains to be proved |
 |---|---|---|
 | Receive a host request | [Registration callers and record handling](firmware/PTP.md#registration) | An authenticated transport receive path and selected request owner |
-| Select a controllable handler | [Release frontend and callers](firmware/RELEASE_CONTROL.md) | The applicable receiver, method, input contract, and host connection |
+| Select a controllable handler | [Release frontend and callers](firmware/RELEASE_CONTROL.md), [constructed service dispatch](firmware/RELEASE_CONTROL.md#constructed-service) | The applicable receiver, method, input contract, preservation, and host connection |
 | Initiate a still capture | [Release body](firmware/RELEASE_CONTROL.md#release-body) and [guarded action](firmware/RELEASE_CONTROL.md#guarded-action) | A source-supported capture effect beyond checks and indirect calls |
 | Identify the resulting image | [Caller-record writes](firmware/RELEASE_CONTROL.md#caller-record), [object consumers](firmware/STILL_OBJECTS.md#field-100), and [owner fields](firmware/PTP.md#descriptor-owner) | A concrete image/payload, its owner, and lifetime; record writes alone do not identify it |
 | Transfer it to the host | [Reply packing and queued storage](firmware/PTP.md#reply-storage) | The image-to-transport connection and host completion |
@@ -66,7 +66,7 @@ and the evidence needed to resolve them are in [RESEARCH.md](RESEARCH.md).
 
 | Block | Authenticated ranges | Canonical instruction rows |
 |---:|---:|---:|
-| 0 | 13,050 | 52,167 |
+| 0 | 13,063 | 52,484 |
 | 1 | 827 | 0 |
 | 2 | 4 | 0 |
 | 3 | 35 | 0 |
