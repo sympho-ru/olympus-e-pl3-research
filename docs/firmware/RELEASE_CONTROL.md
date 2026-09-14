@@ -204,12 +204,15 @@ unresolved; this is not an established host request or capture interface.
 | Dispatch body | 0 | `0x007eee99` | 27 |
 | Root accessor | 0 | `0x007eeed2` | 59 |
 | Root constructor | 0 | `0x007eef39` | 192 |
+| Root's +2180 helper | 0 | `0x007f271e` | 15 |
+| Its nested helper | 0 | `0x007eb634` | 14 |
 | Subobject getter | 0 | `0x007ef08c` | 7 |
 | Root aggregate check | 0 | `0x007ef0d6` | 81 |
 | Receiver selector | 0 | `0x007eea1b` | 36 |
 | +1868 constructor | 0 | `0x007efc1a` | 134 |
 | Its base constructor | 0 | `0x007ed056` | 44 |
 | Directly selected base setup | 0 | `0x007ee993` | 72 |
+| First pointed-storage setup helper | 0 | `0x007ec885` | 47 |
 | Root wiring | 0 | `0x007ef127` | 97 |
 | Current receiver +272 setter | 0 | `0x007f02dd` | 7 |
 | Current receiver +276 setter | 0 | `0x007f02eb` | 7 |
@@ -230,19 +233,41 @@ uses its returned `a0` as the service base, installs literal `0x6eef8980`,
 clears field `+8`, and fills it with the root accessor's return. Preservation
 of the saved input through the factory's allocation remains a qualification.
 
-The root accessor tests `0x6035afd8`, requests 2644 bytes on zero, conditionally
-constructs the root, stores current `a0`, and calls the aggregate check on that
-arm. It then reloads the cached root and calls the getter. The getter
-unconditionally adds 1868; a zero cached root does not produce a safe null
-return. The aggregate check calls separate subobject checks and ANDs current
-results, with intervening register effects still requiring verification.
+The root accessor tests `0x6035afd8` and requests 2644 bytes on zero. After
+saving the allocation result in `a2` and setting `a0=0`, source `0x007eeeea`
+compares `a0,a2`; `beq` at `0x007eeeeb` takes zero to `0x007eeef4`, skipping
+construction. Nonzero falls through to argument setup at `0x007eeeed` /
+`0x007eeeee` and the constructor call at `0x007eeeef`. Source `0x007eeef4`
+stores current `a0` into the cache, then calls the aggregate check without a
+new null guard. On a valid nonzero normally returning construction path, the
+root-owner contract below identifies this stored pointer as returned `R`.
+
+This cache **store** is distinct from the later reload at `0x007eeeff` after
+the aggregate. The aggregate calls separate subobject checks, ANDs current
+results, and directly calls source `0x0081c252` at `0x007ef11b`. Its scalar
+result does not establish absence of indirect global-state effects. Relating
+the later cached pointer to the earlier stored `R` requires those effects to
+be resolved. The getter unconditionally adds 1868; a zero cached root does
+not produce a safe null return. Allocation validity, lifetime and intervening
+register effects remain separate obligations.
 
 The root constructor saves the base helper's returned `a0` in `a2` and installs
 `0x6eef8998`, distinct from the service literal. Source `0x007eef54` calls the
 `+128` constructor at `0x007f17e3`; source `0x007eef81` calls the `+1868`
 constructor at `0x007efc1a`. It also constructs objects at `+460`, `+880`,
-`+2180`, and `+2204`. These expressions use current saved registers: equality
-to the original root across intervening calls is not implied by field layout.
+`+2180`, and `+2204`. Expressions using other current registers still need
+their actual preservation contracts; field layout alone is not an identity
+proof. The saved-root `a2` itself survives the required root calls: complete
+source `0x007f271e` calls complete `0x007eb634`, whose nested source
+`0x005968da` call lists `[a2,a3]`, with no local writes to those registers in
+either wrapper. Their writes through current returned `a0` do not identify
+that pointer with the original `R + 2180` storage. The root's other selected
+calls list `a2` in their masks. Consequently source `0x007eeff5` copies saved
+root `R` to `a0` before `ret [d2,d3,a2,a3],32` at `0x007eeff6`, on the valid
+normally returning path. This proves conditional constructor-return/cache-store
+identity, not an immutable cache or preservation of every internal `a3`/`d3`
+expression. Restoring the caller's registers at the final return is distinct
+from preserving the constructor's internal values across each call.
 The `+1868` constructor installs `0x6eef8af8` through its base constructor's
 return; the `+128` constructor installs `0x6eef8d90` through its own base
 return. The latter base directly clears its current owner's field `+140`.
@@ -253,8 +278,8 @@ On the valid, normally returning construction path, the object receiving the
 `B0`. At root call source `0x007eef81`, it is current saved root `R + 1868`:
 the root's preceding selected calls list `a2` in their preservation masks,
 and source `0x007eef79..0x007eef7e` forms that argument from saved `a2`.
-This partial owner join does not establish a final constructor return, cached
-root identity, later field value, or runtime selection.
+This partial owner join does not establish the final `+1868` constructor return,
+the later cached-root reload's identity, later field value, or runtime selection.
 
 | Owner-contract support | Block | Offset | Length |
 |---|---:|---|---:|
@@ -294,7 +319,17 @@ copies and returns therefore supply `B0` to `0x007efc23`, which saves it in
 Owner-register preservation does not prove pointed-storage preservation. The
 first subsequent storage dependency is `0x007ec885` at `0x007ee9b0` with
 `B0 + 148`; its allocator and the other direct/indirect effects have not been
-shown to leave `B0 + 140` unchanged. Later constructor calls to
+shown to leave `B0 + 140` unchanged. Define `U=B0+148` for that first helper:
+it saves entering `a0` as `a3`, sets local `a2=U+4`, and writes fields at
+`U`, `U+4`, `U+8`, `U+12`, and `U+16` before its allocator call at
+`0x007ec8a7`. These are U-relative fields, not `B0+4..+16`. The size formation
+is 20 shifted left twice (80 bytes). Its post-call store uses current `a2`,
+and its natural return at `0x007ec8b0` copies current `a3` to `a0`; the
+allocator's pointed-storage, returned-pointer validity and relevant register
+effects must be established rather than inferred from an empty mask.
+Likewise the `+1868` constructor's first allocator size is 80, but its second
+size formation uses current `d3` after the first helper; it is not proved to
+remain the original 20. Later constructor calls to
 `0x0081bc3b` at `0x007efc57` / `0x007efc79` also require their actual storage
 and register contracts. An empty mask alone proves neither clobber nor
 preservation. The final `0x007f02fd` tail has no owner-register write or

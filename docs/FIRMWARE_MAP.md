@@ -66,7 +66,7 @@ and the evidence needed to resolve them are in [RESEARCH.md](RESEARCH.md).
 
 | Block | Authenticated ranges | Canonical instruction rows |
 |---:|---:|---:|
-| 0 | 13,074 | 52,633 |
+| 0 | 13,076 | 52,641 |
 | 1 | 827 | 0 |
 | 2 | 4 | 0 |
 | 3 | 35 | 0 |
