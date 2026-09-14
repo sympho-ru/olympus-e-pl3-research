@@ -16,6 +16,7 @@ the intended operations. Those measurements constrain the research without
 identifying the routines below as their live implementation.
 
 - [Named USB-state reporting wrapper](#usb-state-wrapper)
+- [Candidate connection callback and conditional byte stores](#usb-connect-stores)
 - [Registration callers and unresolved callback placement](#registration)
 - [Record initialization and FIFO layout](#fifo)
 - [Primary request selector and caller](#request-selector)
@@ -82,6 +83,59 @@ the reporting preservation contracts remain unjoined. This does not identify
 shooting restrictions, capture initiation, image association, or host transfer.
 See [USB/shooting-state research](../RESEARCH.md#r-usb-shooting-state) and the
 separate [historical session observations](../observations/USB_AND_MEDIA.md#personalities).
+
+<a id="usb-connect-stores"></a>
+## Candidate connection callback and conditional byte stores
+
+The candidate body at source `0x00acfa9b` selects two sets of explicit
+one-byte writes through four direct-call leaves. It is not merely a reporting
+wrapper. Its proposed USB-connect role does not establish live registration,
+the meaning of the numeric states, or a shooting-state consumer.
+
+The 78 canonical instructions completely cover block-0 source body
+`[0x00acfa9b,0x00acfb69)` (206 bytes) and four nine-byte leaves at
+`0x00acf958`, `0x00acf96a`, `0x00acf97c`, and `0x00acfa89`.
+These are instruction coordinates, not canonical range rows. Their CODE-local
+view is `source + 0x6e5fffe0`: body entry `0x6f0cfa7b` and leaves
+`0x6f0cf938`, `0x6f0cf94a`, `0x6f0cf95c`, and `0x6f0cfa69`.
+This local arithmetic does not prove runtime placement or a DATA mapping.
+
+Entry copies are source `0x00acfaa0:d1->d2`, `0x00acfaa1:d0->d3`, and
+`0x00acfaa2:a1->a2`. Initialization at `0x00acfaab` and reporting at
+`0x00acfac5` intervene before the comparisons. Their encoded call masks do not
+establish original-input preservation or a callback ABI; conditions below
+refer to current `d3` and `d2` at the tests.
+
+Source `0x00acfacc` compares `16,d3`; `beq` at `0x00acface` selects
+`0x00acfad3`, while fallthrough returns at `0x00acfad0`. The selected chain
+compares current `d2` with 3, 72, 71, and 70 at `0x00acfad3`,
+`0x00acfad7`, `0x00acfadb`, and `0x00acfadf`. Taken branches at
+`0x00acfad5`, `0x00acfad9`, `0x00acfadd`, and `0x00acfae1` select
+the corresponding arms; an unmatched value returns at `0x00acfae3`.
+
+| Current test values | Selected arm | Explicit byte writes, in order | Return |
+|---|---|---|---|
+| `d3==16`, `d2==3` | `0x00acfae6`; opaque call at `0x00acfaed` | None in the selected caller arm | `0x00acfaf4` |
+| `d3==16`, `d2==72` | `0x00acfaf7`; opaque call at `0x00acfb03` precedes stores | `0x60353190=1`, `0x60353191=4`, `0x60353192=0` | `0x00acfb66` |
+| `d3==16`, `d2==71` or `70` | `0x00acfb39` | `0x60353193=5`, `0x60353190=11`, `0x60353191=2` | `0x00acfb66` |
+
+Each store argument is immediately defined in `d0` before its direct call:
+sources `0x00acfb0a/0c`, `0x00acfb11/13`, `0x00acfb18/19`,
+`0x00acfb39/3b`, `0x00acfb40/42`, and `0x00acfb47/49`.
+The leaves contain complete six-byte `movbu d0,(address)` followed by
+three-byte `retf [],0`. The two store arms perform further opaque calls;
+the 72 arm branches from `0x00acfb37` to the shared return. All four return
+sites have identical complete three-byte `ret [d2,d3,a2,a3],44`; not every
+path reaches the final site.
+
+These writes are conditional normal-execution effects, not proof of persistent
+global values. Opaque helper effects, address validity, lifetime, and later or
+concurrent changes remain unresolved; no-store arms do not prove unchanged
+state. There is no established join to the named wrapper's slot-40 value.
+The constants do not identify connected/disconnected, Storage/MTP, shooting
+permission, capture, image ownership, host transfer, or a safe mode override.
+
+**Next evidence:** [USB/shooting-state research](../RESEARCH.md#r-usb-shooting-state).
 
 <a id="registration"></a>
 ## Registration callers and unresolved callback placement
