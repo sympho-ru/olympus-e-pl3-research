@@ -74,6 +74,15 @@ selected bodies do not establish an exhaustive producer census. Keep this
 service distinct from the guarded action's carrier until a source-supported
 join is established.
 
+For the [conditional table endpoint](firmware/RELEASE_CONTROL.md#conditional-receiver-endpoint),
+establish runtime placement/selection and valid entering `E/P/Q` objects, not
+merely the DATA-local pointer arithmetic. Distinguish the first loaded-global
+zero/nonzero branch from pointer-used `P` and its table-`+12` return. Verify
+preservation and actual indirect effects on the exclusive `+76` versus
+`P+4`/`E+72` paths and in the shared continuation, whose later global compare
+uses current `d2`. A zero P or numeric opcode alone does not establish a safe
+input contract or capture effect.
+
 <a id="r-caller-record"></a>
 ## Identify the caller record's owner and consumers
 
