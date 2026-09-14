@@ -95,9 +95,9 @@ For the established table `0x6ee8d1d0`, slot `+72` resolves to `0x6ee1d38f`
 and calls it at `0x0081bf79` with unchanged entering `a0/a1/d0`. It forms no
 local record and returns `ret [a2],8` at `0x0081bf7b`. Under the same table
 identity, slot `+64` resolves to `0x6ee1d263` (offset `0x0081be43`, 57 bytes).
-Both spans have canonical instruction support; the two-byte boundary at
-`0x6ee1d281` has range coverage only. A source-anchored replay does not add an
-instruction row at that boundary.
+Both spans have canonical instruction support. At source `0x0081be61`
+(local `0x6ee1d281`), the two-byte `mov d3,a0` supplies the local record
+address to the initializer.
 
 Name this native profile's entering `a0/a1/d0` as `E/Q/B`, without implying
 recovered types. Slot `+64` saves `E` in `a2` and `Q` in `a3`.
@@ -131,6 +131,9 @@ saved `d2` to `d0`, and returns `ret [d2,a2,a3],32` at `0x0081bfa8`.
 | Complete initializer | 0 | `0x0081a375` | 17 |
 | Reset pre-return prefix | 0 | `0x0081a386` | 13 |
 | Reset return | 0 | `0x0081a393` | 3 |
+| Conditional record table | 0 | `0x008feac4` | 20 |
+| Record field +4 getter | 0 | `0x0081a396` | 6 |
+| Record field +8 getter | 0 | `0x0081a3a2` | 6 |
 
 The complete initializer (`0x6ee1b795` in this local view) spans
 `[0x0081a375,0x0081a386)`, including `retf [],0` at `0x0081a383`.
@@ -145,10 +148,24 @@ not evidence corrections. The continuation's listed return mask restores
 the wrappers' saved record-address registers; the local reset does not
 change their saved scalar result.
 
+Under the separately conditional DATA-local `source + 0x6e601420` view,
+the installed record literal `0x6eeffee4` nominates source `0x008feac4`.
+Its `+4` and `+12` words nominate the six-byte leaves at `0x0081a396`
+and `0x0081a3a2`. The first reads current `P+4` into `d0`; the second
+reads current `P+8` into `a0`, not `d0`. The latter's distinct recorded
+load-address anchor is retained as explained [above](#owner-2216).
+Relating these current-field reads to initialization requires unchanged
+relevant storage through intervening methods. Neither leaf gives those
+fields opcode, capture, or completion semantics.
+
 These native input profiles are also nominated by the separately conditional
 [E-table slots](RELEASE_CONTROL.md#conditional-receiver-endpoint), without
-establishing shared object identity. Stack validity during initialization and
-the call does not prove safe retention after return, live table validity,
+establishing shared object identity. Native `+64/+76` directly call
+`0x0081c73b`, not endpoint `0x0081c0ec`; their direct calls do not test
+global `0x6035b1ac`. Passing an equivalent record to that endpoint is a
+hypothetical input contract, not an established native-producer call edge.
+Stack validity during initialization and the call does not prove safe
+retention after return, live table validity,
 capture, image ownership, or completion.
 
 The direct successor `0x6ee1db5b` (offset `0x0081c73b`, 103 bytes) also has
@@ -157,30 +174,53 @@ endpoint](RELEASE_CONTROL.md#conditional-receiver-endpoint). The source
 coordinates below identify its replay without implying a global address view
 or shared object/table identity.
 
-It saves entering `d0` at `sp+4`, entering `a1` in `d3`, and entering `a0`
-in `a2`. The direct predicate call at source `0x0081c740` selects
-`0x0081c3e1 [],0`. Its `cmp 0,d0` / `beq` at `0x0081c745` /
-`0x0081c747` skips the optional current-object table-`+8` call on zero,
-branching to `0x0081c758`. On nonzero it calls that slot with `d0=-9`;
-that call's own zero result at `0x0081c754` / `0x0081c756` branches to the
-sole return at `0x0081c79f`.
+Name the continuation's entering `a0/a1/d0` as `E/Q/P`. It saves `P` at
+`sp+4`, `Q` in `d3`, and `E` in `a2`. The direct call at source
+`0x0081c740` selects predicate `0x0081c3e1 [],0`. Its six canonical
+instructions cover the complete 17-byte body through return `0x0081c3ef`:
+it reads current `E+4` into `d1`, clears `d0`, and tests bit `0x20000`.
+The `beq` at `0x0081c3eb` takes a clear bit directly to the zero return;
+fallthrough sets `d0=1`. The body defines only `d0/d1`, with no calls or
+data-memory writes, preserving entering `E/Q` in `a2/d3`.
+
+The caller's `cmp 0,d0` / `beq` at `0x0081c745` / `0x0081c747`
+takes that zero to `0x0081c758`. A set bit instead calls Q-table slot `+8`
+at `0x0081c752` with `a0=Q,d0=-9`; that call's zero result at
+`0x0081c754` / `0x0081c756` branches to the sole return at `0x0081c79f`.
+Its unknown effects prevent extending the gate-clear preservation proof to
+the gate-set arm.
 
 Source `0x0081c758` clears `d2`, copies current `a2` to `a0`, and calls
 that receiver's slot `+52` at source `0x0081c75f` (local `0x6ee1db7f`).
-It saves current returned `a0` in `a3`. The unmasked calls do not establish
-that `a2` still identifies the entering parent, or that `d2` remains zero.
+It saves current returned `a0` in `a3`. With an unspecified selected method,
+this does not establish that `a2` still identifies the entering parent or that
+`d2` remains zero.
 Source `0x0081c762` compares **current** `d2,d3`, not unconditionally the
 entering object against zero; equality branches to `0x0081c79e`. A separate
 `cmp 0,a0` / `beq` at `0x0081c765` / `0x0081c767` takes null to that
 same current-`d2` return-copy arm.
 
-Otherwise it calls the current other object's table slot `+40` with current
-`a2` as `a1`. Source `0x0081c773` then **loads** global `0x6035b1ac` into
+For the gate-clear arm, the separately conditional
+[E-table slot +52](RELEASE_CONTROL.md#conditional-receiver-endpoint)
+nominates the complete [field +100 getter](#field-100). That leaf writes only
+`a0`, loading current `E+100`. Given valid entering objects and this selected
+table, the early checks therefore have `a2=E,d3=Q,d2=0,a3=R`, where `R`
+is that loaded pointer. `Q=0` or `R=0` takes the arm that copies zero to
+`d0` and returns.
+Otherwise the first unproved indirect effect is Q-table slot `+40` at
+`0x0081c771`, with `a0=Q,a1=E`. Source `0x0081c76b` copies `a2` to
+`a1`; `0x0081c76c` then loads Q's table into `a2`, and `0x0081c76e`
+loads its `+40` target into that register. Thus `a2` is the method target
+at the call; the E argument is in `a1`. This qualified join identifies
+neither R's type nor an image owner.
+
+For either arm, source `0x0081c773` then **loads** global `0x6035b1ac` into
 `d0`, not a write of the slot's returned result. Source `0x0081c779` /
 `0x0081c77a` compares that load with current `d2` and takes different to
 `0x0081c78a`. Equal invokes current result-table slot `+8` with saved stack
 `d0` and current `d3` as `a1`; different invokes saved-stack-pointer table
-slot `+4`, then current result-table slot `+48`. Neither path establishes
+slot `+4` at `0x0081c791`, then current result-table slot `+48`. That
+P-table call is distinct from the Q-table `+40` call. Neither path establishes
 preservation of the entering objects or the slot-`+52` result across the
 intervening indirect calls. Source `0x0081c79e` copies current `d2` to `d0`;
 `ret [d2,d3,a2,a3],24` at `0x0081c79f` restores the caller's registers

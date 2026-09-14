@@ -90,8 +90,14 @@ uses current `d2`. A zero P or numeric opcode alone does not establish a safe
 input contract or capture effect. The conditional table `+64/+72/+76` targets
 and their native argument/record formation narrow the input-layout question;
 establish actual live E/Q, the fixed literal owner's validity, record table
-validity, endpoint retention/lifetime and the direct predicate/indirect method
-effects. A native stack record and returned scalar are not capture or
+validity and retention/lifetime. The direct predicate and conditional E-table
+getter establish the gate-clear arguments up to Q-table `+40` at source
+`0x0081c771`; establish that method's effects and preservation from
+`a0=Q,a1=E`. Gate-set instead needs the earlier Q-table `+8` contract.
+Keep native `+64/+76` direct continuation calls separate from the endpoint's
+global-dependent dispatch; no native-producer call to `0x0081c0ec` is proved.
+Relate current P-table field reads to initialization only with relevant storage
+preservation. A native stack record and returned scalar are not capture or
 completion proofs, and do not justify bypassing those obligations with a patch.
 
 <a id="r-caller-record"></a>
@@ -170,10 +176,14 @@ and their [dispatch continuations](firmware/STILL_OBJECTS.md#continuations).
 **Question:** who supplies the setter's incoming pointer, and which concrete
 parent and returned object reach the slot-`+8`/`+48` consumers?
 
-**Useful result:** prove those identities through the calls. Keep the parent
-saved in `a2`, other incoming object in `d3`, and getter result in `a3` distinct.
-Shared methods do not select a parent table; one table's slot-`+40` no-op does
-not resolve the other object's call at `0x6ee1db91`.
+**Useful result:** prove those identities through the calls. The qualified
+gate-clear join preserves E/Q and the field-`+100` result through the early
+checks, but Q-table `+40` at source `0x0081c771` remains unresolved. At that
+call `a0=Q,a1=E`; `a2` has been rebound to the method target, while the
+loaded pointer was saved in `a3`. Establish preservation and that pointer's
+producer/type/lifetime beyond the call; gate-set also requires the earlier
+Q-table `+8` effects. Shared methods do not select a parent table; one table's
+slot-`+40` no-op does not resolve Q's call at local `0x6ee1db91`.
 
 <a id="r-live-view-owner"></a>
 ## Identify the live-view frame owner
