@@ -385,6 +385,7 @@ normal return establishes stock receiver selection or a capture effect.
 | Role | Block | Offset | Length |
 |---|---:|---|---:|
 | Conditional installed-table prefix | 0 | `0x008f76d8` | 8 |
+| Conditional table slot +52 | 0 | `0x008f770c` | 4 |
 | Conditional table slot +64 | 0 | `0x008f7718` | 4 |
 | Conditional table slots +72/+76 | 0 | `0x008f7720` | 8 |
 | Wrapper entry and direct call | 0 | `0x007eccbf` | 12 |
@@ -412,6 +413,14 @@ identical. The complete native `+72` profile forwards entering `a0/a1/d0`
 to the receiver's `+64` method; native `+64` and `+76` form their specified
 stack records on the stated arms rather than requiring an externally guessed
 layout. Their argument formation is a partial source-level input join only.
+
+Source `0x008f770c` holds slot-`+52` word `0x6ee1dc28`, nominating
+the six-byte getter at source `0x0081c808` under this same conditional DATA
+view. It loads current receiver `+100` into `a0` without other register or
+data-memory writes. Together with the direct predicate, this supports the
+[gate-clear E/Q argument join](STILL_OBJECTS.md#continuations) up to the
+Q-table `+40` call, conditional on valid entering objects and the selected
+table. It does not identify the loaded pointer as an image.
 
 Use `E`, `P`, and `Q` only as names for endpoint-entering `a0`, `d0`, and
 `a1`, not recovered types. Source `0x0081c0ec` saves `E` in `a3`,
@@ -441,6 +450,17 @@ proved conventional status/opcode or preserved entering argument. Native
 record initialization, scalar return and reset are not operation-completion
 or image-ownership proofs.
 
+Under the separately conditional [native record-table assignment](STILL_OBJECTS.md#continuations),
+P-table `+12` reads current `P+8` into `a0`; the explicit copy at
+`0x0081c10c` makes that value the endpoint's tested `d0`. P-table `+4`
+reads current `P+4` into `d0`. Initial field values cannot be propagated
+through unproved storage effects. The native `+64/+76` bodies directly
+call `0x0081c73b`, without calling this endpoint or testing its first global.
+A nonzero global here can also dispatch to those bodies through E-table
+`+72/+76`; it does not exclude all entry to the shared continuation.
+An equivalent record supplied to this endpoint remains a hypothetical input
+contract rather than a source-proven native-producer/endpoint chain.
+
 The [shared continuation](STILL_OBJECTS.md#continuations) has its own optional
 object call and compares a later global load with **current** `d2`, not a
 proved preserved zero. Neither complete endpoint body directly writes global
@@ -449,8 +469,9 @@ Shared code does not identify this E table with the still corridor's separate
 parent table or its field-`+100` object.
 
 **Unresolved:** actual table/receiver selection, valid live `E/P/Q` objects and
-their lifetime, argument/register/storage preservation, direct and indirect
-method effects, and host ingress. Native stack lifetime during the call does
+their lifetime, argument/register/storage preservation beyond the qualified
+gate-clear join, indirect method effects, and host ingress. Native stack
+lifetime during the call does
 not establish that an endpoint cannot retain the record or that literal
 `0x6eeffee4` identifies a valid live table. An explicit-receiver adapter could
 bypass a selector or use native record formation conceptually, but would not
