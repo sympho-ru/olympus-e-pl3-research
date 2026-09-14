@@ -15,6 +15,7 @@ show that the tested advertisement and static-route changes did not activate
 the intended operations. Those measurements constrain the research without
 identifying the routines below as their live implementation.
 
+- [Named USB-state reporting wrapper](#usb-state-wrapper)
 - [Registration callers and unresolved callback placement](#registration)
 - [Record initialization and FIFO layout](#fifo)
 - [Primary request selector and caller](#request-selector)
@@ -28,6 +29,59 @@ identifying the routines below as their live implementation.
 - [Unjoined descriptor tables](#descriptor-tables)
 - [Handler boundary and unselected alternate starts](#unselected-entries)
 - [Current instruction boundaries and alternate decode](#decode-boundaries)
+
+<a id="usb-state-wrapper"></a>
+## Named USB-state reporting wrapper
+
+The source-selected body associated with `getUsbState` reports labels for two
+current-register values and clears `d0` before normal return. Its name does not
+establish a caller-visible numeric USB-state getter or a live connection state.
+
+| Role | Block | Offset | Length |
+|---|---:|---|---:|
+| Source-selected wrapper | 0 | `0x005de67b` | 76 |
+| Method name | 0 | `0x0086bb10` | 12 |
+| Three-word row | 0 | `0x0086e5c0` | 12 |
+| Zero-branch label | 0 | `0x008722ce` | 14 |
+| One-branch label | 0 | `0x008722dc` | 17 |
+
+The row contains pointer literals `0x6ee6cf30`, `0x6ebdfa9b`, and
+`0x6ee6cf3c`. Under the conditional DATA-local view `source + 0x6e601420`,
+the first selects the name and the second selects the wrapper. This coherent
+view is not runtime placement or a universal code/data mapping; the third
+word's role is unresolved. The two branch labels are `API_CONNECTED` and
+`API_DISCONENCTED` (source spelling). They do not establish an enum domain or
+actual USB personality, session ownership, or connection.
+
+The wrapper's 21 canonical instructions use local view
+`0x6ebdfa9b..0x6ebdfae7`. They leave a two-byte gap at source `0x005de68c`;
+the 76-byte authenticated range is not a complete canonical instruction listing.
+Source `0x005de680` calls local `0x6eb82317`, then loads `(a0)` into `a1`
+and slot `+40` into `a1`. After the gap, source `0x005de68e` copies current
+`d0` into `d2`. Binding this value to a live slot-40 result requires the
+unresolved receiver, table, call, and method contracts.
+
+Source `0x005de68f` defines `d0=65801` before the call at `0x005de695`
+to local `0x6eb97e18,[d2],4`. Source `0x005de69c` copies current `d2`
+into `d0` before `0x005de69d` calls `0x6eb80db8,[d2,a2,a3],28`.
+The encoded masks alone do not prove either reporting callee's saved-stack,
+return, or register-preservation contract. The later comparisons therefore
+refer to current `d2`, conditionally related to the earlier copied value.
+
+At `0x005de6a4`, `cmp 0,d2` and the following `beq` take zero to
+`0x005de6ae`, which selects pointer `0x6ee737ee` for `API_CONNECTED`.
+Otherwise `cmp 1,d2` at `0x005de6a8` and its `beq` take one to
+`0x005de6b6`, selecting `0x6ee737fc` for `API_DISCONENCTED`.
+Both selections join the reporting call at `0x005de6bc` to
+`0x6eb80d74,[a2,a3],20`; other current `d2` values branch directly to
+`0x005de6c3`. All normal paths through this selected body join `clr d0`
+at `0x005de6c3` and the complete `ret [d2],8` at `0x005de6c4`.
+
+Live receiver/slot ownership, value production, lifetime, synchronization, and
+the reporting preservation contracts remain unjoined. This does not identify
+shooting restrictions, capture initiation, image association, or host transfer.
+See [USB/shooting-state research](../RESEARCH.md#r-usb-shooting-state) and the
+separate [historical session observations](../observations/USB_AND_MEDIA.md#personalities).
 
 <a id="registration"></a>
 ## Registration callers and unresolved callback placement

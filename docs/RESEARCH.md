@@ -244,7 +244,13 @@ error does not identify the firmware's actual operation-acceptance boundary.
 <a id="r-usb-shooting-state"></a>
 ## Distinguish USB mode from shooting-state restrictions
 
-**Start from:** the [session and capture observations](observations/USB_AND_MEDIA.md#remaining-validation).
+**Start from:** the [session and capture observations](observations/USB_AND_MEDIA.md#remaining-validation)
+and the [named USB-state reporting wrapper](firmware/PTP.md#usb-state-wrapper).
+
+The wrapper clears `d0` on normal return and branches on current `d2` to two
+labels. It does not settle live USB state: receiver/slot-40 ownership, value
+production, and preservation across the reporting calls remain unresolved.
+The conditional DATA-local mapping does not establish runtime placement.
 
 **Question:** is ordinary shooting suppressed by the selected USB personality,
 an open PTP session, host interface ownership, or another camera state?
