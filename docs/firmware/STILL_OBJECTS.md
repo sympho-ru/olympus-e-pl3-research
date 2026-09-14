@@ -105,10 +105,39 @@ The adjacent slot `+76` maps to `0x6ee1d39e` (block-0 offset `0x0081bf7e`, 45
 bytes). Its canonical body prepares a stack temporary through `0x6ee1b795`,
 passes it to `0x6ee1db5b`, calls `0x6ee1b7a6`, and returns the saved result.
 The direct successor `0x6ee1db5b` (offset `0x0081c73b`, 103 bytes) also has
-canonical coverage. After a predicate call and a conditional slot-`+8` status
-path, it restores the incoming parent receiver from `a2` into `a0` and calls
-that receiver's slot `+52` at `0x6ee1db7f`. It saves the returned `a0` in `a3`; later dispatch uses the other incoming object and the returned object,
-including slots `+8` or `+48` of the latter according to global `0x6035b1ac`.
+canonical coverage and is shared by the [conditional receiver-table
+endpoint](RELEASE_CONTROL.md#conditional-receiver-endpoint). The source
+coordinates below identify its replay without implying a global address view
+or shared object/table identity.
+
+It saves entering `d0` at `sp+4`, entering `a1` in `d3`, and entering `a0`
+in `a2`. The direct predicate call at source `0x0081c740` selects
+`0x0081c3e1 [],0`. Its `cmp 0,d0` / `beq` at `0x0081c745` /
+`0x0081c747` skips the optional current-object table-`+8` call on zero,
+branching to `0x0081c758`. On nonzero it calls that slot with `d0=-9`;
+that call's own zero result at `0x0081c754` / `0x0081c756` branches to the
+sole return at `0x0081c79f`.
+
+Source `0x0081c758` clears `d2`, copies current `a2` to `a0`, and calls
+that receiver's slot `+52` at source `0x0081c75f` (local `0x6ee1db7f`).
+It saves current returned `a0` in `a3`. The unmasked calls do not establish
+that `a2` still identifies the entering parent, or that `d2` remains zero.
+Source `0x0081c762` compares **current** `d2,d3`, not unconditionally the
+entering object against zero; equality branches to `0x0081c79e`. A separate
+`cmp 0,a0` / `beq` at `0x0081c765` / `0x0081c767` takes null to that
+same current-`d2` return-copy arm.
+
+Otherwise it calls the current other object's table slot `+40` with current
+`a2` as `a1`. Source `0x0081c773` then **loads** global `0x6035b1ac` into
+`d0`, not a write of the slot's returned result. Source `0x0081c779` /
+`0x0081c77a` compares that load with current `d2` and takes different to
+`0x0081c78a`. Equal invokes current result-table slot `+8` with saved stack
+`d0` and current `d3` as `a1`; different invokes saved-stack-pointer table
+slot `+4`, then current result-table slot `+48`. Neither path establishes
+preservation of the entering objects or the slot-`+52` result across the
+intervening indirect calls. Source `0x0081c79e` copies current `d2` to `d0`;
+`ret [d2,d3,a2,a3],24` at `0x0081c79f` restores the caller's registers
+separately from those internal identities and returns no identified payload.
 
 **Unresolved:** the returned object's ownership and its connection to an image
 consumer. The supported result is the dynamic-dispatch and return mechanics.

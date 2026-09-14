@@ -11,6 +11,7 @@ normal return does not yet identify an image-producing operation.
 - [Guarded action and carrier calls](#guarded-action)
 - [Caller record and scalar consumer](#caller-record)
 - [Constructed service and receiver selection](#constructed-service)
+- [Conditional receiver-table endpoint](#conditional-receiver-endpoint)
 - [Six-input frontend and control-object accessor](#six-input-frontend)
 - [Candidate key-conversion owner](#key-conversion-owner)
 - [Bounded selector-to-key lookups](#key-lookup)
@@ -372,6 +373,71 @@ identifies still capture, an image owner, or host transfer.
 
 **Next evidence:** [Resolve the release-control body's indirect
 consumers](../RESEARCH.md#r-release-contract).
+
+<a id="conditional-receiver-endpoint"></a>
+## Conditional receiver-table endpoint
+
+A range-only table anchor nominates a wrapper that forwards three entering
+arguments to further object dispatch. Its first branch depends on a loaded
+global, not the entering scalar. Neither the table relation nor the endpoint's
+normal return establishes stock receiver selection or a capture effect.
+
+| Role | Block | Offset | Length |
+|---|---:|---|---:|
+| Conditional installed-table prefix | 0 | `0x008f76d8` | 8 |
+| Wrapper entry and direct call | 0 | `0x007eccbf` | 12 |
+| Overlapping call-through-return span | 0 | `0x007eccc4` | 32 |
+| Direct endpoint | 0 | `0x0081c0ec` | 71 |
+| Shared continuation | 0 | `0x0081c73b` | 103 |
+
+Under the separately conditional DATA-local `source + 0x6e601420` view,
+installed literal `0x6eef8af8` nominates source `0x008f76d8`. Its `+4` word
+at `0x008f76dc` is `0x6edee0df`, nominating source `0x007eccbf` under that
+same view. This arithmetic does not prove runtime data placement, a live
+installed table, or selection through current `+140` / slot `+156`.
+The two overlapping wrapper ranges cover `[0x007eccbf,0x007ecce4)`; a complete
+source-anchored replay shows its direct call to `0x0081c0ec` at
+`0x007eccc4` without preceding overwrites of entering `a0`, `a1`, or `d0`.
+No new wrapper or endpoint instruction rows are implied by the table range.
+
+Use `E`, `P`, and `Q` only as names for endpoint-entering `a0`, `d0`, and
+`a1`, not recovered types. Source `0x0081c0ec` saves `E` in `a3`,
+`0x0081c0ed` saves `P` in `a2`, and `0x0081c0f5` saves `Q` at `sp+4`.
+Source `0x0081c0ef` **loads** global `0x6035b1ac` into `d0`; it does not
+store `P`. The compare at `0x0081c0f7` and `bne` at `0x0081c0f9` select
+`0x0081c104` when that global is nonzero. Zero falls through, restores saved
+`P` into `d0`, calls `0x0081c73b [d2,d3,a2,a3],24`, then branches to the
+sole `ret [a2,a3],16` at `0x0081c130`. Thus `P=0` does not select the
+zero-global arm or establish null safety; `P` can be nonzero on that arm.
+
+The nonzero-global arm consumes entering `P` as a pointer and calls its table
+slot `+12` at `0x0081c10a`. Source `0x0081c10c` copies current returned `a0`
+to `d0`, compares it with zero at `0x0081c10e`, and `beq` at `0x0081c110`
+takes zero to `0x0081c11e`. Nonzero reloads the stack argument, calls current
+E-table slot `+76`, and branches directly to the return at `0x0081c11c`;
+it does not also call slot `+72`. Zero instead uses current `a2` for P-table
+slot `+4`, reloads the stack argument, and calls current E-table slot `+72`.
+The indirect calls are unmasked: later `a2`/`a3` identities require their
+actual contracts, while the stack reload is explicit. Pointer-used `P` is not
+a proved numeric opcode, image class, or payload owner.
+
+The [shared continuation](STILL_OBJECTS.md#continuations) has its own optional
+object call and compares a later global load with **current** `d2`, not a
+proved preserved zero. Neither complete endpoint body directly writes global
+`0x6035b1ac`; their indirect methods' global and object effects remain open.
+Shared code does not identify this E table with the still corridor's separate
+parent table or its field-`+100` object.
+
+**Unresolved:** actual table/receiver selection, valid live `E/P/Q` objects and
+their lifetime, argument/register/storage preservation, direct and indirect
+method effects, and host ingress. An explicit-receiver adapter could bypass a
+selector conceptually, but would not manufacture those contracts. Numeric
+argument 33, forced-null safety, capture, image ownership, transfer, device
+acceptance, and patch safety are not established.
+
+**Next evidence:** [Resolve the release-control body's indirect
+consumers](../RESEARCH.md#r-release-contract), keeping the global-state branch
+distinct from the `P` pointer and its table-`+12` return.
 
 <a id="six-input-frontend"></a>
 ## Six-input frontend and control-object accessor
