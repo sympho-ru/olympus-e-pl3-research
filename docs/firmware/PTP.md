@@ -9,6 +9,12 @@ support the area name; an RTOS task entry or host operation-code ingress is not
 established. The sections below describe separate bounded relationships. Their
 grouping is not proof that they form one request-to-host path.
 
+Separate [USB observations](../observations/USB_AND_MEDIA.md) establish working
+existing-image retrieval, while [handler experiments](../observations/DEPLOYMENT.md#advertisement)
+show that the tested advertisement and static-route changes did not activate
+the intended operations. Those measurements constrain the research without
+identifying the routines below as their live implementation.
+
 - [Registration callers and unresolved callback placement](#registration)
 - [Record initialization and FIFO layout](#fifo)
 - [Primary request selector and caller](#request-selector)

@@ -12,6 +12,11 @@ boundaries to investigate. Image ownership and host transport remain separate
 missing connections. The questions below are durable evidence gaps, not a live
 work queue; overlapping contributions and well-supported negatives are useful.
 
+[Historical observations](FIRMWARE_MAP.md#observed-capabilities) already establish
+specific modified-image deployment and existing-JPEG retrieval. The remaining
+target is a new host-initiated capture connected to that retrieval capability,
+not rediscovery of basic download or proof that any modified image can boot.
+
 ## Choose a starting point
 
 | Interest | Questions |
@@ -22,6 +27,7 @@ work queue; overlapping contributions and well-supported negatives are useful.
 | Live view and scalar records | [Frame owner](#r-live-view-owner), [ThroughImage record](#r-throughimage-record) |
 | PTP-adjacent ingress and dispatch | [Registration](#r-ptp-registration), [request owner](#r-ptp-ingress), [vectors](#r-ptp-vectors), [status callbacks](#r-ptp-status), [handler banks](#r-ptp-handler-banks) |
 | Storage and unjoined objects | [Queued storage](#r-ptp-storage), [descriptor consumer](#r-descriptor-consumer), [callback provider](#r-callback-provider), [descriptor tables](#r-ptp-descriptor-tables), [entry edges](#r-ptp-entry-edges) |
+| Hardware integration | [USB shooting state](#r-usb-shooting-state), [new-image retrieval](#r-capture-retrieval) |
 | Layout and startup | [Address mappings](#r-address-mapping), [boot chain](#r-startup), [block 1](#r-block-1), [block 2](#r-block-2), [block 3](#r-block-3), [block 4](#r-block-4), [integrity](#r-integrity) |
 | Unassigned anchors | [Caller context](#r-unassigned-caller), [receiver prologue](#r-unassigned-receiver) |
 
@@ -216,6 +222,40 @@ receive boundary and the known FIFO. The `0x6e6860f7` contract on the bit-1-set
 path is a bounded subquestion. Record layout and the shared descriptor handoff
 alone do not establish live admission or wire completion.
 
+Use [known working USB reads and the failed handler experiments](observations/USB_AND_MEDIA.md)
+as empirical controls. Repeating an advertisement-only patch or a host-tool
+error does not identify the firmware's actual operation-acceptance boundary.
+
+<a id="r-usb-shooting-state"></a>
+## Distinguish USB mode from shooting-state restrictions
+
+**Start from:** the [session and capture observations](observations/USB_AND_MEDIA.md#remaining-validation).
+
+**Question:** is ordinary shooting suppressed by the selected USB personality,
+an open PTP session, host interface ownership, or another camera state?
+
+**Useful result:** first inspect retained session/media records for a controlled
+comparison. A separately authorized hardware observation could compare MTP
+with no open session, an open session, a closed session with the host interface
+released but cable attached, and a disconnected shooting control. Observe
+whether a new photograph was actually produced. Button or LCD response alone
+does not settle the question. This would constrain the necessary mode/lifecycle
+work; it would not identify a firmware global or prove host-triggered capture.
+
+<a id="r-capture-retrieval"></a>
+## Associate a new capture with its retrievable image
+
+**Start from:** [verified existing-object retrieval](observations/USB_AND_MEDIA.md#retrieval)
+and the [candidate capture consumers](firmware/RELEASE_CONTROL.md#release-body).
+
+**Useful result:** establish a particular capture's new object identity and
+readiness, then successful host retrieval of that object under the applicable
+USB state. Distinguish an old JPEG, a thumbnail, and a completed new image.
+An event or object-list change must be tied to that capture; an import watcher
+or software-trigger rehearsal alone does not prove the association. Reuse
+the working read path where applicable. A complete reconstruction of unrelated
+image-processing internals is not a prerequisite for a bounded observed join.
+
 <a id="r-ptp-vectors"></a>
 ## Establish selector-vector placement and entry
 
@@ -365,10 +405,16 @@ no such connection, and no block-4 instruction row is canonical.
 
 **Start from:** the [host-visible container result](firmware/BLOCKS.md#container-integrity).
 
+**Known:** [specific modified images were deployed and used after boot](observations/DEPLOYMENT.md#modified-image).
+One other candidate [failed to boot and was recovered](observations/DEPLOYMENT.md#recovery).
+The general validation and loading mechanism remains unresolved.
+
 **Useful result:** independently inspect a verifier, updater/device validation
-path, technical documentation, or reproducible static artifact. Host parser
-acceptance of a repaired checksum does not establish device acceptance; product
-pages, filenames, and requester-side access controls do not answer this question.
+path, technical documentation, or reproducible static artifact explaining the
+applicable checks and limits. Host-parser acceptance of a repaired checksum
+alone does not establish device acceptance; the separate hardware successes
+do not establish acceptance of arbitrary executable changes. Product pages,
+filenames, and requester-side access controls do not resolve the mechanism.
 
 <a id="r-unassigned-caller"></a>
 ## Establish the unassigned caller's context

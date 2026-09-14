@@ -10,6 +10,9 @@ Use [README.md](README.md) for setup and publication boundaries.
   local address views, evidence limits, and research labels.
 - `docs/firmware/` holds the reviewed relationships. Open the affected topic
   and its source anchors before changing a conclusion.
+- `docs/observations/` holds reviewed historical hardware and host results.
+  Check these before describing a capability as unproved. Preserve exact
+  image/session scope and distinguish measurements, attestations, and rehearsals.
 - [RESEARCH.md](docs/RESEARCH.md) holds open questions with stable IDs. It is
   not a live campaign queue and does not repeat the detailed findings.
 - [CONTRIBUTING.md](CONTRIBUTING.md) governs incoming-only evidence submissions.
@@ -29,6 +32,12 @@ Do not infer capture, image ownership, or host transfer from a label, scalar
 return, table, or queued copy. Use the canonical evidence and current reviewed
 references, not private findings or a previous task's summary, for public claims.
 Keep temporary scripts, firmware, decoded bytes, and working notes in `.private/`.
+
+Historical observation backfills follow the separate review in
+`docs/MAINTAINING.md`; private summaries alone do not establish a public finding.
+A result with no new source rows can still require a reviewed documentation
+update. Record its knowledge disposition in the PR, without changing the
+incoming-only evidence workflow or turning open questions into campaign jobs.
 
 Run `pytest` and `epl3-research check` for changes here. Follow the source and
 committed-release gates in the maintainer guide for publication. Documentation

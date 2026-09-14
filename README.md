@@ -6,6 +6,13 @@ original Body 1.6 firmware, so this repository publishes source ranges and
 decoded instructions that contributors can extend without redistributing
 Olympus firmware.
 
+The reviewed reference also preserves historical camera observations: specific
+modified images booted and exposed their data changes, and existing photographs
+were downloaded over USB. The complete host-command-to-new-image path remains
+unresolved. See [deployment observations](docs/observations/DEPLOYMENT.md) and
+[USB/media observations](docs/observations/USB_AND_MEDIA.md) for exact scope,
+supporting records, and limitations.
+
 The canonical public data is:
 - `evidence/ranges.jsonl`: verified firmware coordinates and slice hashes
 - `evidence/instructions.jsonl`: decoded instructions tied to verified slices
@@ -17,6 +24,8 @@ These files are updated by the maintainer. Refer to
 
 - To see what is already known, read the
   [firmware map](docs/FIRMWARE_MAP.md).
+- To distinguish demonstrated capabilities from missing firmware connections,
+  start with the [hardware baseline](docs/FIRMWARE_MAP.md#observed-capabilities).
 - To reproduce the work locally, first
   [obtain and verify the official image](docs/OBTAINING_FIRMWARE.md), then
   follow the [analysis workflow](docs/ANALYSIS.md).

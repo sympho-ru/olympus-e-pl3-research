@@ -90,6 +90,7 @@ resulting firmware understanding.
 | Source coordinates, hashes, instruction text | The two canonical files under `evidence/` |
 | Overview, block classification, coverage totals | [FIRMWARE_MAP.md](FIRMWARE_MAP.md) |
 | Established relationships, source anchors, local limitations | The relevant page under `docs/firmware/` |
+| Reviewed hardware/host observations and their evidence limits | The relevant page under `docs/observations/` |
 | Missing evidence and the question it would answer | [RESEARCH.md](RESEARCH.md) |
 | Address conventions, evidence terms, research labels | [Reading the references](firmware/READING.md) |
 | Contribution history, changed-row counts, correction rationale | The reviewing PR and Git history |
@@ -133,6 +134,43 @@ The wording and use of tables can vary with the finding. Do not add fields to
 canonical evidence, duplicate the reference in a second claims database, or
 copy private campaign instructions into public docs. A successful mechanical
 gate cannot replace semantic review.
+
+## Retain knowledge that does not add source rows
+
+A result can add a relationship, an empirical observation, a bounded negative,
+or a correction without adding a range or instruction. During review, identify
+its lasting knowledge and destination, or explain why existing documentation
+already covers it. Record that disposition in the reviewing PR. Do not require
+a duplicate or artificial incoming row to justify a documentation update.
+
+Historical and empirical reports receive maintainer review separately from
+normal incoming-only contributions. Before admitting an observation:
+
+1. Inspect its primary outcome and available supporting artifacts. Bind the
+   retained source files by SHA-256 and keep the private path/field mapping.
+   Historical chat or summary prose can locate evidence; it is not automatic
+   authority. Identify any user-attested step explicitly.
+2. Record date, model, exact parent/candidate image identities where known,
+   relevant host/tool versions, camera personality/session state, action,
+   response, and limitations. Leave missing metadata explicit. Separate a
+   host-tool error, captured camera rejection, simulation, and physical outcome.
+3. Publish an authored, sanitized account with stable observation/source IDs
+   and enough selected measurements to assess the conclusion. State which
+   evidence is private and cannot be independently replayed from the public
+   repository. A source hash is an identity check, not event authentication.
+4. Review publication rights and remove firmware/packet dumps, personal media,
+   device identifiers, secrets, and private paths. Preserve original records
+   privately. An observation page is not an executable experiment or approval
+   record; retired designs remain retired.
+5. Link the observation from the affected topic/map and narrow the associated
+   research question. Preserve the distinction between demonstrated capability
+   and an unidentified static implementation or missing end-to-end connection.
+
+Do not add observation fields or files under `evidence/`, change the registered
+official image to accommodate candidates, or weaken the incoming/contextual
+gates. New static support still follows ordinary evidence admission. Track
+historical reconciliation privately against declared source snapshots; report
+remaining gaps rather than asserting that an unchecked archive is complete.
 
 ## Verify documentation changes
 

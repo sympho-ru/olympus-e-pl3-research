@@ -72,6 +72,14 @@ and consumes the selected incoming files into canonical evidence. See
 for that procedure. Contributors do not update canonical files or the reviewed
 topic references as part of an incoming-evidence PR.
 
+For a historical finding or hardware observation that cannot be represented by
+source rows, provide the maintainer a sanitized description of the conditions,
+result, evidence availability, and limitations. It receives a separate
+[documentation review](docs/MAINTAINING.md#retain-knowledge-that-does-not-add-source-rows).
+Do not put raw captures, personal media, private identifiers, or experimental
+metadata into an incoming-evidence PR. Maintainer review can retain useful
+knowledge even when no new source row is needed.
+
 ## Contextual instruction gate
 
 Instruction intake requires GNU MN103 objdump 2.45 through `MN103_OBJDUMP` or
