@@ -246,17 +246,62 @@ to the original root across intervening calls is not implied by field layout.
 The `+1868` constructor installs `0x6eef8af8` through its base constructor's
 return; the `+128` constructor installs `0x6eef8d90` through its own base
 return. The latter base directly clears its current owner's field `+140`.
-The outer `+1868`/base bodies do not themselves write `+140`, but the base
-directly calls setup source `0x007ee993`. That setup saves its helper's returned
-`a0` in `a2`, installs a table literal, clears `d0`, and writes zero to that
-current owner's `+140` and `+144` at `0x007ee9a4` / `0x007ee9a8`. It then calls
-source `0x007ec885` with current owner offsets `+148`, `+168`, and `+188`.
-The copies at `0x007ee9c7`, `0x007ee9d1`, and `0x007ee9d7` are `mov a2,a0`,
-not rebindings of `a2` from helper returns. The listed call masks preserve `a2`
-around those three calls and source `0x0081c176`; the later unmasked tail at
-`0x007eeaba` still needs its actual register/storage contract. These initial
-zero writes do not yet identify the outer constructor's returned owner or
-establish the field's value after construction or at live selection.
+
+On the valid, normally returning construction path, the object receiving the
+`+1868` constructor's `0x6eef8af8` installation is also the object whose
+`+140` and `+144` are initially cleared by direct base setup. Call that object
+`B0`. At root call source `0x007eef81`, it is current saved root `R + 1868`:
+the root's preceding selected calls list `a2` in their preservation masks,
+and source `0x007eef79..0x007eef7e` forms that argument from saved `a2`.
+This partial owner join does not establish a final constructor return, cached
+root identity, later field value, or runtime selection.
+
+| Owner-contract support | Block | Offset | Length |
+|---|---:|---|---:|
+| Common-base stack-argument prefix | 0 | `0x0081bd5a` | 2 |
+| Common-base owner continuation | 0 | `0x0081bd5c` | 97 |
+| Intermediate base | 0 | `0x007ecb2f` | 59 |
+| Its clear-only tail | 0 | `0x007ecf84` | 12 |
+| Direct setup clear-only tail | 0 | `0x007eeaba` | 12 |
+| Outer base clear-only tail | 0 | `0x007ed312` | 12 |
+| +1868 constructor clear-only tail | 0 | `0x007f02fd` | 44 |
+| Current a0 +12 writer | 0 | `0x00819dc6` | 6 |
+
+Common base source `0x0081bd5a` stores entering `a1` on the stack, then
+`0x0081bd5c` saves entering `a0` in `a2`. Its selected calls preserve `a2`;
+the final unmasked source `0x00819dc6` only stores current `d0` through current
+`a0 + 12` and returns without writing the owner register. Source
+`0x0081bdb9` copies saved `a2` to `a0` before the return. The call at source
+`0x0081bdac` selects source `0x0081c1ba`: its canonical alternate display
+view is `source + 0x402bffe0`, while the caller's CODE-local target is
+`0x6ee1c19a`. Neither display arithmetic is the separate DATA view.
+
+Intermediate base `0x007ecb2f` saves that returned owner in `a2`, preserves it
+around its listed-mask calls, and restores it after the complete unmasked
+`0x007ecf84` tail, which clears only `+132`/`+136` without owner-register
+writes. This intermediate base stores **-1**, not zero, at current owner's
+`+128` (`0x007ecb50` / `0x007ecb52`). Direct setup `0x007ee993` saves the
+same returned `B0`, installs its literal, clears `d0`, and writes zero to
+`B0 + 140` / `B0 + 144` at `0x007ee9a4` / `0x007ee9a8`. It calls source
+`0x007ec885` with `B0 + 148`, `B0 + 168`, and `B0 + 188`, preserving saved
+`a2` around each call and source `0x0081c176`. The copies at `0x007ee9c7`,
+`0x007ee9d1`, and `0x007ee9d7` are `mov a2,a0`, not helper-return rebindings.
+Its complete `0x007eeaba` tail and outer base's complete `0x007ed312` tail
+clear only `+208`/`+212` without owner-register writes. Their saved-owner
+copies and returns therefore supply `B0` to `0x007efc23`, which saves it in
+`a3` before literal installation at `0x007efc2a`.
+
+Owner-register preservation does not prove pointed-storage preservation. The
+first subsequent storage dependency is `0x007ec885` at `0x007ee9b0` with
+`B0 + 148`; its allocator and the other direct/indirect effects have not been
+shown to leave `B0 + 140` unchanged. Later constructor calls to
+`0x0081bc3b` at `0x007efc57` / `0x007efc79` also require their actual storage
+and register contracts. An empty mask alone proves neither clobber nor
+preservation. The final `0x007f02fd` tail has no owner-register write or
+`+140` store: it clears current `+208`, `+212`, and `+280..+308` in four-byte
+steps and returns at `0x007f0326`. It does not repair an earlier unknown
+effect. The copies at `0x007efc8d` / `0x007efc9c` are `mov a3,a0`, not
+rebindings of saved `a3` from helper returns.
 
 Root source `0x007eefe7` explicitly copies current saved `a2` to `a0` before
 calling wiring source `0x007ef127`, whose first instruction defines its own

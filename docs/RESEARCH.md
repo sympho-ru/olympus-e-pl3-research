@@ -60,11 +60,13 @@ For the constructed service, establish the cached root's validity and lifetime,
 the concrete receiver selected from the `+1868` subobject's current field `+140`,
 and its table's `+4` consumer. Verify `d2` preservation through selector slot
 `+156` before equating the forwarded scalar with the incoming request. Resolve
-the owner join from direct base setup's initial `+140`/`+144` zero writes to
-the outer constructor return, then the field's later value through helper and
-indirect storage effects. Root wiring's `+272`/`+276`/`+160` writes are distinct
-from that field. The selected bodies do not establish an exhaustive producer
-census. Keep this
+the field's later value through helper and indirect storage effects: on the
+qualified construction path, the initial `+140`/`+144` zero-write owner is
+joined to the outer-base return and the `0x6eef8af8` installation, but zero is
+not proved to survive those effects or live invocation. Establish final
+constructor/root return and cache contracts separately from that partial join.
+Root wiring's `+272`/`+276`/`+160` writes are distinct from that field. The
+selected bodies do not establish an exhaustive producer census. Keep this
 service distinct from the guarded action's carrier until a source-supported
 join is established.
 
