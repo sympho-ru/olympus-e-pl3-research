@@ -140,9 +140,14 @@ produced a same-size five-block image accepted by that host parser; the
 unrepaired control failed its checksum. The exact-source verifier correctly
 rejects the modified image because it is not the registered research source.
 
-This proves only the regular container transformation and checksum boundary.
-Updater validation, transfer acceptance, device-side checks, loading,
-authentication, and successful boot remain unknown.
+This host test proves only the regular container transformation and checksum
+boundary. Separate [physical observations](../observations/DEPLOYMENT.md#modified-image)
+establish transfer and post-boot use of particular modified Body-1.6 images;
+the modified block-4 test image described here was not thereby tested on hardware.
+The updater/device validation mechanism, general executable-patch safety, and
+precise loading behavior remain unresolved. The [boot-failure and recovery
+observation](../observations/DEPLOYMENT.md#recovery) illustrates why acceptance
+or LCD completion cannot substitute for those proofs.
 
 **Next evidence:** [Establish updater or device
 authentication](../RESEARCH.md#r-integrity).

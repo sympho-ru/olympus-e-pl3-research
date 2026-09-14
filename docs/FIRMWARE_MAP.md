@@ -10,6 +10,25 @@ Start here for an overview, open a topic for exact relationships, or choose an
 [open research question](RESEARCH.md). Before interpreting an address, read
 [the coordinate and evidence conventions](firmware/READING.md).
 
+<a id="observed-capabilities"></a>
+## What has been observed on hardware?
+
+Historical observations complement the static firmware reference. They describe
+specific images, sessions, and host conditions; they do not identify every
+internal implementation or establish the complete capture path.
+
+| Capability or constraint | Observed result | Remaining limit |
+|---|---|---|
+| [Modified-image deployment](observations/DEPLOYMENT.md#modified-image) | An exact modified Body-1.6 image booted and returned its changed data marker | Arbitrary executable-patch safety and the validation mechanism |
+| [Operation advertisement and dispatch](observations/DEPLOYMENT.md#advertisement) | Advertisement changed, but the tested capture and proxy requests were rejected | Actual live handler admission and selection |
+| [Existing-image retrieval](observations/USB_AND_MEDIA.md#retrieval) | A selected JPEG was downloaded and its saved hash verified | Initiating capture and associating its new image with retrieval |
+| [USB personalities](observations/USB_AND_MEDIA.md#personalities) | Storage and MTP/Print worked with different session and media behavior | Shooting-state interaction and runtime firmware connections |
+| [Boot failure and recovery](observations/DEPLOYMENT.md#recovery) | One executable-table experiment failed to boot; one official-image recovery was reported | Exact fault mechanism and general recovery guarantees |
+
+Source-record identities, measured versus user-attested steps, and public
+reproducibility limits accompany the observations. Early USB records without
+an exact image identity are not automatically Body-1.6-specific evidence.
+
 ## What is in the firmware?
 
 | Decoded block | Current understanding | Missing connection |
@@ -48,6 +67,11 @@ The practical target is one host command causing one still image and transfer
 of that image to the host without physical interaction. The complete path is
 not established. Each connection below needs its own evidence; the available
 findings do not yet form an end-to-end route.
+
+The [existing-image download](observations/USB_AND_MEDIA.md#retrieval) is an
+observed capability available for reuse. The table below concerns the missing
+connections to a host-initiated new capture and their static implementation;
+it does not mean that basic USB communication or downloading is unproved.
 
 | Required connection | Available static starting point | What remains to be proved |
 |---|---|---|

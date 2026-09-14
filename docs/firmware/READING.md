@@ -18,17 +18,31 @@ human-reviewed interpretations; they do not change either evidence schema.
 | Static relationship | Reviewed code or data supports a specific call, write, lookup, or local mapping | State, receiver identity, and intervening call effects still matter |
 | Candidate or hypothesis | A proposed role, placement, or connection worth investigating | It must not be used as an established premise |
 | Bounded negative | A stated search or path excludes a particular possibility | It does not exclude other blocks, address views, indirect paths, or runtime-built state |
+| Host measurement | A retained host record reports a response, transfer, file, or other measured result | Host-tool failure is not necessarily a camera response; setup and image identity bound applicability |
+| Hardware observation | A recorded physical experiment supports the stated behavior on the tested body/image | It does not prove the internal implementation, general patch safety, or behavior under other conditions |
+| User attestation | The operator reports a physical step or visible result | It is distinct from a captured host measurement or firmware readback |
+| External documentation | An identified source describes a product or interface | Model, revision, and applicability require review; it is not an observation of this body |
+| Simulation or rehearsal | A model or host runner exercised a specified scenario | A simulated success does not establish camera actuation or image production |
 
 These are different kinds of evidence, not steps on an automatic confidence
 scale. A range-only contribution may support a reviewed structural finding; an
 instruction row may still have an unresolved entry anchor. See [contextual
 verification](../DECODING.md) for the mechanical gate and its limits.
 
-All behavior here is static unless an entry explicitly states otherwise with
-supporting evidence. No complete host-request-to-image-transfer path has been
-established. Capture, image ownership, device acceptance, and patch safety
+Behavior in the firmware topic pages is static unless explicitly supported by
+other evidence. The [observation pages](../FIRMWARE_MAP.md#observed-capabilities)
+record historical hardware and host results separately, with source identities,
+conditions, and limitations. Specific modified-image deployment and existing
+JPEG retrieval have been observed; no complete host-request-to-new-image-transfer
+path has been established. Capture, image ownership, and general patch safety
 require their own evidence. Each entry retains the particular uncertainty that
 limits its result, especially receiver identity and register preservation.
+
+Private source-record hashes bind the retained artifacts but do not make a
+physical event independently reproducible. Public observation summaries must
+state what was measured, what was attested, and which supporting material is
+withheld. Missing historical firmware or tool identity stays explicit. A
+DeviceInfo version string is not automatically the camera-menu body version.
 
 <a id="coordinates"></a>
 ## Source coordinates and address views
