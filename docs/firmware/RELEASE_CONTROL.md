@@ -385,6 +385,8 @@ normal return establishes stock receiver selection or a capture effect.
 | Role | Block | Offset | Length |
 |---|---:|---|---:|
 | Conditional installed-table prefix | 0 | `0x008f76d8` | 8 |
+| Conditional table slot +64 | 0 | `0x008f7718` | 4 |
+| Conditional table slots +72/+76 | 0 | `0x008f7720` | 8 |
 | Wrapper entry and direct call | 0 | `0x007eccbf` | 12 |
 | Overlapping call-through-return span | 0 | `0x007eccc4` | 32 |
 | Direct endpoint | 0 | `0x0081c0ec` | 71 |
@@ -399,6 +401,17 @@ The two overlapping wrapper ranges cover `[0x007eccbf,0x007ecce4)`; a complete
 source-anchored replay shows its direct call to `0x0081c0ec` at
 `0x007eccc4` without preceding overwrites of entering `a0`, `a1`, or `d0`.
 No new wrapper or endpoint instruction rows are implied by the table range.
+
+Under the same conditional DATA view, source `0x008f7718` holds
+`0x6ee1d263`, nominating `0x0081be43` as slot `+64`; source
+`0x008f7720` / `0x008f7724` hold `0x6ee1d38f` / `0x6ee1d39e`, nominating
+`0x0081bf6f` / `0x0081bf7e` as slots `+72` / `+76`. These are the same code
+profiles reviewed in the [still-corridor continuations](STILL_OBJECTS.md#continuations),
+not proof that the E table and that corridor's parent table or objects are
+identical. The complete native `+72` profile forwards entering `a0/a1/d0`
+to the receiver's `+64` method; native `+64` and `+76` form their specified
+stack records on the stated arms rather than requiring an externally guessed
+layout. Their argument formation is a partial source-level input join only.
 
 Use `E`, `P`, and `Q` only as names for endpoint-entering `a0`, `d0`, and
 `a1`, not recovered types. Source `0x0081c0ec` saves `E` in `a3`,
@@ -421,6 +434,13 @@ The indirect calls are unmasked: later `a2`/`a3` identities require their
 actual contracts, while the stack reload is explicit. Pointer-used `P` is not
 a proved numeric opcode, image class, or payload owner.
 
+The nonzero table-`+12` result is still current `d0` at the `+76` call; its
+native wrapper copies that entering `d0` to `d1` before normalizing it. On the
+other arm, the later `+72` input is current `d0` after P-table `+4`, not a
+proved conventional status/opcode or preserved entering argument. Native
+record initialization, scalar return and reset are not operation-completion
+or image-ownership proofs.
+
 The [shared continuation](STILL_OBJECTS.md#continuations) has its own optional
 object call and compares a later global load with **current** `d2`, not a
 proved preserved zero. Neither complete endpoint body directly writes global
@@ -430,8 +450,11 @@ parent table or its field-`+100` object.
 
 **Unresolved:** actual table/receiver selection, valid live `E/P/Q` objects and
 their lifetime, argument/register/storage preservation, direct and indirect
-method effects, and host ingress. An explicit-receiver adapter could bypass a
-selector conceptually, but would not manufacture those contracts. Numeric
+method effects, and host ingress. Native stack lifetime during the call does
+not establish that an endpoint cannot retain the record or that literal
+`0x6eeffee4` identifies a valid live table. An explicit-receiver adapter could
+bypass a selector or use native record formation conceptually, but would not
+manufacture those contracts. Numeric
 argument 33, forced-null safety, capture, image ownership, transfer, device
 acceptance, and patch safety are not established.
 
