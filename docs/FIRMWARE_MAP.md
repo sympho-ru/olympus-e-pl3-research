@@ -49,7 +49,7 @@ evidence of newly captured images.
 | Topic | What the current evidence explains |
 |---|---|
 | [Startup](firmware/STARTUP.md) | Shared state words and a local overlay handoff; reset ownership is unresolved |
-| [Release-control candidates](firmware/RELEASE_CONTROL.md) | Release and guarded action callers, carrier methods, caller record writes, construction owner joins, receiver selection, conditional endpoint/native inputs and gate-clear receiver arguments, six-input frontend, and bounded selector-to-key lookups |
+| [Release-control candidates](firmware/RELEASE_CONTROL.md) | Release and guarded action callers, bit-state guards, carrier methods, caller record writes, construction owner joins, receiver selection, conditional endpoint/native inputs and gate-clear receiver arguments, six-input frontend, and bounded selector-to-key lookups |
 | [Still-corridor objects](firmware/STILL_OBJECTS.md) | Singleton dispatch, list population, separate object tables, and field getter/setter relationships |
 | [Live view and ThroughImage](firmware/LIVE_VIEW.md) | Object lifecycle, collection operations, and a selector returning a scalar through a record lookup |
 | [PTP-adjacent records and dispatch](firmware/PTP.md) | Registration callers, FIFO mechanics, selectors, callbacks, descriptors, and queued storage |
@@ -90,7 +90,7 @@ and the evidence needed to resolve them are in [RESEARCH.md](RESEARCH.md).
 
 | Block | Authenticated ranges | Canonical instruction rows |
 |---:|---:|---:|
-| 0 | 13,080 | 52,648 |
+| 0 | 13,080 | 52,688 |
 | 1 | 827 | 0 |
 | 2 | 4 | 0 |
 | 3 | 35 | 0 |

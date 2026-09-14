@@ -67,8 +67,10 @@ consumers](../RESEARCH.md#r-release-contract).
 The action at source `0x005c9e20` checks two helper results, prepares a carrier,
 and calls methods through unresolved receivers. Its direct callers establish
 local entry edges, but the method effects do not identify capture initiation.
-These relationships have authenticated range support; this action and its
-carrier helpers do not have canonical instruction listings.
+Canonical instructions cover the two guards, their shared bit-test leaf, and
+the action prefix through source `0x005c9e56`. The remaining action and carrier
+relationships have authenticated range support without complete canonical
+instruction listings.
 
 | Role | Local address | Block | Offset | Length |
 |---|---|---:|---|---:|
@@ -76,6 +78,8 @@ carrier helpers do not have canonical instruction listings.
 | Action body through return | `0x6ebc9e00` | 0 | `0x005c9e20` | 174 |
 | First guard helper | `0x6ebd1a61` | 0 | `0x005d1a81` | 14 |
 | Second guard helper | `0x6ebd1aa6` | 0 | `0x005d1ac6` | 15 |
+| Range containing shared bit-test leaf | `local code view` | 0 | `0x0060666a` | 256 |
+| Bit-test leaf return | `0x6ec06747` | 0 | `0x00606767` | 3 |
 | Carrier construction | `0x6ebd2634` | 0 | `0x005d2654` | 70 |
 | Nested field writer | `0x6eb9a781` | 0 | `0x0059a7a1` | 19 |
 | Dynamic-call body | `0x6eb9a11c` | 0 | `0x0059a13c` | 77 |
@@ -96,8 +100,26 @@ that comparison's original `d2` value.
 The action saves incoming `a0` in `a2`. At source `0x005c9e26` and
 `0x005c9e39`, each `cmp 0,d0` / `beq` continues only on zero. The nonzero
 arms return `-268435455` and `-268435422`, respectively. Each guard helper
-loads receiver field `+4` and calls local `0x6ec0672d`, with `d0=0` or `5`;
-the meaning of those checks remains unresolved.
+loads receiver field `+4` and calls local `0x6ec0672d`, with `d0=0` or `5`.
+The first helper does not write `a2`, including in its shared leaf, so the
+second helper receives the saved incoming receiver. Each helper returns the
+leaf's `d0` unchanged.
+
+The shared leaf occupies source `[0x0060674d,0x0060676a)`. For entering pointer
+`S` in `a0` and index `i` in `d0`, it loads a word at
+`S + 16 + 4*(i >> 3)` and tests mask `1 << (i & 7)`, narrowed to a byte by
+`extbu`. It clears `d2`, then `cmp d2,d1` / `bls 0x6ec06746` at source
+`0x00606761` skips `mov 1,d2` when the masked value is zero; the nonzero
+fallthrough sets `d2=1`. Both arms copy `d2` to return `d0`, and
+`retf [d2,d3],8` restores the saved `d2/d3`. Thus indices 0 and 5 select
+masks `0x01` and `0x20` in the same word at `S+16`. A set bit selects the
+corresponding action error return; both bits must be clear to reach source
+`0x005c9e46`. The leaf changes `a0` and `d1`, and neither wrapper restores
+them. This is a bit-state test, not an identified image-readiness check.
+
+The owner and validity of `S`, the producers and meanings of those bits, and
+their state during invocation remain unresolved. Later carrier operations
+still need their own receiver and register-preservation evidence.
 
 On the continuation, the action prepares `sp+12` in `a3`, loads through the
 current `a2+52`, and calls two helpers. Immediately before construction at
