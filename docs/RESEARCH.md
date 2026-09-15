@@ -248,6 +248,8 @@ caller metadata 2 survives the allocator's transitive calls in `d3` to node
 and [FIFO](firmware/PTP.md#fifo), plus the [named MTP lifecycle and
 receive-record/pump join](firmware/PTP.md#mtp-event-pump) and the
 [adjacent submitted-record consumer candidate](firmware/PTP.md#submitted-record-consumer).
+The [range-only aggregate owner candidate](firmware/PTP.md#mtp-lifecycle-owner)
+is a separate construction starting point.
 
 **Useful result:** identify the stack-record owner's relationship to a transport
 receive boundary and the known FIFO. The `0x6e6860f7` contract on the bit-1-set
@@ -266,6 +268,12 @@ through `0x6e61fd33` and `0x6f3311e7`. Establish the missing middle and exit,
 its runtime task/owner, and the identity of the stack record before joining it
 to the MTP submitter or known FIFO. A shared halfword/helper is insufficient.
 
+The aggregate candidate supplies construction and field-372/field-8 dispatch
+geometry around a singleton-style 208-byte object. Establish its runtime root,
+the retained identities returned by opaque factories, and a table/caller edge
+selecting the MTP start/end wrappers. Range-only proximity and compatible
+object shape do not establish wrapper ownership.
+
 Use [known working USB reads and the failed handler experiments](observations/USB_AND_MEDIA.md)
 as empirical controls. Repeating an advertisement-only patch or a host-tool
 error does not identify the firmware's actual operation-acceptance boundary.
@@ -276,7 +284,8 @@ error does not identify the firmware's actual operation-acceptance boundary.
 **Start from:** the [session and capture observations](observations/USB_AND_MEDIA.md#remaining-validation)
 and the [named USB-state reporting wrapper](firmware/PTP.md#usb-state-wrapper)
 and [candidate connection callback stores and consumer](firmware/PTP.md#usb-connect-stores),
-plus the [named MTP communication lifecycle callers](firmware/PTP.md#mtp-communication-lifecycle).
+plus the [named MTP communication lifecycle callers](firmware/PTP.md#mtp-communication-lifecycle)
+and their [range-only aggregate owner candidate](firmware/PTP.md#mtp-lifecycle-owner).
 
 The wrapper clears `d0` on normal return and branches on current `d2` to two
 labels. It does not settle live USB state: receiver/slot-40 ownership, value
@@ -304,6 +313,9 @@ uses current `d2` after an opaque call, and the two outer wrappers use current
 the wrappers' runtime owner before treating the family as a producer of a
 shooting-relevant state. The pump-shaped path also tests bit 1 of
 `0x605fc9dc`, but its writer, lifetime, and shooting meaning remain unresolved.
+The aggregate candidate adds field links and indirect slots, but no accepted
+edge selects the start/end wrappers or ties the separate Boolean-shaped leaf to
+a USB or shooting state.
 
 **Question:** is ordinary shooting suppressed by the selected USB personality,
 an open PTP session, host interface ownership, or another camera state?
