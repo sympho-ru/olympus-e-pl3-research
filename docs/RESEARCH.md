@@ -48,8 +48,9 @@ does not resolve its owner or execution path.
 
 **Start from:** the [release body and caller profiles](firmware/RELEASE_CONTROL.md#release-body),
 [guarded action and carrier calls](firmware/RELEASE_CONTROL.md#guarded-action),
-and the separate [native still-request receiver boundary](firmware/STILL_OBJECTS.md#native-still-request).
-Also inspect the distinct [constructed service dispatch](firmware/RELEASE_CONTROL.md#constructed-service).
+the separate [native still-request receiver boundary](firmware/STILL_OBJECTS.md#native-still-request),
+the [native still-take command boundary](firmware/STILL_OBJECTS.md#native-still-take),
+and the distinct [constructed service dispatch](firmware/RELEASE_CONTROL.md#constructed-service).
 
 **Question:** which concrete receivers and input profiles reach the conditional
 lookups, the helper at `0x6ebd9652`, and the action's dynamic methods reached
@@ -111,6 +112,13 @@ the current field-`+140` receiver, its table slot `+4`, and the indirect
 method's effect. Preserve the immediate-return predicate arm and the uncertain
 constructor-return identity through opaque helpers. The post-call shooting
 diagnostic does not prove request publication, exposure, or image creation.
+
+For the native still-take body at source `0x00220368`, the direct caller-to-
+callee scalar handoff is established, but the complete authenticated body has
+only sparse canonical instruction anchors. Select a bounded downstream call
+with complete argument and preservation support and establish its concrete
+capture or object effect. The `Still Take Start` identifier and normal return
+do not supply that effect.
 
 <a id="r-caller-record"></a>
 ## Identify the caller record's owner and consumers

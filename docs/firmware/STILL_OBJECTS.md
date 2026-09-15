@@ -11,6 +11,7 @@ unresolved. Shared methods do not establish shared receiver identity.
 - [Separate object at owner field +2216](#owner-2216)
 - [Slots +72 and +76 and their continuations](#continuations)
 - [Native still-request receiver boundary](#native-still-request)
+- [Native still-take command boundary](#native-still-take)
 - [Field +100 getter and writer](#field-100)
 
 <a id="singleton"></a>
@@ -277,6 +278,48 @@ The dynamic slot's concrete owner and effect, live inbound selection, exposure,
 new-image identity, and host retrieval remain unresolved. The body is not a
 safe patch or host-control interface merely because it constructs a typed
 argument and reaches a named diagnostic.
+
+**Next evidence:** [Resolve the release-control and native request
+consumers](../RESEARCH.md#r-release-contract).
+
+<a id="native-still-take"></a>
+## Native still-take command boundary
+
+A dispatch arm forwards its current `d2` value to a bounded native still-take
+body. The callee saves that input immediately, and a source label identifies a
+still-take phase. These facts establish a direct scalar handoff and a useful
+effect frontier, not shutter actuation or a completed capture.
+
+| Role | Block | Offset | Length |
+|---|---:|---|---:|
+| Caller argument and direct call | 0 | `0x00220236` | 6 |
+| Separate enclosing return anchor | 0 | `0x00220365` | 3 |
+| Complete authenticated callee span | 0 | `0x00220368` | 935 |
+| Still-take diagnostic identifier | 0 | `0x0039d7fd` | 17 |
+
+The code rows use local view `source + 0x402c0000`. At source `0x00220236`,
+`mov d2,d0` is immediately followed by the direct call to source
+`0x00220368`; the callee's first canonical instruction stores entering `d0`
+at `sp+28`. This proves the local input handoff. The return instruction at
+source `0x00220365` is separately canonical, but the gap after the call is not
+a complete canonical control-flow listing and does not establish the returned
+status or caller outcome.
+
+The 935-byte range authenticates the callee through its complete return at
+source `0x0022070c`, while only six interior instructions are canonical. A
+selected test at `0x002204f8` compares current `d1` with zero and branches
+nonzero to `0x00220547`. On the zero fallthrough, range-only context associates
+the separately authenticated `Still Take Start` identifier before later
+selected anchors at `0x00220509` and `0x0022053d`. Those anchors load current
+field `a3+32` and call `0x404d7980`, respectively, but the intervening bytes
+are not a canonical instruction listing and do not establish preserved
+arguments or the callee's effect.
+
+The complete authenticated extent and diagnostic name do not prove that the
+body is entered live, that its scalar denotes a host request, or that any
+sensor exposure, file creation, new-image ownership, transfer, or completion
+occurs. Establish those effects at a bounded selected call before treating the
+body as a controllable capture interface.
 
 **Next evidence:** [Resolve the release-control and native request
 consumers](../RESEARCH.md#r-release-contract).
