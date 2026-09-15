@@ -243,10 +243,51 @@ requests state 20. The separate caller maps receiver field `+0` values 178 or
 179 to state 22, 180 to state 23, and 181 to state 21 before its direct owner
 call. No accepted source binds either receiver to a physical disconnect input.
 
+An adjacent range-only event family adds a conditional path into the interior
+of the disconnect-labelled body, plus exact owners for two internal globals:
+
+| Role | Local address | Block | Offset | Length |
+|---|---:|---:|---|---:|
+| Flag clear/get/set leaves | `0x6efc9054` | 0 | `0x009c9074` | 36 |
+| Selected flag-setter caller | `0x6efc912f` | 0 | `0x009c914f` | 25 |
+| Event-field dispatcher | `0x6efd39ce` | 0 | `0x009d39ee` | 218 |
+| Mode-state mapper | `0x6efd3ab3` | 0 | `0x009d3ad3` | 92 |
+| Mode-state store leaf | `0x6efd3b0f` | 0 | `0x009d3b2f` | 9 |
+| Mode-state load leaf | `0x6efd3b18` | 0 | `0x009d3b38` | 9 |
+
+These spans use the same conditional CODE-local view and add no canonical
+instruction rows. The flag leaves clear `0x6066a53c` and `0x6066a540`, read
+`0x6066a53c`, or write literal 1 to `0x6066a53c`. The selected setter caller
+passes entry `a1` through saved `a2`, calls the setter, then writes 306 at
+receiver `+76` and 1 at receiver `+84`. The flag's physical meaning, clearer
+input, lifetime, and relationship to the transition receiver remain unresolved.
+
+The dispatcher initially copies entry `a1` to `a3`, but two later direct calls
+with empty encoded preservation masks intervene before current `a3` is used.
+It then reads current field `a3+4` and clears that same current field. This
+establishes field direction for the current object, not preservation of the
+entry receiver. The read value maps as follows: 240 calls the mode-state
+mapper; 241 maps to 1; 242 to 2; 243 to 3; 244 to 4; 245 to 6; and unmatched
+values to 1. Each fixed arm calls the exact store leaf for `0x6066a670`.
+
+The mode-state mapper can write 0, 1, 2, 3, or 4 to `0x6066a670` under its
+current helper results, and the exact load leaf returns the current global.
+These numeric producers are internally established but have no source-proved
+USB, interface, or shooting meaning.
+
+The dispatcher's interior call into the disconnect-labelled body occurs only
+when a separate virtual-slot-`+40` call returns current value 1. Event 243
+instead skips a later helper/indirect-call pair; that value alone does not
+select the interior call. Although the state-19 record mapper writes `+4=243`,
+no accepted writer-to-dispatcher edge or common object identity joins that
+record to the current dispatch object.
+
 The first missing join is therefore a source-authenticated physical USB or
-interface-release input and receiver owner reaching an accepted `PC_RETURN` or
-`PC_CAM_SHOOTING` transition. Active-interface teardown, ordinary shooting,
-MTP re-entry, capture, image production, and host transfer remain unproved.
+interface-release owner of the dispatcher's incoming event object, including
+receiver preservation through the intervening calls, reaching an accepted
+`PC_RETURN` or `PC_CAM_SHOOTING` transition. Active-interface teardown,
+ordinary shooting, MTP re-entry, capture, image production, and host transfer
+remain unproved.
 
 **Next evidence:** [USB/shooting-state research](../RESEARCH.md#r-usb-shooting-state).
 
