@@ -17,6 +17,7 @@ identifying the routines below as their live implementation.
 
 - [Named USB-state reporting wrapper](#usb-state-wrapper)
 - [Candidate connection callback, byte stores, and consumer](#usb-connect-stores)
+- [Named MTP communication lifecycle callers](#mtp-communication-lifecycle)
 - [Registration callers and unresolved callback placement](#registration)
 - [Record initialization and FIFO layout](#fifo)
 - [Primary request selector and caller](#request-selector)
@@ -172,6 +173,63 @@ transfer, or a safe mode override. They also do not connect this consumer to
 the named wrapper's slot-40 value.
 
 **Next evidence:** [USB/shooting-state research](../RESEARCH.md#r-usb-shooting-state).
+
+<a id="mtp-communication-lifecycle"></a>
+## Named MTP communication lifecycle callers
+
+Two source-selected bodies associated with the identifiers
+`api_comm_Start_Communication_MTP` and `api_comm_End_Communication_MTP` call a
+shared set of status, notification, and event-shaped helpers. Two separate
+wrappers call those bodies before conditionally forwarding a current field
+value. The names and direct calls establish a bounded static lifecycle family,
+not live MTP-session entry, host request ingress, or a transport completion.
+
+| Role | Local address | Block | Offset | Length |
+|---|---:|---:|---|---:|
+| Start-associated body | `0x6e858cab` | 0 | `0x00258ccb` | 100 |
+| End-associated body | `0x6e858d0f` | 0 | `0x00258d2f` | 65 |
+| Shared status writer candidate | `0x6e858e48` | 0 | `0x00258e68` | 23 |
+| Mount-status-shaped helper | `0x6e85e919` | 0 | `0x0025e939` | 44 |
+| Start identifier | DATA-local `0x6e9b0882` | 0 | `0x003af462` | 33 |
+| End identifier | DATA-local `0x6e9b08a3` | 0 | `0x003af483` | 31 |
+| End-calling wrapper | `0x6ee1819a` | 0 | `0x008181ba` | 31 |
+| Start-calling wrapper | `0x6ee181b9` | 0 | `0x008181d9` | 32 |
+
+The 100 canonical instructions completely cover the six code spans. Their
+CODE-local view uses `source + 0x6e5fffe0`; the two identifier ranges use the
+separate conditional DATA-local view `source + 0x6e601420`. Coherent pointer
+arithmetic across those views does not establish runtime placement.
+
+The start-associated body calls `0x6e861c92` with fixed scalar inputs, copies
+its current result through `d1` and `d2`, and compares the zero-extended value
+with 2. The less-than arm calls `0x6e8615eb` with `d0=33`; both arms then call
+`0x6e861599` with `d0=33`. The end-associated body begins with that latter
+call. Each body next calls the mount-status-shaped helper with `d0=1` for start
+or `d0=0` for end, calls `0x6e85ef16`, and calls the shared writer candidate
+with the same fixed start/end scalar. Intervening opaque calls prevent binding
+later current registers to earlier values unless the relevant preservation
+contract is established.
+
+The shared writer candidate copies incoming `d0` to `d2`, performs an opaque
+reporting call, and writes current post-call `d2` as a halfword to
+`0x605fc9d4`. This does not prove that the written value equals the incoming
+start/end scalar. The mount-status-shaped helper retains incoming `d1` in its
+stack record, selects current `d1=1` when current post-reporting low-byte `d2`
+equals 1 and otherwise selects 7, loads a halfword through `0x6e691ad8`, and
+calls `0x6e8605d5`. The called helper's effect and the numeric meanings remain
+unresolved.
+
+The wrappers call the end- or start-associated body and then inspect a current
+pointer at current `a2+4` or `a2+8`; a nonzero value is forwarded to
+`0x6edec994`. Although each wrapper initially copies incoming `a0` to `a2`,
+preservation across the lifecycle call is not established, so the later field
+cannot yet be assigned to the incoming object. No accepted edge establishes
+that either wrapper is selected by a live MTP session, or connects the family
+to shooting permission, capture, image ownership, USB submission, or host
+completion.
+
+**Next evidence:** [USB/shooting-state research](../RESEARCH.md#r-usb-shooting-state)
+and [PTP ingress research](../RESEARCH.md#r-ptp-ingress).
 
 <a id="registration"></a>
 ## Registration callers and unresolved callback placement

@@ -261,7 +261,8 @@ error does not identify the firmware's actual operation-acceptance boundary.
 
 **Start from:** the [session and capture observations](observations/USB_AND_MEDIA.md#remaining-validation)
 and the [named USB-state reporting wrapper](firmware/PTP.md#usb-state-wrapper)
-and [candidate connection callback stores and consumer](firmware/PTP.md#usb-connect-stores).
+and [candidate connection callback stores and consumer](firmware/PTP.md#usb-connect-stores),
+plus the [named MTP communication lifecycle callers](firmware/PTP.md#mtp-communication-lifecycle).
 
 The wrapper clears `d0` on normal return and branches on current `d2` to two
 labels. It does not settle live USB state: receiver/slot-40 ownership, value
@@ -280,6 +281,13 @@ unchanged-state claims. The next useful static result would establish the
 consumer's live owner/input contract or a concrete downstream shooting effect.
 Neither the store constants nor a join inferred from naming establishes
 shooting permission or the wrapper's slot-40 producer.
+
+The named MTP start/end bodies add direct calls to shared status,
+mount-status-shaped, and event-shaped helpers, but they do not establish live
+session selection. The candidate status writer uses current `d2` after an
+opaque call, and the two outer wrappers use current `a2` after their lifecycle
+calls. Establish those preservation contracts and the wrappers' runtime owner
+before treating the family as a producer of a shooting-relevant state.
 
 **Question:** is ordinary shooting suppressed by the selected USB personality,
 an open PTP session, host interface ownership, or another camera state?
