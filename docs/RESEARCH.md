@@ -25,7 +25,7 @@ not rediscovery of basic download or proof that any modified image can boot.
 | Release interface and inputs | [Release and guarded action](#r-release-contract), [caller record](#r-caller-record), [frontend inputs](#r-release-inputs), [key owner](#r-key-owner) |
 | Still-object ownership | [List consumer](#r-still-list), [nested receiver](#r-still-receiver), [field +100](#r-still-field-100) |
 | Live view and scalar records | [Frame owner](#r-live-view-owner), [ThroughImage record](#r-throughimage-record) |
-| PTP-adjacent ingress and dispatch | [Registration](#r-ptp-registration), [request owner](#r-ptp-ingress), [vectors](#r-ptp-vectors), [status callbacks](#r-ptp-status), [handler banks](#r-ptp-handler-banks) |
+| PTP-adjacent ingress and dispatch | [Registration](#r-ptp-registration), [request owner and MTP lifecycle](#r-ptp-ingress), [vectors](#r-ptp-vectors), [status callbacks](#r-ptp-status), [handler banks](#r-ptp-handler-banks) |
 | Storage and unjoined objects | [Queued storage](#r-ptp-storage), [descriptor consumer](#r-descriptor-consumer), [callback provider](#r-callback-provider), [descriptor tables](#r-ptp-descriptor-tables), [entry edges](#r-ptp-entry-edges) |
 | Hardware integration | [USB shooting state](#r-usb-shooting-state), [new-image retrieval](#r-capture-retrieval) |
 | Layout and startup | [Address mappings](#r-address-mapping), [boot chain](#r-startup), [block 1](#r-block-1), [block 2](#r-block-2), [block 3](#r-block-3), [block 4](#r-block-4), [integrity](#r-integrity) |
@@ -245,12 +245,20 @@ caller metadata 2 survives the allocator's transitive calls in `d3` to node
 ## Connect the primary request owner to ingress
 
 **Start from:** the [primary selector's caller](firmware/PTP.md#request-selector)
-and [FIFO](firmware/PTP.md#fifo).
+and [FIFO](firmware/PTP.md#fifo), plus the [named MTP lifecycle and
+receive-record/pump join](firmware/PTP.md#mtp-event-pump).
 
 **Useful result:** identify the stack-record owner's relationship to a transport
 receive boundary and the known FIFO. The `0x6e6860f7` contract on the bit-1-set
 path is a bounded subquestion. Record layout and the shared descriptor handoff
 alone do not establish live admission or wire completion.
+
+The lifecycle-called wrapper supplies a direct static edge to a bounded
+receive-record submitter, record processor, and pump-shaped calls. Establish
+the submitter's runtime task and record producer, resolve its uncovered exits
+and processor address-view gap, and connect its input to a transport receive
+boundary before treating it as host ingress. Names, stack fields, and pump-like
+control flow are insufficient.
 
 Use [known working USB reads and the failed handler experiments](observations/USB_AND_MEDIA.md)
 as empirical controls. Repeating an advertisement-only patch or a host-tool
@@ -283,11 +291,13 @@ Neither the store constants nor a join inferred from naming establishes
 shooting permission or the wrapper's slot-40 producer.
 
 The named MTP start/end bodies add direct calls to shared status,
-mount-status-shaped, and event-shaped helpers, but they do not establish live
-session selection. The candidate status writer uses current `d2` after an
-opaque call, and the two outer wrappers use current `a2` after their lifecycle
-calls. Establish those preservation contracts and the wrappers' runtime owner
-before treating the family as a producer of a shooting-relevant state.
+mount-status-shaped, and [receive-record/pump-shaped helpers](firmware/PTP.md#mtp-event-pump),
+but they do not establish live session selection. The candidate status writer
+uses current `d2` after an opaque call, and the two outer wrappers use current
+`a2` after their lifecycle calls. Establish those preservation contracts and
+the wrappers' runtime owner before treating the family as a producer of a
+shooting-relevant state. The pump-shaped path also tests bit 1 of
+`0x605fc9dc`, but its writer, lifetime, and shooting meaning remain unresolved.
 
 **Question:** is ordinary shooting suppressed by the selected USB personality,
 an open PTP session, host interface ownership, or another camera state?
@@ -348,6 +358,11 @@ the fixed consumer's register route are insufficient without that connection.
 ## Identify queued storage and its consumer
 
 **Start from:** the [reply and storage corridor](firmware/PTP.md#reply-storage).
+
+The separate [receive-record/pump join](firmware/PTP.md#mtp-event-pump) reaches
+two pump-shaped helpers but does not identify their queue, storage object, or
+USB consumer. Shared vocabulary or nearby source placement is not an object
+join.
 
 **Useful result:** identify the concrete object selected by `(d0 & 0x7000) >> 12`,
 its queue allocation, and the caller of the source-only writer at `0x000a9736`,
