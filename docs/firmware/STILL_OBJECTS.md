@@ -10,6 +10,7 @@ unresolved. Shared methods do not establish shared receiver identity.
 - [Singleton dispatch and list population](#singleton)
 - [Separate object at owner field +2216](#owner-2216)
 - [Slots +72 and +76 and their continuations](#continuations)
+- [Native still-request receiver boundary](#native-still-request)
 - [Field +100 getter and writer](#field-100)
 
 <a id="singleton"></a>
@@ -231,6 +232,54 @@ consumer. The supported result is the dynamic-dispatch and return mechanics.
 
 **Next evidence:** [Trace the pointer stored in field
 +100](../RESEARCH.md#r-still-field-100).
+
+<a id="native-still-request"></a>
+## Native still-request receiver boundary
+
+A native caller conditionally reaches a typed-argument construction and an
+indirect receiver call associated with a still-request diagnostic. The source
+relationship establishes argument formation and the first dynamic-effect
+boundary, not request publication, capture, or a resulting image.
+
+| Role | Block | Offset | Length | Support |
+|---|---:|---|---:|---|
+| Typed-argument constructor | 0 | `0x0059b994` | 21 | Canonical instructions |
+| Conditional caller | 0 | `0x006a257e` | 78 | Canonical instructions |
+| Native request body | 0 | `0x006a8ec3` | 96 | Canonical instructions, including one earlier row |
+| Separate direct-call anchor | 0 | `0x007bddd9` | 7 | One canonical instruction |
+
+The 68 canonical instructions use CODE-local view `source + 0x402c0000`.
+The caller saves current `a0` in `a2`, reads field `+236`, and returns when
+that value is nonzero. The zero arm crosses three direct helper calls before
+restoring current `a2` to `a0` and calling source `0x006a8ec3`. Their listed
+return masks preserve `a2`, but do not establish the receiver's lifetime,
+the field meaning, or live entry into this caller. The separate instruction at
+source `0x007bddd9` also directly calls the same body without establishing its
+own caller contract.
+
+The request body first supplies a stack word containing 1 to a predicate call.
+A current zero result returns immediately. On the other arm it requests 28
+bytes; a non-null current return reaches the constructor, which calls a base
+helper and then writes table literal `0x6ee4f9b0` and halfword 26817 through
+current post-helper `a0`. This does not prove that the writes target the
+allocation result or identify a persistent request object.
+
+The body then initializes a stack record and reaches an indirect call through
+the current field-`+140` receiver's table slot `+4`, with the current
+constructor candidate in `a1`. A diagnostic associated with sending
+`evTraResShtStartShootingPicture` occurs only **after** that call. The string
+and ordering do not identify the selected method or prove that the request was
+published. Current receiver, candidate, stack-record, and register identities
+depend on intervening opaque calls; matched masks at outer returns do not prove
+their internal preservation.
+
+The dynamic slot's concrete owner and effect, live inbound selection, exposure,
+new-image identity, and host retrieval remain unresolved. The body is not a
+safe patch or host-control interface merely because it constructs a typed
+argument and reaches a named diagnostic.
+
+**Next evidence:** [Resolve the release-control and native request
+consumers](../RESEARCH.md#r-release-contract).
 
 <a id="field-100"></a>
 ## Field +100 getter and writer

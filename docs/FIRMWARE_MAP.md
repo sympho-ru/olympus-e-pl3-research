@@ -50,7 +50,7 @@ evidence of newly captured images.
 |---|---|
 | [Startup](firmware/STARTUP.md) | Shared state words and a local overlay handoff; reset ownership is unresolved |
 | [Release-control candidates](firmware/RELEASE_CONTROL.md) | Release and guarded action callers, bit-state guards, carrier methods, caller record writes, construction owner joins, receiver selection, conditional endpoint/native inputs and gate-clear receiver arguments, six-input frontend, and bounded selector-to-key lookups |
-| [Still-corridor objects](firmware/STILL_OBJECTS.md) | Singleton dispatch, list population, separate object tables, and field getter/setter relationships |
+| [Still-corridor objects](firmware/STILL_OBJECTS.md) | Singleton dispatch, list population, separate object tables, a [native still-request receiver boundary](firmware/STILL_OBJECTS.md#native-still-request), and field getter/setter relationships |
 | [Live view and ThroughImage](firmware/LIVE_VIEW.md) | Object lifecycle, collection operations, and a selector returning a scalar through a record lookup |
 | [PTP-adjacent records and dispatch](firmware/PTP.md) | Registration callers, FIFO mechanics, selectors, callbacks, descriptors, queued storage, a [qualified USB-state reporting wrapper](firmware/PTP.md#usb-state-wrapper), and [conditional connection-candidate byte stores and consumer](firmware/PTP.md#usb-connect-stores) |
 | [Decoded blocks and integrity](firmware/BLOCKS.md) | Data layouts, materialization requests, and the host parser's checksum boundary |
@@ -90,7 +90,7 @@ and the evidence needed to resolve them are in [RESEARCH.md](RESEARCH.md).
 
 | Block | Authenticated ranges | Canonical instruction rows |
 |---:|---:|---:|
-| 0 | 13,085 | 52,938 |
+| 0 | 13,085 | 53,006 |
 | 1 | 827 | 0 |
 | 2 | 4 | 0 |
 | 3 | 35 | 0 |
