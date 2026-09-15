@@ -288,7 +288,8 @@ error does not identify the firmware's actual operation-acceptance boundary.
 and the [named USB-state reporting wrapper](firmware/PTP.md#usb-state-wrapper)
 and [candidate connection callback stores and consumer](firmware/PTP.md#usb-connect-stores),
 plus the [named MTP communication lifecycle callers](firmware/PTP.md#mtp-communication-lifecycle)
-and their [range-only aggregate and state-selector candidates](firmware/PTP.md#mtp-lifecycle-owner).
+and their [range-only aggregate and state-selector candidates](firmware/PTP.md#mtp-lifecycle-owner),
+and the [PC/USB state-transition policy and callers](firmware/PTP.md#pc-usb-transition).
 
 The wrapper clears `d0` on normal return and branches on current `d2` to two
 labels. It does not settle live USB state: receiver/slot-40 ownership, value
@@ -321,6 +322,17 @@ reaches the field-372 / virtual-slot-24 helper, but its current receiver is not
 proved to be the aggregate-relative object whose field would select the MTP
 start wrapper. Values 6 and 7 have no established USB, session, or shooting
 meaning, and the separate Boolean-shaped leaf remains unjoined.
+
+The PC/USB state family establishes a 23-state destination/current transition
+policy, diagnostic labels, record fields, and bounded direct callers. State 19
+maps record fields `+4=243` and `+20=277`; the disconnect-labelled caller can
+request states 11, 17, 15, or 6 under separate conditions, while another
+caller can request state 21. None of the accepted callers binds its receiver or
+condition to a physical USB/interface-release input, and the selected handler
+bodies do not directly perform teardown or MTP re-entry. The next useful static
+result is the concrete input and receiver-owner join into an accepted
+`PC_RETURN` or `PC_CAM_SHOOTING` transition, with any intervening preservation
+contract made explicit.
 
 **Question:** is ordinary shooting suppressed by the selected USB personality,
 an open PTP session, host interface ownership, or another camera state?
