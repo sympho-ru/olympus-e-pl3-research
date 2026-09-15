@@ -18,6 +18,7 @@ identifying the routines below as their live implementation.
 - [Named USB-state reporting wrapper](#usb-state-wrapper)
 - [Candidate connection callback, byte stores, and consumer](#usb-connect-stores)
 - [PC/USB state-transition policy and callers](#pc-usb-transition)
+- [Communication disconnect/connect state machine](#communication-cycle)
 - [Named MTP communication lifecycle callers](#mtp-communication-lifecycle)
 - [Range-only lifecycle aggregate and state-selector candidates](#mtp-lifecycle-owner)
 - [Receive-record submission and pump join](#mtp-event-pump)
@@ -290,6 +291,94 @@ ordinary shooting, MTP re-entry, capture, image production, and host transfer
 remain unproved.
 
 **Next evidence:** [USB/shooting-state research](../RESEARCH.md#r-usb-shooting-state).
+
+<a id="communication-cycle"></a>
+## Communication disconnect/connect state machine
+
+A separate source-selected state family contains diagnostic-associated bodies
+for disconnecting, protocol selection, connecting, and connected idle. It
+establishes numeric state writes, local transitions, and an MTP-selection
+condition. Its effect-bearing calls remain virtual or otherwise opaque: no
+accepted target resolves to the known MTP start/end bodies or wrappers, and no
+source-owned host input selects the disconnect side. It therefore does not
+establish a logical communication close/start or an unattended physical USB
+cycle.
+
+| Role | Local address | Block | Offset | Length |
+|---|---:|---:|---|---:|
+| Conditional disconnect producer | `0x6ecd03cc` | 0 | `0x006d03ec` | 63 |
+| Disconnecting unmount-storage body | `0x6ecd0413` | 0 | `0x006d0433` | 108 |
+| Disconnecting unmount-media body | `0x6ecd04c0` | 0 | `0x006d04e0` | 127 |
+| Disconnecting end-communication body | `0x6ecd0580` | 0 | `0x006d05a0` | 108 |
+| Disconnecting-done body | `0x6ecd062d` | 0 | `0x006d064d` | 170 |
+| Disconnect body | `0x6ecd06e7` | 0 | `0x006d0707` | 36 |
+| Connecting local producer | `0x6ecd070b` | 0 | `0x006d072b` | 85 |
+| Connecting-start body | `0x6ecd09aa` | 0 | `0x006d09ca` | 147 |
+| Protocol-selection body | `0x6ecd0b0b` | 0 | `0x006d0b2b` | 691 |
+| Connecting mount-storage body | `0x6ecd0dff` | 0 | `0x006d0e1f` | 108 |
+| Connecting mount-media body | `0x6ecd0eac` | 0 | `0x006d0ecc` | 151 |
+| Connecting-error body | `0x6ecd0fc7` | 0 | `0x006d0fe7` | 201 |
+| Connecting-done body | `0x6ecd10a0` | 0 | `0x006d10c0` | 173 |
+| Connected-idle body | `0x6ecd16cc` | 0 | `0x006d16ec` | 130 |
+
+These anchors are selected from 33 canonical ranges under the conditional
+CODE-local view `source + 0x6e5fffe0`; the accepted instruction set adds 42
+contextually verified rows. Four additional canonical rows at source
+`0x006cfbd8`, `0x006cfbed`, `0x006cfbf4`, and `0x006cfbf6` load receiver field
+`+172`, scale the current value by four, load a table-selected pointer, and
+jump through it. They do not establish the table entries or the state input's
+owner. The wider proposed dispatcher range was not admitted because it stopped
+before its return.
+
+The diagnostic names were checked as contextual source during semantic review:
+their exact strings lie outside these canonical ranges, while unique pointer
+operands occur in the selected bodies. The pointers label the bodies; they are
+not written to the receiver. In particular, each body first writes a numeric
+state to `+172` and to another state field, then loads its diagnostic pointer
+separately for a reporting call. The disconnecting bodies write values 6
+through 9 to both `+408` and `+172`; the disconnect body writes 10 to `+404`
+and `+172`. The selected connecting bodies write 12 through 17 to `+412` and
+`+172`, while connected idle writes 23 to `+416` and `+172`.
+
+The producer at source `0x006d03ec` calls an empty-preservation-mask helper,
+then tests a virtual slot `+8`. Its nonzero arm reaches a local helper and the
+wrapper at source `0x006d06ff`, which directly calls the disconnect body at
+`0x006d0707`. The empty-mask calls leave the receiver and result owner
+unproved, so this is a local conditional edge rather than a host or USB input.
+
+In the end-communication body, the current receiver `R` supplies
+`P = *(R + 180)`. The body calls virtual slot `+36` from `P` with the adjacent
+argument source `R + 264`, then later reaches separate allocation, helper, and
+virtual-slot-`+28` machinery. The slot-`+36` target does not resolve to the
+known MTP-end body at source `0x00258d2f`, its wrapper at `0x008181ba`, or
+another explicit communication/interface close.
+
+On the connect side, source `0x006d072b` directly reaches the state-11 wrapper,
+which calls the protocol-selection body. The connecting-start body invokes
+unresolved slots `+96`, `+52`, and `+40` on objects obtained through receiver
+field `+180`, with receiver-relative argument sources `+264`, `+312`, and
+`+288`. It contains no direct call to the known MTP-start body at source
+`0x00258ccb` or its wrapper at `0x008181d9`.
+
+The protocol body reads `P = *(R + 184)`. A null value selects its protocol
+error diagnostic; otherwise virtual slot `+76` must return nonzero before the
+protocol comparison. Equality between `*P` and `*(R + 392)` selects the
+MassStorage diagnostic. If that comparison fails, equality between `*P` and
+`*(R + 388)` selects the MTP diagnostic; otherwise the PC Link diagnostic is
+selected. The MTP-labelled arm converges on unresolved helper and virtual-call
+machinery, not a source-resolved MTP re-entry target.
+
+The later selected bodies retain the mount-storage, mount-media, error, done,
+and connected-idle state writes. Connected idle invokes unresolved virtual
+slots including `+168`, `+172`, `+200`, `+204`, `+56`, and `+44` on objects
+derived from receiver fields. State names, numeric writes, and these calls do
+not prove logical close/start, active USB teardown, host-visible detach or
+enumeration, shooting availability, pending-action survival, capture, image
+identity, host transfer, or patch safety.
+
+**Next evidence:** resolve the disconnect input owner and receiver preservation,
+then identify the end-communication slot `+36` and connecting/MTP virtual
+targets. See [USB/shooting-state research](../RESEARCH.md#r-usb-shooting-state).
 
 <a id="mtp-communication-lifecycle"></a>
 ## Named MTP communication lifecycle callers

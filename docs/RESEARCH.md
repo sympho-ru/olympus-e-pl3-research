@@ -289,7 +289,8 @@ and the [named USB-state reporting wrapper](firmware/PTP.md#usb-state-wrapper)
 and [candidate connection callback stores and consumer](firmware/PTP.md#usb-connect-stores),
 plus the [named MTP communication lifecycle callers](firmware/PTP.md#mtp-communication-lifecycle)
 and their [range-only aggregate and state-selector candidates](firmware/PTP.md#mtp-lifecycle-owner),
-and the [PC/USB state-transition policy and callers](firmware/PTP.md#pc-usb-transition).
+the [PC/USB state-transition policy and callers](firmware/PTP.md#pc-usb-transition),
+and the separate [communication disconnect/connect state machine](firmware/PTP.md#communication-cycle).
 
 The wrapper clears `d0` on normal return and branches on current `d2` to two
 labels. It does not settle live USB state: receiver/slot-40 ownership, value
@@ -339,6 +340,16 @@ state-19 record remain unproved. The next useful static result is the concrete
 physical input and event-object owner, including preservation through the
 intervening calls, joined to an accepted `PC_RETURN` or `PC_CAM_SHOOTING`
 transition.
+
+The separate communication state family adds local disconnect/connect bodies,
+numeric state writes, a conditional disconnect producer, and an exact MTP
+diagnostic-selection condition. It still stops before the needed effects: the
+end-communication slot `+36`, connecting-start slots, and MTP-arm calls remain
+unresolved, with no direct call to the reviewed MTP start/end bodies or
+wrappers. Establish the state input's host/USB owner and receiver preservation,
+then resolve those virtual targets before treating the family as a logical or
+physical USB cycle. Diagnostic names and numeric states alone do not establish
+communication close/start, detach, enumeration, or shooting availability.
 
 **Question:** is ordinary shooting suppressed by the selected USB personality,
 an open PTP session, host interface ownership, or another camera state?
