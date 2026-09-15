@@ -52,7 +52,7 @@ evidence of newly captured images.
 | [Release-control candidates](firmware/RELEASE_CONTROL.md) | Release and guarded action callers, bit-state guards, carrier methods, caller record writes, construction owner joins, receiver selection, conditional endpoint/native inputs and gate-clear receiver arguments, six-input frontend, and bounded selector-to-key lookups |
 | [Still-corridor objects](firmware/STILL_OBJECTS.md) | Singleton dispatch, list population, separate object tables, and field getter/setter relationships |
 | [Live view and ThroughImage](firmware/LIVE_VIEW.md) | Object lifecycle, collection operations, and a selector returning a scalar through a record lookup |
-| [PTP-adjacent records and dispatch](firmware/PTP.md) | Registration callers, FIFO mechanics, selectors, callbacks, descriptors, queued storage, a [qualified USB-state reporting wrapper](firmware/PTP.md#usb-state-wrapper), and [conditional connection-candidate byte stores](firmware/PTP.md#usb-connect-stores) |
+| [PTP-adjacent records and dispatch](firmware/PTP.md) | Registration callers, FIFO mechanics, selectors, callbacks, descriptors, queued storage, a [qualified USB-state reporting wrapper](firmware/PTP.md#usb-state-wrapper), and [conditional connection-candidate byte stores and consumer](firmware/PTP.md#usb-connect-stores) |
 | [Decoded blocks and integrity](firmware/BLOCKS.md) | Data layouts, materialization requests, and the host parser's checksum boundary |
 | [Unassigned source anchors](firmware/UNASSIGNED.md) | A complete caller slice and a receiver prologue without established subsystem ownership |
 
@@ -90,7 +90,7 @@ and the evidence needed to resolve them are in [RESEARCH.md](RESEARCH.md).
 
 | Block | Authenticated ranges | Canonical instruction rows |
 |---:|---:|---:|
-| 0 | 13,085 | 52,787 |
+| 0 | 13,085 | 52,938 |
 | 1 | 827 | 0 |
 | 2 | 4 | 0 |
 | 3 | 35 | 0 |
