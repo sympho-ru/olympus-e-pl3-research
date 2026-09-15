@@ -18,7 +18,7 @@ identifying the routines below as their live implementation.
 - [Named USB-state reporting wrapper](#usb-state-wrapper)
 - [Candidate connection callback, byte stores, and consumer](#usb-connect-stores)
 - [Named MTP communication lifecycle callers](#mtp-communication-lifecycle)
-- [Range-only lifecycle aggregate owner candidate](#mtp-lifecycle-owner)
+- [Range-only lifecycle aggregate and state-selector candidates](#mtp-lifecycle-owner)
 - [Receive-record submission and pump join](#mtp-event-pump)
 - [Registration callers and unresolved callback placement](#registration)
 - [Record initialization and FIFO layout](#fifo)
@@ -236,14 +236,15 @@ completion.
 and [PTP ingress research](../RESEARCH.md#r-ptp-ingress).
 
 <a id="mtp-lifecycle-owner"></a>
-## Range-only lifecycle aggregate owner candidate
+## Range-only lifecycle aggregate and state-selector candidates
 
 Authenticated construction, field-link, and indirect-dispatch spans connect a
 large aggregate to the accessor and constructor around the MTP lifecycle
-family. This is range-only structural support: none of these spans adds a
-canonical instruction row, and the relationship does not establish a live
-aggregate instance or prove that the start/end wrappers are its selected
-methods.
+family. A separate state selector reaches a helper that loads receiver field
+`+372` and calls virtual slot `+24`. This is range-only structural support:
+none of these spans adds a canonical instruction row, and the missing receiver
+and preservation join prevents treating the helper as a selection of the
+aggregate's start wrapper.
 
 | Role | Local address / placement | Block | Offset | Length |
 |---|---:|---:|---|---:|
@@ -254,17 +255,28 @@ methods.
 | Field-372 writer | `0x6ec843be` | 0 | `0x006843de` | 7 |
 | Field-8-to-field-372 wrapper | `0x6ec84c90` | 0 | `0x00684cb0` | 14 |
 | Field +8 writer | `0x6ec84da6` | 0 | `0x00684dc6` | 6 |
+| Slot-24 helper initializer prefix | `0x6ec84102` | 0 | `0x00684122` | 11 |
+| Field-372 / slot-24 helper | `0x6ec84236` | 0 | `0x00684256` | 20 |
+| State selector's immediate caller | `0x6ec84778` | 0 | `0x00684798` | 69 |
+| Field-412 state selector | `0x6ec848ea` | 0 | `0x0068490a` | 30 |
+| State-6 writer | `0x6ec84910` | 0 | `0x00684930` | 13 |
+| State-6 arm | `0x6ec8491d` | 0 | `0x0068493d` | 190 |
+| State-7 writer | `0x6ec849e3` | 0 | `0x00684a03` | 13 |
+| State-7 arm | `0x6ec849f0` | 0 | `0x00684a10` | 104 |
 | Singleton-style accessor | `0x6ee17e23` | 0 | `0x00817e43` | 44 |
 | 208-byte aggregate constructor | `0x6ee17ea7` | 0 | `0x00817ec7` | 134 |
 | Separate Boolean-shaped leaf | `0x6ee180a8` | 0 | `0x008180c8` | 29 |
+| Candidate adapter table | DATA-local `0x6eeacbb8` | 0 | `0x008ab798` | 124 |
 | Nine-word target-shaped table | placement unresolved | 0 | `0x008fe678` | 36 |
 
-The ten code spans use the conditional local view
-`source + 0x6e5fffe0`. The 36-byte table is data-shaped, not MN103 code.
-Coverage authenticates each span but does not itself establish the contextual
-decodes summarized below. In particular, the 207-byte field-link range ends
-inside the final decoded call, so it is not a complete instruction listing or
-function body.
+The 18 code spans use the conditional CODE-local view
+`source + 0x6e5fffe0`. The candidate adapter table uses the separate
+conditional DATA-local view `source + 0x6e601420`; the 36-byte table remains
+placement-unresolved. Both tables are data-shaped, not MN103 code. Coverage
+authenticates each span but does not itself establish the contextual decodes
+summarized below. In particular, the 207-byte field-link range ends inside the
+final decoded call, so it is not a complete instruction listing or function
+body.
 
 The orchestration tail calls the field-link slice and then the construction
 body with a shared current aggregate candidate. In the construction body, three
@@ -291,8 +303,31 @@ writes the current returned pointer back to the global before a shared tail.
 The constructor initializes subobjects at offsets 0, 12, 24, and 36, then
 eight 20-byte-spaced subobjects at offsets 48 through 188, calls a final helper,
 and returns its saved aggregate pointer. This provides a bounded construction
-shape near the start/end wrappers, but no accepted table or caller selects
-those wrappers from the aggregate.
+shape near the start/end wrappers.
+
+The immediate caller passes its incoming `a0` unchanged to a selector.
+That selector reads field `+412`, compares the current value with 7 and then 6,
+and calls distinct state-7 or state-6 arms. Separate writers store 7 or 6 to
+both fields `+408` and `+412`; no accepted owner assigns those values a host,
+session, USB-personality, connected, or shooting meaning.
+
+The state-7 arm can reach the field-372 / slot-24 helper, but only after two
+direct calls with empty preservation masks and an indirect slot-`+8` call with
+no preservation mask. The helper then loads field `+372` from its current
+receiver, dereferences that object's table, and calls virtual slot `+24`.
+Consequently, the current receiver at that call is not established as the
+state-7 arm's entry receiver or the construction body's aggregate-relative
+object `+112`. The state-6 sibling uses separate slot-`+8` behavior and does
+not call the slot-24 helper.
+
+Conditionally, if the helper receiver were the previously established
+aggregate-relative object `+112`, its field `+372` would hold the
+singleton-relative object `+12`, whose table slot `+24` maps to the named MTP
+start wrapper at source `0x008181d9`. These spans do not establish that
+receiver identity, so this remains a selector frontier rather than a selected
+MTP-start dispatch. The candidate adapter table's slot `+68` maps only under
+its separate DATA-local relation to the existing field-8-to-field-372 wrapper;
+it is not a consumer of the helper's virtual slot `+24`.
 
 The separate Boolean-shaped leaf calls `0x6e872e39` with `d0=0x02020400` and
 returns 1 for a current zero result or 0 otherwise. Its caller and meaning are
@@ -300,10 +335,10 @@ unjoined. The nine-word table contains target-shaped values in the
 `0x6ee194a5..0x6ee195f9` area, but no accepted consumer or placement joins it
 to this aggregate.
 
-The range-only construction and field geometry nominate an owner candidate;
-they do not prove live allocation/order, MTP mode, session ownership, wrapper
-selection, host ingress, shooting permission, capture, image ownership,
-USB/wire submission, or completion.
+The range-only construction, state selection, and field geometry nominate an
+owner and selector frontier; they do not prove live allocation/order, MTP
+mode, session ownership, wrapper selection, host ingress, shooting permission,
+capture, image ownership, USB/wire submission, or completion.
 
 **Next evidence:** [PTP ingress research](../RESEARCH.md#r-ptp-ingress) and
 [USB/shooting-state research](../RESEARCH.md#r-usb-shooting-state).
