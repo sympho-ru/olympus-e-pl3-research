@@ -46,8 +46,9 @@ does not resolve its owner or execution path.
 <a id="r-release-contract"></a>
 ## Resolve the release-control body's indirect consumers
 
-**Start from:** the [release body and caller profiles](firmware/RELEASE_CONTROL.md#release-body)
-and [guarded action and carrier calls](firmware/RELEASE_CONTROL.md#guarded-action).
+**Start from:** the [release body and caller profiles](firmware/RELEASE_CONTROL.md#release-body),
+[guarded action and carrier calls](firmware/RELEASE_CONTROL.md#guarded-action),
+and the separate [native still-request receiver boundary](firmware/STILL_OBJECTS.md#native-still-request).
 Also inspect the distinct [constructed service dispatch](firmware/RELEASE_CONTROL.md#constructed-service).
 
 **Question:** which concrete receivers and input profiles reach the conditional
@@ -104,6 +105,12 @@ global-dependent dispatch; no native-producer call to `0x0081c0ec` is proved.
 Relate current P-table field reads to initialization only with relevant storage
 preservation. A native stack record and returned scalar are not capture or
 completion proofs, and do not justify bypassing those obligations with a patch.
+
+For the distinct native still-request body at source `0x006a8ec3`, establish
+the current field-`+140` receiver, its table slot `+4`, and the indirect
+method's effect. Preserve the immediate-return predicate arm and the uncertain
+constructor-return identity through opaque helpers. The post-call shooting
+diagnostic does not prove request publication, exposure, or image creation.
 
 <a id="r-caller-record"></a>
 ## Identify the caller record's owner and consumers
