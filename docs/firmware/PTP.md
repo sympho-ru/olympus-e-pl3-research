@@ -17,6 +17,7 @@ identifying the routines below as their live implementation.
 
 - [Named USB-state reporting wrapper](#usb-state-wrapper)
 - [Candidate connection callback, byte stores, and consumer](#usb-connect-stores)
+- [PC/USB state-transition policy and callers](#pc-usb-transition)
 - [Named MTP communication lifecycle callers](#mtp-communication-lifecycle)
 - [Range-only lifecycle aggregate and state-selector candidates](#mtp-lifecycle-owner)
 - [Receive-record submission and pump join](#mtp-event-pump)
@@ -174,6 +175,78 @@ The numeric states, calls, and byte stores do not identify connected versus
 disconnected, Storage/MTP, shooting permission, capture, image ownership, host
 transfer, or a safe mode override. They also do not connect this consumer to
 the named wrapper's slot-40 value.
+
+**Next evidence:** [USB/shooting-state research](../RESEARCH.md#r-usb-shooting-state).
+
+<a id="pc-usb-transition"></a>
+## PC/USB state-transition policy and callers
+
+A range-only state family connects a 23-by-23 transition matrix, diagnostic
+state names, record construction, and several PC/USB-labelled bodies. It
+establishes an internal transition policy and bounded direct-caller edges, but
+does not establish that a physical USB event selects them or that an accepted
+transition changes the active interface or shooting availability.
+
+| Role | Local address / placement | Block | Offset | Length |
+|---|---:|---:|---|---:|
+| Diagnostic state mapper | `0x6efcbd07` | 0 | `0x009cbd27` | 392 |
+| Eight PC/USB-labelled bodies | `0x6efd3e99` | 0 | `0x009d3eb9` | 546 |
+| Separate state-21 caller | `0x6efd41b0` | 0 | `0x009d41d0` | 71 |
+| Disconnect-labelled conditional caller | `0x6efd4245` | 0 | `0x009d4265` | 90 |
+| 23-by-23 transition matrix | DATA-local `0x6f10fd84` | 0 | `0x00b0e964` | 529 |
+| State-name sequence | DATA-local `0x6f11004c` | 0 | `0x00b0ec2c` | 611 |
+
+The four code spans use the conditional CODE-local view
+`source + 0x6e5fffe0`; the matrix and names use the separate conditional
+DATA-local view `source + 0x6e601420`. These are authenticated range anchors,
+not canonical instruction rows. Contextual GNU MN103 decoding with source
+lookahead supports the relationships below, but neither address arithmetic nor
+the labels establish runtime placement or physical USB meaning.
+
+The neighboring request owner preserves its proposed state in `d3` and its
+receiver in `a2` across a validator call whose encoded mask includes both
+registers. Only current validator result 1 selects the record mapper and the
+store of the proposed state to `0x6034cf84`; the owner itself is contextual
+source, not one of the canonical ranges above. The validator treats the
+matrix row as proposed state minus one and the column as current state minus
+one. Matrix values 0 reject, 1 are ordinary candidates, 2 conditionally call
+virtual slot `+40`, and 3 conditionally call virtual slot `+48`; those calls'
+zero-result tests make values 2 and 3 conditional rather than unconditional
+transition effects.
+
+The selected matrix cells for states 11, 17, 18, 19, 20, and 21 are:
+
+| Proposed \ current | 11 | 17 | 18 | 19 | 20 | 21 |
+|---:|---:|---:|---:|---:|---:|---:|
+| 11 | 1 | 3 | 2 | 2 | 2 | 2 |
+| 17 | 0 | 1 | 2 | 2 | 2 | 2 |
+| 18 | 0 | 0 | 1 | 1 | 1 | 1 |
+| 19 | 0 | 0 | 1 | 1 | 1 | 1 |
+| 20 | 0 | 0 | 1 | 1 | 1 | 1 |
+| 21 | 0 | 0 | 1 | 1 | 1 | 1 |
+
+The state-name sequence labels 11 `CAM_SHOOTING`, 17
+`PC_START_PC_USB_SELECT`, 19 `PC_START_PC_WAIT_USB_DISCONNECT`, 20
+`PC_RETURN`, and 21 `PC_CAM_SHOOTING`. The record mapper associates state 19
+with fields `+4=243` and `+20=277`. These labels and numeric fields describe
+the internal records; they do not prove a USB event, state lifetime, or effect.
+
+The eight-body span contains bodies associated by nearby name pointers with
+USB selection, PC mode, PC start/print, waiting for USB disconnect, and ending
+USB selection. Their selected paths prepare fields or call local helpers; none
+of the bodies directly calls the transition owner or contains an established
+interface teardown, session close, MTP start, or automatic re-enumeration.
+
+The disconnect-labelled body requests only states 11, 17, 15, or 6 under its
+current mode and helper results, then calls the transition owner. It never
+requests state 20. The separate caller maps receiver field `+0` values 178 or
+179 to state 22, 180 to state 23, and 181 to state 21 before its direct owner
+call. No accepted source binds either receiver to a physical disconnect input.
+
+The first missing join is therefore a source-authenticated physical USB or
+interface-release input and receiver owner reaching an accepted `PC_RETURN` or
+`PC_CAM_SHOOTING` transition. Active-interface teardown, ordinary shooting,
+MTP re-entry, capture, image production, and host transfer remain unproved.
 
 **Next evidence:** [USB/shooting-state research](../RESEARCH.md#r-usb-shooting-state).
 
