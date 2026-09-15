@@ -18,6 +18,7 @@ identifying the routines below as their live implementation.
 - [Named USB-state reporting wrapper](#usb-state-wrapper)
 - [Candidate connection callback, byte stores, and consumer](#usb-connect-stores)
 - [Named MTP communication lifecycle callers](#mtp-communication-lifecycle)
+- [Receive-record submission and pump join](#mtp-event-pump)
 - [Registration callers and unresolved callback placement](#registration)
 - [Record initialization and FIFO layout](#fifo)
 - [Primary request selector and caller](#request-selector)
@@ -205,10 +206,11 @@ its current result through `d1` and `d2`, and compares the zero-extended value
 with 2. The less-than arm calls `0x6e8615eb` with `d0=33`; both arms then call
 `0x6e861599` with `d0=33`. The end-associated body begins with that latter
 call. Each body next calls the mount-status-shaped helper with `d0=1` for start
-or `d0=0` for end, calls `0x6e85ef16`, and calls the shared writer candidate
-with the same fixed start/end scalar. Intervening opaque calls prevent binding
-later current registers to earlier values unless the relevant preservation
-contract is established.
+or `d0=0` for end, calls the [receive-record submission wrapper](#mtp-event-pump)
+at `0x6e85ef16`, and calls the shared writer candidate with the same fixed
+start/end scalar. Intervening opaque calls prevent binding later current
+registers to earlier values unless the relevant preservation contract is
+established.
 
 The shared writer candidate copies incoming `d0` to `d2`, performs an opaque
 reporting call, and writes current post-call `d2` as a halfword to
@@ -230,6 +232,73 @@ completion.
 
 **Next evidence:** [USB/shooting-state research](../RESEARCH.md#r-usb-shooting-state)
 and [PTP ingress research](../RESEARCH.md#r-ptp-ingress).
+
+<a id="mtp-event-pump"></a>
+## Receive-record submission and pump join
+
+The start/end lifecycle bodies directly reach a small wrapper which calls a
+larger receive-record submitter. That submitter builds a stack record, calls a
+record-processing body, and on selected paths reaches two pump-shaped helpers.
+This joins previously separate static stages inside one bounded family; it does
+not establish the runtime task, live MTP selection, transport input, event
+meaning, or delivery to USB.
+
+| Role | Local address | Block | Offset | Length |
+|---|---:|---:|---|---:|
+| Lifecycle-called wrapper | `0x6e85ef16` | 0 | `0x0025ef36` | 13 |
+| Receive-record submitter slice | `0x6e85f180` | 0 | `0x0025f1a0` | 224 |
+| Record processor, first span | `0x6e86044e` | 0 | `0x0026046e` | 94 |
+| Record processor, later span | `0x6e8604be` | 0 | `0x002604de` | 144 |
+
+All four rows are authenticated ranges under the conditional CODE-local view
+`source + 0x6e5fffe0`. The 183 canonical instructions fully cover the wrapper
+and both record-processor spans. They cover 223 of the submitter slice's 224
+bytes: source `0x0025f27f` is not a canonical instruction byte, so the slice is
+not a complete body. The processor spans also leave source
+`[0x002604cc,0x002604de)` outside this local-view submission. Existing rows in
+that gap use a different local-address view; their bytes do not establish one
+continuous `0x6e86...` execution view across the two spans.
+
+The wrapper copies incoming `d0` to `d2`, calls the submitter, and tests current
+post-call `d2`. Its zero arm returns within the authenticated span; its nonzero
+branch targets `0x6e85ef23`, outside the span. The submitter initializes stack
+fields at `+12`, `+16`, `+20`, `+24`, `+28`, and `+32`, then calls the record
+processor with `a0=sp+16`. A current unsigned value at `sp+28` greater than
+zero selects the covered continuation; the other arm returns zero. The record
+and branch geometry are established, but their field meanings and producer are
+not.
+
+In the selected continuation, the submitter tests the current word at `sp+40`
+against `0x02000100`, `0x02000101`, `0x02010100`, and `0x02010101`, and
+conditionally calls `0x6e85f10b`. It copies the current `sp+40/+44` pair to
+`sp+48/+52`, calls `0x6e85f33e`, and can copy that pair to `sp+4/+8`. It then
+calls `0x6e85fa20` with the unsigned halfword at `sp+36`, tests bit 1 of
+`0x605fc9dc`, and on another covered arm calls `0x6e85fa4f` before a second
+`0x6e85fa20` call and bit-1 test. Branches at `0x6e85f22a`, `0x6e85f238`,
+and `0x6e85f258` leave the authenticated slice. The final covered path sets up
+arguments at `0x6e85f25a..0x6e85f25e`, but the next instruction begins at the
+unrecorded suffix; no final submission, retry, or return effect follows from
+this slice.
+
+The record processor reads pointer/value pairs through input fields `+0`, `+4`,
+`+8`, and `+16`. Its first span treats current field `+4` values 0 and -1 as a
+zero auxiliary scalar, compares field `+0` with halfwords reached through
+`0x6e691bf2` and `0x6e691bf4`, and selects calls to `0x6e61fd33` or
+`0x6e8606eb`. The later span reports current state and returns current `d3` as
+-1, 0, or 1 on its covered paths; the zero path copies the current pointee of
+the saved `+8` pointer to input field `+12`. Because the two spans are separated
+by the address-view gap and reporting calls precede later tests, this does not
+establish a complete processor contract or unconditional result mapping.
+
+The direct calls establish a static submitter-to-processor-to-pump-shaped join.
+Opaque effects, uncovered exits, record ownership, scheduling, retry behavior,
+numeric meanings, and the writer or lifecycle of `0x605fc9dc` remain
+unresolved. Nothing here establishes host request admission, shooting
+permission, capture, image identity, USB/wire submission, or completion.
+
+**Next evidence:** [PTP ingress research](../RESEARCH.md#r-ptp-ingress),
+[queued-storage research](../RESEARCH.md#r-ptp-storage), and
+[USB/shooting-state research](../RESEARCH.md#r-usb-shooting-state).
 
 <a id="registration"></a>
 ## Registration callers and unresolved callback placement
