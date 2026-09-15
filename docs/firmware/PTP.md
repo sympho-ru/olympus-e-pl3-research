@@ -18,6 +18,7 @@ identifying the routines below as their live implementation.
 - [Named USB-state reporting wrapper](#usb-state-wrapper)
 - [Candidate connection callback, byte stores, and consumer](#usb-connect-stores)
 - [Named MTP communication lifecycle callers](#mtp-communication-lifecycle)
+- [Range-only lifecycle aggregate owner candidate](#mtp-lifecycle-owner)
 - [Receive-record submission and pump join](#mtp-event-pump)
 - [Registration callers and unresolved callback placement](#registration)
 - [Record initialization and FIFO layout](#fifo)
@@ -233,6 +234,79 @@ completion.
 
 **Next evidence:** [USB/shooting-state research](../RESEARCH.md#r-usb-shooting-state)
 and [PTP ingress research](../RESEARCH.md#r-ptp-ingress).
+
+<a id="mtp-lifecycle-owner"></a>
+## Range-only lifecycle aggregate owner candidate
+
+Authenticated construction, field-link, and indirect-dispatch spans connect a
+large aggregate to the accessor and constructor around the MTP lifecycle
+family. This is range-only structural support: none of these spans adds a
+canonical instruction row, and the relationship does not establish a live
+aggregate instance or prove that the start/end wrappers are its selected
+methods.
+
+| Role | Local address / placement | Block | Offset | Length |
+|---|---:|---:|---|---:|
+| Outer orchestration tail | `0x6ec83a30` | 0 | `0x00683a50` | 14 |
+| Aggregate construction body | `0x6ec83af0` | 0 | `0x00683b10` | 123 |
+| Aggregate field-link slice | `0x6ec83c03` | 0 | `0x00683c23` | 207 |
+| Field-372 slot +8/+16 wrappers | `0x6ec84033` | 0 | `0x00684053` | 31 |
+| Field-372 writer | `0x6ec843be` | 0 | `0x006843de` | 7 |
+| Field-8-to-field-372 wrapper | `0x6ec84c90` | 0 | `0x00684cb0` | 14 |
+| Field +8 writer | `0x6ec84da6` | 0 | `0x00684dc6` | 6 |
+| Singleton-style accessor | `0x6ee17e23` | 0 | `0x00817e43` | 44 |
+| 208-byte aggregate constructor | `0x6ee17ea7` | 0 | `0x00817ec7` | 134 |
+| Separate Boolean-shaped leaf | `0x6ee180a8` | 0 | `0x008180c8` | 29 |
+| Nine-word target-shaped table | placement unresolved | 0 | `0x008fe678` | 36 |
+
+The ten code spans use the conditional local view
+`source + 0x6e5fffe0`. The 36-byte table is data-shaped, not MN103 code.
+Coverage authenticates each span but does not itself establish the contextual
+decodes summarized below. In particular, the 207-byte field-link range ends
+inside the final decoded call, so it is not a complete instruction listing or
+function body.
+
+The orchestration tail calls the field-link slice and then the construction
+body with a shared current aggregate candidate. In the construction body, three
+factory/accessor calls produce current pointer candidates. One is the
+singleton-style accessor at `0x6ee17e23`. Calls to the field-372 writer place
+the three current candidates through subobjects based at aggregate offsets
+580, 112, and 1208; later calls and fixed scalars 1, 2, and 3 configure other
+aggregate-relative subobjects. Opaque factory and setup calls leave returned
+identity, preservation, validity, and lifetime unresolved.
+
+The seven-byte writer stores incoming `a1` at receiver field `+372`. The two
+wrappers at `0x6ec84033` and `0x6ec84041` load that current field, then call
+its current table slot `+8` or `+16`. The separate `0x6ec84c90` wrapper loads
+receiver field `+8` and reaches the slot-`+8` wrapper. The six-byte writer
+stores incoming `a1` at receiver field `+8`. Within the field-link slice, one
+complete direct call uses that writer to place aggregate-relative object
+`+112` at field `+8` of aggregate-relative object `+536`. These are local
+field and dispatch relations, not concrete class names or runtime method
+selection.
+
+The singleton-style accessor reads global pointer `0x6035b13c`. Its null arm
+requests 208 bytes, conditionally calls the constructor at `0x6ee17ea7`, and
+writes the current returned pointer back to the global before a shared tail.
+The constructor initializes subobjects at offsets 0, 12, 24, and 36, then
+eight 20-byte-spaced subobjects at offsets 48 through 188, calls a final helper,
+and returns its saved aggregate pointer. This provides a bounded construction
+shape near the start/end wrappers, but no accepted table or caller selects
+those wrappers from the aggregate.
+
+The separate Boolean-shaped leaf calls `0x6e872e39` with `d0=0x02020400` and
+returns 1 for a current zero result or 0 otherwise. Its caller and meaning are
+unjoined. The nine-word table contains target-shaped values in the
+`0x6ee194a5..0x6ee195f9` area, but no accepted consumer or placement joins it
+to this aggregate.
+
+The range-only construction and field geometry nominate an owner candidate;
+they do not prove live allocation/order, MTP mode, session ownership, wrapper
+selection, host ingress, shooting permission, capture, image ownership,
+USB/wire submission, or completion.
+
+**Next evidence:** [PTP ingress research](../RESEARCH.md#r-ptp-ingress) and
+[USB/shooting-state research](../RESEARCH.md#r-usb-shooting-state).
 
 <a id="mtp-event-pump"></a>
 ## Receive-record submission and pump join
