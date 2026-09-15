@@ -246,7 +246,8 @@ caller metadata 2 survives the allocator's transitive calls in `d3` to node
 
 **Start from:** the [primary selector's caller](firmware/PTP.md#request-selector)
 and [FIFO](firmware/PTP.md#fifo), plus the [named MTP lifecycle and
-receive-record/pump join](firmware/PTP.md#mtp-event-pump).
+receive-record/pump join](firmware/PTP.md#mtp-event-pump) and the
+[adjacent submitted-record consumer candidate](firmware/PTP.md#submitted-record-consumer).
 
 **Useful result:** identify the stack-record owner's relationship to a transport
 receive boundary and the known FIFO. The `0x6e6860f7` contract on the bit-1-set
@@ -259,6 +260,11 @@ the submitter's runtime task and record producer, resolve its uncovered exits
 and processor address-view gap, and connect its input to a transport receive
 boundary before treating it as host ingress. Names, stack fields, and pump-like
 control flow are insufficient.
+
+The adjacent consumer candidate adds a mask-32-selected polling/dispatch loop
+through `0x6e61fd33` and `0x6f3311e7`. Establish the missing middle and exit,
+its runtime task/owner, and the identity of the stack record before joining it
+to the MTP submitter or known FIFO. A shared halfword/helper is insufficient.
 
 Use [known working USB reads and the failed handler experiments](observations/USB_AND_MEDIA.md)
 as empirical controls. Repeating an advertisement-only patch or a host-tool
@@ -338,6 +344,11 @@ targets distinct. A vector does not establish a common entry ABI.
 
 **Start from:** [status dispatch and callback installation](firmware/PTP.md#status-callbacks).
 
+The [adjacent consumer candidate](firmware/PTP.md#submitted-record-consumer)
+adds two initializer setup islands and a separate sparse loop. Determine whether
+the initializer retains that body's record owner or schedules its entry; source
+adjacency alone is not an execution edge.
+
 **Useful result:** identify the initializer's runtime owner/order, the writer
 of `0x60355a2c`, the callback contract through `0xa07b702c`, or a consumer of
 `0xa07b7030`. To connect the `0x5001` dispatcher, supply an authenticated
@@ -362,7 +373,9 @@ the fixed consumer's register route are insufficient without that connection.
 The separate [receive-record/pump join](firmware/PTP.md#mtp-event-pump) reaches
 two pump-shaped helpers but does not identify their queue, storage object, or
 USB consumer. Shared vocabulary or nearby source placement is not an object
-join.
+join. The adjacent submitted-record consumer similarly reuses
+`0x6e61fd33`, but its stack-record identity and connection to either storage
+path remain unresolved.
 
 **Useful result:** identify the concrete object selected by `(d0 & 0x7000) >> 12`,
 its queue allocation, and the caller of the source-only writer at `0x000a9736`,

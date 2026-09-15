@@ -24,6 +24,7 @@ identifying the routines below as their live implementation.
 - [Primary request selector and caller](#request-selector)
 - [Neighboring source vectors and the 0x5001 selector](#selector-vectors)
 - [Status dispatcher and installed callbacks](#status-callbacks)
+- [Adjacent submitted-record consumer candidate](#submitted-record-consumer)
 - [FIFO handler banks and candidate writers](#handler-banks)
 - [Record route through the callback body](#callback-body)
 - [Reply packing, queued storage, and buffer pool](#reply-storage)
@@ -520,6 +521,58 @@ RTOS task entry or operation-code ingress is established.
 
 **Next evidence:** [Resolve status callbacks and the skipped interior
 entry](../RESEARCH.md#r-ptp-status).
+
+<a id="submitted-record-consumer"></a>
+### Adjacent submitted-record consumer candidate
+
+Four instruction-covered islands extend the initializer and an adjacent body.
+They establish fixed record setup and a conditional polling/dispatch loop, but
+not a complete consumer body, live task entry, or identity with the separate
+MTP receive-record submitter.
+
+| Role | Local span | Block | Source span |
+|---|---|---:|---|
+| Initializer setup A | `[0x6f32f745,0x6f32f75d)` | 0 | `[0x00d2f765,0x00d2f77d)` |
+| Initializer setup B | `[0x6f32f7fd,0x6f32f814)` | 0 | `[0x00d2f81d,0x00d2f834)` |
+| Adjacent-body entry | `[0x6f32f865,0x6f32f893)` | 0 | `[0x00d2f885,0x00d2f8b3)` |
+| Conditional loop | `[0x6f32f97d,0x6f32f9b4)` | 0 | `[0x00d2f99d,0x00d2f9d4)` |
+
+The 52 canonical instructions completely cover these four islands under local
+view `source + 0x6e600fe0`. The containing source ranges were already
+authenticated. No canonical instructions cover the intervening adjacent-body
+span `[0x6f32f893,0x6f32f97d)`, and branch target `0x6f32f9b4` is outside the
+last island.
+
+Initializer setup A loads the halfword through `0x6e691ad8`, supplies fixed
+arguments `d1=2` and `a1=16`, and calls `0x6e61fd03` with
+`a0=0x6f358649`. Setup B loads halfwords through `0x6e691ad8` and
+`0x6e691a00`, supplies `a0=32`, and calls `0x6e61fe35`. Missing instructions
+between these islands and the initializer's later calls prevent a complete
+construction or retained-object contract.
+
+The adjacent body begins at `0x6f32f865`, creates stack pointers at `sp+8`,
+`sp+12`, `sp+28`, and `sp+44`, stores -1 at `sp+4`, and calls
+`0x6e61fc4b` with `a0=sp+8`, current halfword-derived `d0`, `d1=123`, and
+`a1=1`. It then reads the current word at `sp+8`; the uncovered span prevents
+carrying that value unconditionally to the later island.
+
+At `0x6f32f97d`, the later island rereads current `sp+8` and tests mask 32.
+The clear arm leaves for `0x6f32f9b4`. The set arm places the `sp+12` pointer
+at `sp+28`, calls `0x6e61fd33` with the halfword through `0x6e691ad8`,
+`a0=sp+28`, and `d1=0`, and leaves on a current nonzero return. A zero return
+calls `0x6f3311e7` with current `a0=sp+12`, repeats the same
+`0x6e61fd33` call, and branches back to `0x6f32f99a` while its current return
+remains zero. The uncovered exit, helper effects, scheduling, termination, and
+record ownership remain unresolved.
+
+The reused halfwords and `0x6e61fd33` helper are static commonalities, not proof
+that this body consumes the record built by the [MTP submitter](#mtp-event-pump)
+or the known FIFO. It does not establish host ingress, event identity, shooting,
+capture, image ownership, USB submission, or completion.
+
+**Next evidence:** [PTP ingress research](../RESEARCH.md#r-ptp-ingress),
+[status-callback research](../RESEARCH.md#r-ptp-status), and
+[queued-storage research](../RESEARCH.md#r-ptp-storage).
 
 <a id="handler-banks"></a>
 ## FIFO handler banks and candidate writers
