@@ -16,7 +16,7 @@ the intended operations. Those measurements constrain the research without
 identifying the routines below as their live implementation.
 
 - [Named USB-state reporting wrapper](#usb-state-wrapper)
-- [Candidate connection callback and conditional byte stores](#usb-connect-stores)
+- [Candidate connection callback, byte stores, and consumer](#usb-connect-stores)
 - [Registration callers and unresolved callback placement](#registration)
 - [Record initialization and FIFO layout](#fifo)
 - [Primary request selector and caller](#request-selector)
@@ -85,7 +85,7 @@ See [USB/shooting-state research](../RESEARCH.md#r-usb-shooting-state) and the
 separate [historical session observations](../observations/USB_AND_MEDIA.md#personalities).
 
 <a id="usb-connect-stores"></a>
-## Candidate connection callback and conditional byte stores
+## Candidate connection callback, byte stores, and consumer
 
 The candidate body at source `0x00acfa9b` selects two sets of explicit
 one-byte writes through four direct-call leaves. It is not merely a reporting
@@ -132,8 +132,44 @@ These writes are conditional normal-execution effects, not proof of persistent
 global values. Opaque helper effects, address validity, lifetime, and later or
 concurrent changes remain unresolved; no-store arms do not prove unchanged
 state. There is no established join to the named wrapper's slot-40 value.
-The constants do not identify connected/disconnected, Storage/MTP, shooting
-permission, capture, image ownership, host transfer, or a safe mode override.
+
+A separate dispatcher and consumer read the same candidate-state storage. The
+151 canonical instructions completely cover dispatcher
+`[0x00acf65e,0x00acf691)`, consumer `[0x00acf74a,0x00acf83e)`, helper
+`[0x00acf86b,0x00acf8b1)`, and getter `[0x00acf985,0x00acf98e)` under the
+same conditional CODE-local `source + 0x6e5fffe0` view. The dispatcher calls
+the consumer at source `0x00acf67b` when its current `d0` equals 4. This is a
+source-level selection, not proof that the dispatcher is entered or that 4
+denotes a live USB state.
+
+The consumer initializes stack bytes `sp+4=1` and `sp+5=4`, calls the getter,
+saves its returned `d0` in `d2`, and calls the 1,580-byte-frame helper. The
+getter directly loads unsigned byte `0x60353192` and returns. Subsequent tests
+use current post-helper `d2` and the low halfword of current `d0`; the encoded
+call/return masks do not prove that they preserve the pre-helper values.
+
+| Current post-helper values | Explicit branch-local effects before the shared tail |
+|---|---|
+| `d2=0`, `d0=0/1/2` | Call arguments `(d0,d1)=(14,13)`, `(14,14)`, or `(14,15)` to `0x6f09ad39` |
+| `d2=0`, `d0=3` | Two opaque calls precede a current-`d0==1` split; equality selects another opaque call and a call with `d0=11`, while inequality selects `(14,17)` for `0x6f09ad39` |
+| `d2=1`, `d0=0` | Store 36 through the existing `0x60353193` leaf, write stack bytes 0/2, then select `(14,17)` |
+| `d2=1`, `d0=1` | Write stack bytes 0/0, store 2 through the `0x60353192` leaf, then call `0x6f0cf3fe` with `d0=2` and current saved consumer object in `a0` |
+| `d2=2`, `d0=0` | Write stack bytes 0/0, then call `0x6f0cf96e` with pointers to those two stack bytes |
+| `d2=2`, `d0=1` | Write stack bytes 0/0, store 3 through the `0x60353192` leaf, then call `0x6f0cf3fe` with `d0=3` and current saved consumer object in `a0` |
+
+All other tested values reach the shared tail without those listed
+branch-local effects. The tail reloads the **current** stack bytes and calls
+the existing setters for `0x60353190` and `0x60353191`; intervening opaque
+calls can change those bytes, globals, and receiver registers. In the helper,
+the byte-derived `d3` calculation occurs before an opaque initializer call, so
+the later table-address calculation uses current post-call `d3`. Its scratch
+storage, table validity, loop termination, returned scalar, and preservation
+effects remain unresolved.
+
+The numeric states, calls, and byte stores do not identify connected versus
+disconnected, Storage/MTP, shooting permission, capture, image ownership, host
+transfer, or a safe mode override. They also do not connect this consumer to
+the named wrapper's slot-40 value.
 
 **Next evidence:** [USB/shooting-state research](../RESEARCH.md#r-usb-shooting-state).
 
