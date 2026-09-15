@@ -329,10 +329,16 @@ maps record fields `+4=243` and `+20=277`; the disconnect-labelled caller can
 request states 11, 17, 15, or 6 under separate conditions, while another
 caller can request state 21. None of the accepted callers binds its receiver or
 condition to a physical USB/interface-release input, and the selected handler
-bodies do not directly perform teardown or MTP re-entry. The next useful static
-result is the concrete input and receiver-owner join into an accepted
-`PC_RETURN` or `PC_CAM_SHOOTING` transition, with any intervening preservation
-contract made explicit.
+bodies do not directly perform teardown or MTP re-entry. An adjacent dispatcher
+reads and clears current receiver field `+4`, maps internal values 240 through
+245, while the family adds exact flag and mode-state leaves. Its conditional
+interior call
+into the disconnect-labelled body depends on a separate slot-40 result, not on
+event 243 alone. Entry-receiver preservation and a common identity with the
+state-19 record remain unproved. The next useful static result is the concrete
+physical input and event-object owner, including preservation through the
+intervening calls, joined to an accepted `PC_RETURN` or `PC_CAM_SHOOTING`
+transition.
 
 **Question:** is ordinary shooting suppressed by the selected USB personality,
 an open PTP session, host interface ownership, or another camera state?
