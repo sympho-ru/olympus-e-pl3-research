@@ -320,8 +320,10 @@ cycle.
 | Connecting-error body | `0x6ecd0fc7` | 0 | `0x006d0fe7` | 201 |
 | Connecting-done body | `0x6ecd10a0` | 0 | `0x006d10c0` | 173 |
 | Connected-idle body | `0x6ecd16cc` | 0 | `0x006d16ec` | 130 |
+| Dispatcher owner-candidate gate | `0x6eccfde9` | 0 | `0x006cfe09` | 88 |
+| Parent-chain preservation callee | `0x6eccfec3` | 0 | `0x006cfee3` | 16 |
 
-These anchors are selected from 33 canonical ranges under the conditional
+These anchors are selected from 35 canonical ranges under the conditional
 CODE-local view `source + 0x6e5fffe0`; the accepted instruction set adds 60
 contextually verified rows. Four additional canonical rows at source
 `0x006cfbd8`, `0x006cfbed`, `0x006cfbf4`, and `0x006cfbf6` load receiver field
@@ -346,6 +348,14 @@ wrapper at source `0x006d06ff`, which directly calls the disconnect body at
 `0x006d0707`. The empty-mask calls leave the receiver and result owner
 unproved, so this is a local conditional edge rather than a host or USB input.
 
+The dispatcher's separate owner-candidate arm passes its entry receiver `D`
+to the complete body at source `0x006cfe09`. That body crosses two direct
+empty-mask calls before its first virtual slot `+8` at source `0x006cfe26`;
+the current helper result, table, and receiver are not source-bound to `D`.
+Later calls therefore cannot establish a `D`-owned parent chain. This is the
+first unresolved dynamic boundary, not evidence of a physical disconnect
+producer.
+
 In the end-communication body, the current receiver `R` supplies
 `P = *(R + 180)`. The body calls virtual slot `+36` from `P` with the adjacent
 argument source `R + 264`, then later reaches separate allocation, helper, and
@@ -362,9 +372,13 @@ not establish the predicate controlling that store. The accepted tail reloads
 `X + 180`, dereferences the loaded object, and calls its virtual slot `+80`.
 Six isolated rows at sources `0x006cfdf4`, `0x006cff1f`, `0x006cff25`,
 `0x006cff2b`, `0x006cff2e`, and `0x006cff34` retain nearby reload,
-register-copy, return, and comparison anchors, but the intervening direct-call
-rows are not canonical. They therefore do not bind `X` to `R`; slot `+80`
-also remains distinct from the unresolved end-communication slot `+36`.
+register-copy, return, and comparison anchors. The complete range-only body at
+source `0x006cfee3` writes 4 to receiver field `+168`, calls one helper while
+explicitly preserving `a2`, and returns without overwriting it. This repairs
+the local `X` preservation through the following field helper, but the
+upstream owner-candidate boundary still does not bind `X`, `R`, and dispatcher
+receiver `D` as one object. Slot `+80` also remains distinct from the
+unresolved end-communication slot `+36`.
 
 On the connect side, source `0x006d072b` directly reaches the state-11 wrapper,
 which calls the protocol-selection body. The connecting-start body invokes
@@ -389,9 +403,11 @@ not prove logical close/start, active USB teardown, host-visible detach or
 enumeration, shooting availability, pending-action survival, capture, image
 identity, host transfer, or patch safety.
 
-**Next evidence:** resolve the disconnect input owner and receiver preservation,
-then identify the end-communication slot `+36` and connecting/MTP virtual
-targets. See [USB/shooting-state research](../RESEARCH.md#r-usb-shooting-state).
+**Next evidence:** source-bind the current result, table, and receiver at the
+first owner-candidate slot `+8` boundary, or find an independent physical
+disconnect producer. Then identify the end-communication slot `+36` and
+connecting/MTP virtual targets. See
+[USB/shooting-state research](../RESEARCH.md#r-usb-shooting-state).
 
 <a id="mtp-communication-lifecycle"></a>
 ## Named MTP communication lifecycle callers
