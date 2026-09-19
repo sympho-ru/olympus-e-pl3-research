@@ -348,12 +348,16 @@ end-communication slot `+36`, connecting-start slots, and MTP-arm calls remain
 unresolved, with no direct call to the reviewed MTP start/end bodies or
 wrappers. A nearby helper reads object field `+180`, contains a possible
 field-`+392` source for that location, and later calls virtual slot `+80`, but
-the accepted rows omit the controlling branch and do not join its receiver to
-the end-communication receiver. Establish the state input's host/USB owner and
-that receiver identity, then resolve slot `+36` before treating the family as a
-logical or physical USB cycle. Diagnostic names, numeric states, and the
-separate slot `+80` alone do not establish communication close/start, detach,
-enumeration, or shooting availability.
+the accepted rows omit the controlling branch. A complete adjacent callee now
+proves local `a2` preservation into the field helper, but the dispatcher's
+owner-candidate body crosses empty-mask calls before an unresolved virtual
+slot `+8`; its current result, table, and receiver are not bound to the
+dispatcher entry object. The evidence therefore does not join the dispatcher,
+end-communication, and field-helper receivers. Establish the state input's
+host/USB owner and that receiver identity, then resolve slot `+36` before
+treating the family as a logical or physical USB cycle. Diagnostic names,
+numeric states, and the separate slot `+80` alone do not establish
+communication close/start, detach, enumeration, or shooting availability.
 
 **Question:** is ordinary shooting suppressed by the selected USB personality,
 an open PTP session, host interface ownership, or another camera state?
