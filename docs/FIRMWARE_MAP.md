@@ -52,7 +52,7 @@ evidence of newly captured images.
 | [Release-control candidates](firmware/RELEASE_CONTROL.md) | Release and guarded action callers, bit-state guards, carrier methods, caller record writes, construction owner joins, receiver selection, conditional endpoint/native inputs and gate-clear receiver arguments, six-input frontend, and bounded selector-to-key lookups |
 | [Still-corridor objects](firmware/STILL_OBJECTS.md) | Singleton dispatch, list population, separate object tables, [native still-request](firmware/STILL_OBJECTS.md#native-still-request) and [still-take](firmware/STILL_OBJECTS.md#native-still-take) boundaries, and field getter/setter relationships |
 | [Live view and ThroughImage](firmware/LIVE_VIEW.md) | Object lifecycle, collection operations, and a selector returning a scalar through a record lookup |
-| [PTP-adjacent records and dispatch](firmware/PTP.md) | Registration callers, FIFO mechanics, selectors, callbacks, descriptors, queued storage, a [qualified USB-state reporting wrapper](firmware/PTP.md#usb-state-wrapper), [conditional connection-candidate byte stores and consumer](firmware/PTP.md#usb-connect-stores), a [PC/USB state-transition policy with unresolved physical-input ownership](firmware/PTP.md#pc-usb-transition), a separate [communication disconnect/connect state machine with a bounded receiver-chain rejection](firmware/PTP.md#communication-cycle), and a [named MTP lifecycle with range-only aggregate/selector and receive-record/consumer candidates](firmware/PTP.md#mtp-communication-lifecycle) |
+| [PTP-adjacent records and dispatch](firmware/PTP.md) | Registration callers, FIFO mechanics, selectors, callbacks, descriptors, queued storage, a [qualified USB-state reporting wrapper](firmware/PTP.md#usb-state-wrapper), [conditional connection-candidate byte stores and consumer](firmware/PTP.md#usb-connect-stores), a [PC/USB state-transition policy with unresolved physical-input ownership](firmware/PTP.md#pc-usb-transition), a separate [communication disconnect/connect state machine with a bounded receiver-chain rejection](firmware/PTP.md#communication-cycle), [USB-labelled name maps that do not establish a disconnect owner](firmware/PTP.md#usb-disconnect-name-maps), and a [named MTP lifecycle with range-only aggregate/selector and receive-record/consumer candidates](firmware/PTP.md#mtp-communication-lifecycle) |
 | [Decoded blocks and integrity](firmware/BLOCKS.md) | Data layouts, materialization requests, and the host parser's checksum boundary |
 | [Unassigned source anchors](firmware/UNASSIGNED.md) | A complete caller slice and a receiver prologue without established subsystem ownership |
 
@@ -90,7 +90,7 @@ and the evidence needed to resolve them are in [RESEARCH.md](RESEARCH.md).
 
 | Block | Authenticated ranges | Canonical instruction rows |
 |---:|---:|---:|
-| 0 | 13,168 | 53,410 |
+| 0 | 13,177 | 53,410 |
 | 1 | 827 | 0 |
 | 2 | 4 | 0 |
 | 3 | 35 | 0 |

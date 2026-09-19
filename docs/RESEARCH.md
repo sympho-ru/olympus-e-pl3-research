@@ -359,6 +359,16 @@ treating the family as a logical or physical USB cycle. Diagnostic names,
 numeric states, and the separate slot `+80` alone do not establish
 communication close/start, detach, enumeration, or shooting availability.
 
+Three separate USB-labelled name maps add exact connected/disconnected pairs
+for `EV_*` values 9/10 and OLY values 8/9 and 77/78. Their complete accepted
+lookup paths use the selected names as resource or formatting data and do not
+reach either release dispatcher. The only direct caller of the OLY 77/78
+lookup loses its incoming numeric value through a helper and forwards only 0
+or 1, so the labelled rows are not a physical disconnect ingress. Do not spend
+another route on these maps alone. The smallest useful static result is an
+independently authenticated physical/interface producer with a preserved event
+object and value into source `0x009d39ee` or `0x006cfbd2`.
+
 **Question:** is ordinary shooting suppressed by the selected USB personality,
 an open PTP session, host interface ownership, or another camera state?
 

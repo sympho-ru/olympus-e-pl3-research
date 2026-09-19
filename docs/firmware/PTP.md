@@ -19,6 +19,7 @@ identifying the routines below as their live implementation.
 - [Candidate connection callback, byte stores, and consumer](#usb-connect-stores)
 - [PC/USB state-transition policy and callers](#pc-usb-transition)
 - [Communication disconnect/connect state machine](#communication-cycle)
+- [USB-labelled name maps and lookup boundaries](#usb-disconnect-name-maps)
 - [Named MTP communication lifecycle callers](#mtp-communication-lifecycle)
 - [Range-only lifecycle aggregate and state-selector candidates](#mtp-lifecycle-owner)
 - [Receive-record submission and pump join](#mtp-event-pump)
@@ -408,6 +409,50 @@ first owner-candidate slot `+8` boundary, or find an independent physical
 disconnect producer. Then identify the end-communication slot `+36` and
 connecting/MTP virtual targets. See
 [USB/shooting-state research](../RESEARCH.md#r-usb-shooting-state).
+
+<a id="usb-disconnect-name-maps"></a>
+### USB-labelled name maps and lookup boundaries
+
+Three connected/disconnected name pairs occur in separate lookup domains, but
+their accepted consumers are resource or formatting paths rather than a
+physical USB-event owner. The rows authenticate names, numeric companions,
+complete tables, and two lookup bodies; they do not select the PC/USB or
+communication-state release dispatchers.
+
+| Role | Local address | Block | Offset | Length |
+|---|---:|---:|---:|---:|
+| Complete `EV_*` lookup body | source only | 0 | `0x00596a2d` | 74 |
+| `EV_USB_CONNECTED` string | DATA-local `0x6ee45605` | 0 | `0x008441e5` | 17 |
+| `EV_USB_DISCONNECTED` string | DATA-local `0x6ee45616` | 0 | `0x008441f6` | 20 |
+| Complete `EV_*` table | DATA-local `0x6ee45de4` | 0 | `0x008449c4` | 892 |
+| Complete OLY 77/78 lookup body | source only | 0 | `0x009d7632` | 64 |
+| `OLY_USB_CONNECTED` string | DATA-local `0x6f11d520` | 0 | `0x00b1c100` | 18 |
+| `OLY_USB_DISCONNECTED` string | DATA-local `0x6f11d532` | 0 | `0x00b1c112` | 21 |
+| Complete OLY 8/9 table | DATA-local `0x6f11d7c8` | 0 | `0x00b1c3a8` | 872 |
+| Complete OLY 77/78 table | DATA-local `0x6f11f388` | 0 | `0x00b1df68` | 2,528 |
+
+The conditional DATA-local view for these rows is `source + 0x6e601420`.
+The `EV_*` pair has numeric companions 9 and 10. The two OLY tables reuse the
+same name pointers but assign separate numeric domains: 8/9 and 77/78. Pointer
+reuse does not make those domains aliases.
+
+The OLY 77/78 lookup at source `0x009d7632` scans eight-byte records, compares
+the numeric word, and obtains the pointer at record offset `+4`. It passes the
+selected pointer as data to direct helpers rather than invoking it as a code
+target. Its first unresolved receiver/meaning boundary is the call at source
+`0x009d765d`; the body has no edge to either accepted release dispatcher. Its
+only direct caller invokes another helper before forwarding the numeric key;
+that helper clears the saved value and can produce only 0 or 1, not 8, 9, 77,
+or 78. The `EV_*` body and separate OLY 8/9 scan likewise terminate in
+resource/formatting helpers without a release-dispatch edge.
+
+No accepted map row, table relation, direct call, or registrar establishes a
+physical/interface producer for these names. The required pivot is a
+source-authenticated producer with a preserved event object and value into the
+PC/USB dispatcher at source `0x009d39ee` or the communication-state dispatcher
+at source `0x006cfbd2`. The maps do not prove logical close, physical teardown,
+host detach or re-enumeration, shooting availability, capture, image ownership,
+or transfer.
 
 <a id="mtp-communication-lifecycle"></a>
 ## Named MTP communication lifecycle callers
