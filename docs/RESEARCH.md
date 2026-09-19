@@ -293,9 +293,12 @@ the [PC/USB state-transition policy and callers](firmware/PTP.md#pc-usb-transiti
 and the separate [communication disconnect/connect state machine](firmware/PTP.md#communication-cycle).
 
 The wrapper clears `d0` on normal return and branches on current `d2` to two
-labels. It does not settle live USB state: receiver/slot-40 ownership, value
-production, and preservation across the reporting calls remain unresolved.
-The conditional DATA-local mapping does not establish runtime placement.
+labels. Its accessor and slot `+40` are now source-joined to a lazy singleton,
+one installed table, and a normalized lower predicate. This does not settle
+live USB state: runtime object selection, lower-provider ownership, value
+production, and preservation across this wrapper's reporting calls remain
+unresolved. The conditional DATA-local mapping does not establish runtime
+placement.
 
 The source `0x00acfa9b` candidate supplies explicit conditional byte writes to
 `0x60353190..0x60353193`. A separate selected consumer directly reads
@@ -325,18 +328,27 @@ start wrapper. Values 6 and 7 have no established USB, session, or shooting
 meaning, and the separate Boolean-shaped leaf remains unjoined.
 
 The PC/USB state family establishes a 23-state destination/current transition
-policy, diagnostic labels, record fields, and bounded direct callers. State 19
-maps record fields `+4=243` and `+20=277`; the disconnect-labelled caller can
-request states 11, 17, 15, or 6 under separate conditions, while another
-caller can request state 21. None of the accepted callers binds its receiver or
-condition to a physical USB/interface-release input, and the selected handler
-bodies do not directly perform teardown or MTP re-entry. An adjacent dispatcher
-reads and clears current receiver field `+4`, maps internal values 240 through
-245, while the family adds exact flag and mode-state leaves. Its conditional
-interior call
-into the disconnect-labelled body depends on a separate slot-40 result, not on
-event 243 alone. Entry-receiver preservation and a common identity with the
-state-19 record remain unproved. The next useful static result is the concrete
+policy, diagnostic labels, record fields, and bounded direct callers. Its
+conditional values now join one lazy singleton and installed table to exact
+slot-`+40` and slot-`+48` wrappers. Each wrapper returns its lower predicate's
+normalized 0/1 result. Both queries stop at the same first unowned provider
+call: source `0x00272e62` calls `0x0025f743` after the query supplied literal
+`0x02020400` or `0x02020501`. No owned global, port/MMIO object, or state field
+is established before that boundary. Validator values 2 and 3 require result
+0; later state 17 requires slot `+48` result 1, and states 18 through 23 require
+slot `+40` result 1. The failure labels do not define physical USB meaning.
+
+State 19 maps record fields `+4=243` and `+20=277`; the disconnect-labelled
+caller can request states 11, 17, 15, or 6 under separate conditions, while
+another caller can request state 21. None of the accepted callers binds its
+receiver or condition to a physical USB/interface-release input, and the
+selected handler bodies do not directly perform teardown or MTP re-entry. An
+adjacent dispatcher reads and clears current receiver field `+4`, maps internal
+values 240 through 245, and adds exact flag and mode-state leaves. Its
+conditional interior call into the disconnect-labelled body depends on a
+separate slot-40 result, not on event 243 alone. Entry-receiver preservation
+and a common identity with the state-19 record remain unproved. The next useful
+static result is either the owner/ABI behind `0x0025f743` or the concrete
 physical input and event-object owner, including preservation through the
 intervening calls, joined to an accepted `PC_RETURN` or `PC_CAM_SHOOTING`
 transition.

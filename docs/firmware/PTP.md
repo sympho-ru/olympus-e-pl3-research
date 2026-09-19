@@ -65,9 +65,10 @@ The wrapper's 21 canonical instructions use local view
 `0x6ebdfa9b..0x6ebdfae7`. They leave a two-byte gap at source `0x005de68c`;
 the 76-byte authenticated range is not a complete canonical instruction listing.
 Source `0x005de680` calls local `0x6eb82317`, then loads `(a0)` into `a1`
-and slot `+40` into `a1`. After the gap, source `0x005de68e` copies current
-`d0` into `d2`. Binding this value to a live slot-40 result requires the
-unresolved receiver, table, call, and method contracts.
+and slot `+40` into `a1`. The accessor, installed table, and selected slot-40
+body are source-joined in the [transition-policy finding](#pc-usb-transition).
+That static join does not establish live singleton selection or lifetime.
+After the gap, source `0x005de68e` copies current `d0` into `d2`.
 
 Source `0x005de68f` defines `d0=65801` before the call at `0x005de695`
 to local `0x6eb97e18,[d2],4`. Source `0x005de69c` copies current `d2`
@@ -85,9 +86,11 @@ Both selections join the reporting call at `0x005de6bc` to
 `0x005de6c3`. All normal paths through this selected body join `clr d0`
 at `0x005de6c3` and the complete `ret [d2],8` at `0x005de6c4`.
 
-Live receiver/slot ownership, value production, lifetime, synchronization, and
-the reporting preservation contracts remain unjoined. This does not identify
-shooting restrictions, capture initiation, image association, or host transfer.
+The slot-40 source chain produces a normalized lower-provider result, but the
+provider's owner, live value production, object lifetime, synchronization, and
+this wrapper's reporting preservation contracts remain unjoined. This does not
+identify shooting restrictions, capture initiation, image association, or host
+transfer.
 See [USB/shooting-state research](../RESEARCH.md#r-usb-shooting-state) and the
 separate [historical session observations](../observations/USB_AND_MEDIA.md#personalities).
 
@@ -227,6 +230,67 @@ The selected matrix cells for states 11, 17, 18, 19, 20, and 21 are:
 | 20 | 0 | 0 | 1 | 1 | 1 | 1 |
 | 21 | 0 | 0 | 1 | 1 | 1 | 1 |
 
+The conditional checks use one lazy singleton and one installed table. This
+source-level object join resolves the validator's exact slot targets and
+returned Boolean-shaped values, but stops at a shared lower-provider call.
+
+| Role | Conditional local view | Block | Offset | Length |
+|---|---:|---:|---|---:|
+| Common lower-provider body | CODE `0x6e872e39` | 0 | `0x00272e59` | 59 |
+| Lazy singleton accessor | CODE `0x6eb80ed7` | 0 | `0x00580ef7` | 88 |
+| Slot-`+48` wrapper | CODE `0x6eb81062` | 0 | `0x00581082` | 92 |
+| Slot-`+40` wrapper | CODE `0x6eb81181` | 0 | `0x005811a1` | 92 |
+| Constructor | CODE `0x6eb812f5` | 0 | `0x00581315` | 30 |
+| Object-field-`+4` setter | CODE `0x6eb81ce0` | 0 | `0x00581d00` | 3 |
+| Slot-`+48` lower predicate | CODE `0x6eba143f` | 0 | `0x005a145f` | 31 |
+| Slot-`+40` lower predicate | CODE `0x6eba19d3` | 0 | `0x005a19f3` | 48 |
+| Constructor helper caller | CODE `0x6eba2153` | 0 | `0x005a2173` | 13 |
+| Receiver-preserving helper body | CODE `0x6eba22d1` | 0 | `0x005a22f1` | 95 |
+| Receiver-adjustment leaf | CODE `0x6eba2333` | 0 | `0x005a2353` | 3 |
+| Lower-predicate entry leaf | CODE `0x6ec09287` | 0 | `0x006092a7` | 3 |
+| Lower-predicate exit leaf | CODE `0x6ec0928a` | 0 | `0x006092aa` | 3 |
+| Slot-`+48` normalized query | CODE `0x6ec09347` | 0 | `0x00609367` | 24 |
+| Slot-`+40` normalized query | CODE `0x6ec093ef` | 0 | `0x0060940f` | 24 |
+| Installed object table | DATA `0x6ee3eb40` | 0 | `0x0083d720` | 56 |
+| Value-3 failure label | DATA `0x6f10ffdc` | 0 | `0x00b0ebbc` | 23 |
+| Value-2 failure label | DATA `0x6f11000e` | 0 | `0x00b0ebee` | 26 |
+
+The accessor reads global `0x60357abc`, takes a bounded allocation and
+construction path when it is null, stores the constructed result back to that
+global, and returns the final loaded object. The constructor installs table
+pointer `0x6ee3eb40` at object `+0`, clears object `+4`, and passes a helper
+result to the complete setter at source `0x00581d00`. The selected helper body
+returns with `a2` preserved, and its other direct leaf changes only `a0`, so the
+constructor's saved receiver survives this bounded path. Allocation success,
+runtime table placement, replacement, lifetime, and synchronization are not
+established.
+
+Under the conditional DATA-local view `source + 0x6e601420`, table word
+`+40` at source `0x0083d748` nominates source `0x005811a1`, while word `+48`
+at `0x0083d750` nominates `0x00581082`. Each wrapper saves its receiver,
+loads object field `+4`, calls its selected lower predicate, preserves the
+predicate result in `d2` through the bounded reporting path, copies it back to
+`d0`, and returns. The slot-`+40` lower path calls source `0x0060940f`; the
+slot-`+48` path calls `0x00609367`. Both queries normalize the common
+provider's result to 0 or 1. The `+40` fallback at source `0x00609483` clears
+`d0` but leaves the saved `d2` result unchanged.
+
+The two queries pass exact literals `0x02020400` (`+40`) and `0x02020501`
+(`+48`) to source `0x00272e59`. That body reaches the first unowned boundary
+at source `0x00272e62`, a direct call to `0x0025f743`. No owned global,
+port/MMIO object, or state field is established before that call, and the
+effective provider ABI is unresolved. The two failure-label ranges identify
+validator branches only; they do not assign connected/disconnected meaning to
+the table slots or returned values.
+
+In the complete contextual validator, matrix value 3 calls slot `+48` and
+accepts result 0, while value 2 calls slot `+40` and also accepts result 0.
+Later state 17 calls `+48` and requires result 1; states 18 through 23 call
+`+40` and require result 1. The wrappers do not invert their lower results;
+the required polarity depends on validator context. The full validator is
+contextual support rather than a new canonical range because its tail overlaps
+the existing source range beginning at `0x009cbc27`.
+
 The state-name sequence labels 11 `CAM_SHOOTING`, 17
 `PC_START_PC_USB_SELECT`, 19 `PC_START_PC_WAIT_USB_DISCONNECT`, 20
 `PC_RETURN`, and 21 `PC_CAM_SHOOTING`. The record mapper associates state 19
@@ -284,12 +348,12 @@ select the interior call. Although the state-19 record mapper writes `+4=243`,
 no accepted writer-to-dispatcher edge or common object identity joins that
 record to the current dispatch object.
 
-The first missing join is therefore a source-authenticated physical USB or
-interface-release owner of the dispatcher's incoming event object, including
-receiver preservation through the intervening calls, reaching an accepted
-`PC_RETURN` or `PC_CAM_SHOOTING` transition. Active-interface teardown,
-ordinary shooting, MTP re-entry, capture, image production, and host transfer
-remain unproved.
+The first missing joins are the lower provider behind the direct call at
+`0x00272e62` and a source-authenticated physical USB or interface-release owner
+of the dispatcher's incoming event object. They require receiver preservation
+through the intervening calls and an accepted `PC_RETURN` or
+`PC_CAM_SHOOTING` transition. Active-interface teardown, ordinary shooting,
+MTP re-entry, capture, image production, and host transfer remain unproved.
 
 **Next evidence:** [USB/shooting-state research](../RESEARCH.md#r-usb-shooting-state).
 
