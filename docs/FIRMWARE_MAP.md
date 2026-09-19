@@ -90,7 +90,7 @@ and the evidence needed to resolve them are in [RESEARCH.md](RESEARCH.md).
 
 | Block | Authenticated ranges | Canonical instruction rows |
 |---:|---:|---:|
-| 0 | 13,166 | 53,392 |
+| 0 | 13,166 | 53,410 |
 | 1 | 827 | 0 |
 | 2 | 4 | 0 |
 | 3 | 35 | 0 |
