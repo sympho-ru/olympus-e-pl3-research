@@ -322,7 +322,7 @@ cycle.
 | Connected-idle body | `0x6ecd16cc` | 0 | `0x006d16ec` | 130 |
 
 These anchors are selected from 33 canonical ranges under the conditional
-CODE-local view `source + 0x6e5fffe0`; the accepted instruction set adds 42
+CODE-local view `source + 0x6e5fffe0`; the accepted instruction set adds 60
 contextually verified rows. Four additional canonical rows at source
 `0x006cfbd8`, `0x006cfbed`, `0x006cfbf4`, and `0x006cfbf6` load receiver field
 `+172`, scale the current value by four, load a table-selected pointer, and
@@ -352,6 +352,19 @@ argument source `R + 264`, then later reaches separate allocation, helper, and
 virtual-slot-`+28` machinery. The slot-`+36` target does not resolve to the
 known MTP-end body at source `0x00258d2f`, its wrapper at `0x008181ba`, or
 another explicit communication/interface close.
+
+A nearby helper contributes 12 accepted rows across source
+`0x006cf67d..0x006cf697` (CODE-local `0x6eccf65d..0x6eccf677`). With its entry
+object named `X`, the rows compute `X + 180`, read and compare that field with
+zero, and later load `*(X + 392)` and store it through the computed `X + 180`
+address. The intervening branch row is not canonical, so these rows alone do
+not establish the predicate controlling that store. The accepted tail reloads
+`X + 180`, dereferences the loaded object, and calls its virtual slot `+80`.
+Six isolated rows at sources `0x006cfdf4`, `0x006cff1f`, `0x006cff25`,
+`0x006cff2b`, `0x006cff2e`, and `0x006cff34` retain nearby reload,
+register-copy, return, and comparison anchors, but the intervening direct-call
+rows are not canonical. They therefore do not bind `X` to `R`; slot `+80`
+also remains distinct from the unresolved end-communication slot `+36`.
 
 On the connect side, source `0x006d072b` directly reaches the state-11 wrapper,
 which calls the protocol-selection body. The connecting-start body invokes

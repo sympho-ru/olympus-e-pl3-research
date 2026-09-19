@@ -346,10 +346,14 @@ numeric state writes, a conditional disconnect producer, and an exact MTP
 diagnostic-selection condition. It still stops before the needed effects: the
 end-communication slot `+36`, connecting-start slots, and MTP-arm calls remain
 unresolved, with no direct call to the reviewed MTP start/end bodies or
-wrappers. Establish the state input's host/USB owner and receiver preservation,
-then resolve those virtual targets before treating the family as a logical or
-physical USB cycle. Diagnostic names and numeric states alone do not establish
-communication close/start, detach, enumeration, or shooting availability.
+wrappers. A nearby helper reads object field `+180`, contains a possible
+field-`+392` source for that location, and later calls virtual slot `+80`, but
+the accepted rows omit the controlling branch and do not join its receiver to
+the end-communication receiver. Establish the state input's host/USB owner and
+that receiver identity, then resolve slot `+36` before treating the family as a
+logical or physical USB cycle. Diagnostic names, numeric states, and the
+separate slot `+80` alone do not establish communication close/start, detach,
+enumeration, or shooting availability.
 
 **Question:** is ordinary shooting suppressed by the selected USB personality,
 an open PTP session, host interface ownership, or another camera state?
