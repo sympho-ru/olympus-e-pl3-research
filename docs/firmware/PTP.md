@@ -269,6 +269,7 @@ The provider-side ranges use the conditional CODE-local view
 | Record-status writer | `0x6e85f5f4` | 0 | `0x0025f614` | 303 |
 | Selected-query provider | `0x6e85f723` | 0 | `0x0025f743` | 67 |
 | Dynamic list owner | `0x6ebb3d64` | 0 | `0x005b3d84` | 412 |
+| Finite list-value mapper | `0x6ebb47f6` | 0 | `0x005b4816` | 31 |
 
 The accessor reads global `0x60357abc`, takes a bounded allocation and
 construction path when it is null, stores the constructed result back to that
@@ -301,13 +302,21 @@ pre-callback low halfwords `0x0400` and `0x0501` do not establish the compared
 keys.
 
 The dynamic owner clears four records, conditionally maps its current `d2`,
-`d3`, and `a2` values through unresolved source `0x005b4816`, writes the three
-results to `0x60358ce8`, `0x60358cec`, and `0x60358cf0`, and feeds the list to
-the four-record copier. The preceding clear call has no encoded preservation
-mask, so those values are not proved natural-entry inputs. The owner reads a
-fourth word at `0x60358cf4`, but this bounded span establishes no writer,
-initialization, or deliberately-zero lifetime for it. The copier can therefore
-consume an unknown fourth word when the first three are nonzero.
+`d3`, and `a2` values through source `0x005b4816`, writes the three results to
+`0x60358ce8`, `0x60358cec`, and `0x60358cf0`, and feeds the list to the
+four-record copier. The complete mapper returns `0x0000000b` for input 15,
+`0x0000120a` for input 16, `0x00001209` for input 11, and zero for every other
+input. It changes only `d0` and `d1`, so the three sequential current inputs
+survive its calls. The preceding list-clear call has no encoded preservation
+mask, however, so those current values are not proved natural-entry inputs and
+which slots become nonzero remains dynamic.
+
+The owner reads a fourth word at `0x60358cf4`, but this bounded span establishes
+no writer, initialization, or deliberately-zero lifetime for it. The copier
+can therefore consume an unknown fourth word when the first three are nonzero.
+The explicit slots' exact possible nonzero values are bounded to
+`{0x0000000b, 0x00001209, 0x0000120a}`; neither selected query's post-callback
+key is proved to be a member of that set.
 
 The record-status body updates bytes `+4` and `+5` only for query high-word
 cases `0x0200` and `0x0201`. The selected queries have high word `0x0202`, so
@@ -382,13 +391,13 @@ select the interior call. Although the state-19 record mapper writes `+4=243`,
 no accepted writer-to-dispatcher edge or common object identity joins that
 record to the current dispatch object.
 
-The first missing joins are the dynamic callback and list-value provenance
-behind the selected-query provider, plus a source-authenticated physical USB
-or interface-release owner of the dispatcher's incoming event object. They
-require receiver preservation through the intervening calls and an accepted
-`PC_RETURN` or `PC_CAM_SHOOTING` transition. Active-interface teardown,
-ordinary shooting, MTP re-entry, capture, image production, and host transfer
-remain unproved.
+The first missing joins are the dynamic transform callback and fourth-word
+provenance behind the selected-query provider, plus a source-authenticated
+physical USB or interface-release owner of the dispatcher's incoming event
+object. They require receiver preservation through the intervening calls and
+an accepted `PC_RETURN` or `PC_CAM_SHOOTING` transition. Active-interface
+teardown, ordinary shooting, MTP re-entry, capture, image production, and host
+transfer remain unproved.
 
 **Next evidence:** [USB/shooting-state research](../RESEARCH.md#r-usb-shooting-state).
 

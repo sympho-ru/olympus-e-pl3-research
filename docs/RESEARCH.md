@@ -336,14 +336,18 @@ normalized 0/1 result. Source `0x00272e62` calls the shared provider at
 The provider passes the query through an unresolved callback, compares the
 post-callback low halfword with a dynamic four-record list, and copies matched
 record byte `+4` to the caller output. A bounded owner clears and populates the
-list through unresolved mapper `0x005b4816`; it proves neither the three mapped
-values nor the writer or lifetime of the possible fourth word. The selected
-queries' high word `0x0202` also has no source-proven record-status write.
+first three list words through a complete mapper: inputs 15, 16, and 11 return
+`0x0000000b`, `0x0000120a`, and `0x00001209`, while all other inputs return
+zero. The no-mask clear call leaves the current inputs and populated slots
+dynamic, and no accepted writer or lifetime resolves the possible fourth word.
+The selected queries' high word `0x0202` also has no source-proven record-status
+write.
+
 Validator values 2 and 3 require result 0; later state 17 requires slot `+48`
 result 1, and states 18 through 23 require slot `+40` result 1. The first static
-frontier is now the transform callback, mapper outputs, and fourth-word
-provenance, not the provider ABI. The failure labels do not define physical USB
-meaning.
+frontier is now the transform callback and fourth-word provenance, not the
+provider ABI or the three explicit value mappings. The failure labels do not
+define physical USB meaning.
 
 State 19 maps record fields `+4=243` and `+20=277`; the disconnect-labelled
 caller can request states 11, 17, 15, or 6 under separate conditions, while
@@ -354,11 +358,11 @@ adjacent dispatcher reads and clears current receiver field `+4`, maps internal
 values 240 through 245, and adds exact flag and mode-state leaves. Its
 conditional interior call into the disconnect-labelled body depends on a
 separate slot-40 result, not on event 243 alone. Entry-receiver preservation
-and a common identity with the state-19 record remain unproved. The next useful
-static result would resolve the bounded provider-list inputs without assuming
-callback identity, or establish the concrete physical input and event-object
-owner, including preservation through the intervening calls, joined to an
-accepted `PC_RETURN` or `PC_CAM_SHOOTING` transition.
+and a common identity with the state-19 record remain unproved. A useful static
+result now needs an independent owner for the transform callback or fourth
+word; otherwise the decisive missing evidence is the concrete physical input
+and event-object owner, including preservation through the intervening calls,
+joined to an accepted `PC_RETURN` or `PC_CAM_SHOOTING` transition.
 
 The separate communication state family adds local disconnect/connect bodies,
 numeric state writes, a conditional disconnect producer, and an exact MTP
