@@ -232,7 +232,9 @@ The selected matrix cells for states 11, 17, 18, 19, 20, and 21 are:
 
 The conditional checks use one lazy singleton and one installed table. This
 source-level object join resolves the validator's exact slot targets and
-returned Boolean-shaped values, but stops at a shared lower-provider call.
+returned Boolean-shaped values. The shared lower-provider path continues
+through a dynamic four-record list, but stops at unresolved callback and list
+value provenance.
 
 | Role | Conditional local view | Block | Offset | Length |
 |---|---:|---:|---|---:|
@@ -255,6 +257,19 @@ returned Boolean-shaped values, but stops at a shared lower-provider call.
 | Value-3 failure label | DATA `0x6f10ffdc` | 0 | `0x00b0ebbc` | 23 |
 | Value-2 failure label | DATA `0x6f11000e` | 0 | `0x00b0ebee` | 26 |
 
+The provider-side ranges use the conditional CODE-local view
+`source + 0x6e5fffe0`:
+
+| Role | Conditional local view | Block | Offset | Length |
+|---|---:|---:|---|---:|
+| Provider orchestration slice | `0x6e85eace` | 0 | `0x0025eaee` | 425 |
+| Four-record list feed | `0x6e85f534` | 0 | `0x0025f554` | 35 |
+| Four-record list clearer | `0x6e85f557` | 0 | `0x0025f577` | 32 |
+| Callback and enable helpers | `0x6e85f577` | 0 | `0x0025f597` | 125 |
+| Record-status writer | `0x6e85f5f4` | 0 | `0x0025f614` | 303 |
+| Selected-query provider | `0x6e85f723` | 0 | `0x0025f743` | 67 |
+| Dynamic list owner | `0x6ebb3d64` | 0 | `0x005b3d84` | 412 |
+
 The accessor reads global `0x60357abc`, takes a bounded allocation and
 construction path when it is null, stores the constructed result back to that
 global, and returns the final loaded object. The constructor installs table
@@ -276,12 +291,31 @@ provider's result to 0 or 1. The `+40` fallback at source `0x00609483` clears
 `d0` but leaves the saved `d2` result unchanged.
 
 The two queries pass exact literals `0x02020400` (`+40`) and `0x02020501`
-(`+48`) to source `0x00272e59`. That body reaches the first unowned boundary
-at source `0x00272e62`, a direct call to `0x0025f743`. No owned global,
-port/MMIO object, or state field is established before that call, and the
-effective provider ABI is unresolved. The two failure-label ranges identify
-validator branches only; they do not assign connected/disconnected meaning to
-the table slots or returned values.
+(`+48`) to source `0x00272e59`, whose call at `0x00272e62` reaches the
+selected-query provider. That provider passes the query word through the
+conditional callback pointer at `0x605fd84c`, masks the current result to its
+low halfword, and scans eight-byte records rooted at `0x605fd820`. A matching
+record copies byte `+4` to the caller's output halfword; a miss leaves that
+output unchanged. The callback target and its result are unresolved, so the
+pre-callback low halfwords `0x0400` and `0x0501` do not establish the compared
+keys.
+
+The dynamic owner clears four records, conditionally maps its current `d2`,
+`d3`, and `a2` values through unresolved source `0x005b4816`, writes the three
+results to `0x60358ce8`, `0x60358cec`, and `0x60358cf0`, and feeds the list to
+the four-record copier. The preceding clear call has no encoded preservation
+mask, so those values are not proved natural-entry inputs. The owner reads a
+fourth word at `0x60358cf4`, but this bounded span establishes no writer,
+initialization, or deliberately-zero lifetime for it. The copier can therefore
+consume an unknown fourth word when the first three are nonzero.
+
+The record-status body updates bytes `+4` and `+5` only for query high-word
+cases `0x0200` and `0x0201`. The selected queries have high word `0x0202`, so
+this body does not source-prove their record byte `+4` values. The callback
+helpers install, clear, and conditionally invoke pointers; they are not
+standalone pointer getters. The two failure-label ranges identify validator
+branches only; they do not assign connected/disconnected meaning to the table
+slots, list keys, record bytes, or returned values.
 
 In the complete contextual validator, matrix value 3 calls slot `+48` and
 accepts result 0, while value 2 calls slot `+40` and also accepts result 0.
@@ -348,12 +382,13 @@ select the interior call. Although the state-19 record mapper writes `+4=243`,
 no accepted writer-to-dispatcher edge or common object identity joins that
 record to the current dispatch object.
 
-The first missing joins are the lower provider behind the direct call at
-`0x00272e62` and a source-authenticated physical USB or interface-release owner
-of the dispatcher's incoming event object. They require receiver preservation
-through the intervening calls and an accepted `PC_RETURN` or
-`PC_CAM_SHOOTING` transition. Active-interface teardown, ordinary shooting,
-MTP re-entry, capture, image production, and host transfer remain unproved.
+The first missing joins are the dynamic callback and list-value provenance
+behind the selected-query provider, plus a source-authenticated physical USB
+or interface-release owner of the dispatcher's incoming event object. They
+require receiver preservation through the intervening calls and an accepted
+`PC_RETURN` or `PC_CAM_SHOOTING` transition. Active-interface teardown,
+ordinary shooting, MTP re-entry, capture, image production, and host transfer
+remain unproved.
 
 **Next evidence:** [USB/shooting-state research](../RESEARCH.md#r-usb-shooting-state).
 

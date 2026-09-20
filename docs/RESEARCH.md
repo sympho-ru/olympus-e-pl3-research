@@ -329,14 +329,21 @@ meaning, and the separate Boolean-shaped leaf remains unjoined.
 
 The PC/USB state family establishes a 23-state destination/current transition
 policy, diagnostic labels, record fields, and bounded direct callers. Its
-conditional values now join one lazy singleton and installed table to exact
+conditional values join one lazy singleton and installed table to exact
 slot-`+40` and slot-`+48` wrappers. Each wrapper returns its lower predicate's
-normalized 0/1 result. Both queries stop at the same first unowned provider
-call: source `0x00272e62` calls `0x0025f743` after the query supplied literal
-`0x02020400` or `0x02020501`. No owned global, port/MMIO object, or state field
-is established before that boundary. Validator values 2 and 3 require result
-0; later state 17 requires slot `+48` result 1, and states 18 through 23 require
-slot `+40` result 1. The failure labels do not define physical USB meaning.
+normalized 0/1 result. Source `0x00272e62` calls the shared provider at
+`0x0025f743` after the query supplied literal `0x02020400` or `0x02020501`.
+The provider passes the query through an unresolved callback, compares the
+post-callback low halfword with a dynamic four-record list, and copies matched
+record byte `+4` to the caller output. A bounded owner clears and populates the
+list through unresolved mapper `0x005b4816`; it proves neither the three mapped
+values nor the writer or lifetime of the possible fourth word. The selected
+queries' high word `0x0202` also has no source-proven record-status write.
+Validator values 2 and 3 require result 0; later state 17 requires slot `+48`
+result 1, and states 18 through 23 require slot `+40` result 1. The first static
+frontier is now the transform callback, mapper outputs, and fourth-word
+provenance, not the provider ABI. The failure labels do not define physical USB
+meaning.
 
 State 19 maps record fields `+4=243` and `+20=277`; the disconnect-labelled
 caller can request states 11, 17, 15, or 6 under separate conditions, while
@@ -348,10 +355,10 @@ values 240 through 245, and adds exact flag and mode-state leaves. Its
 conditional interior call into the disconnect-labelled body depends on a
 separate slot-40 result, not on event 243 alone. Entry-receiver preservation
 and a common identity with the state-19 record remain unproved. The next useful
-static result is either the owner/ABI behind `0x0025f743` or the concrete
-physical input and event-object owner, including preservation through the
-intervening calls, joined to an accepted `PC_RETURN` or `PC_CAM_SHOOTING`
-transition.
+static result would resolve the bounded provider-list inputs without assuming
+callback identity, or establish the concrete physical input and event-object
+owner, including preservation through the intervening calls, joined to an
+accepted `PC_RETURN` or `PC_CAM_SHOOTING` transition.
 
 The separate communication state family adds local disconnect/connect bodies,
 numeric state writes, a conditional disconnect producer, and an exact MTP
