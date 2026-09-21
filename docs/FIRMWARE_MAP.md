@@ -48,13 +48,18 @@ evidence of newly captured images.
 
 | Topic | What the current evidence explains |
 |---|---|
-| [Startup](firmware/STARTUP.md) | Shared state words and a local overlay handoff; reset ownership is unresolved |
-| [Release-control candidates](firmware/RELEASE_CONTROL.md) | Release and guarded action callers, bit-state guards, carrier methods, caller record writes, construction owner joins, receiver selection, conditional endpoint/native inputs and gate-clear receiver arguments, six-input frontend, and bounded selector-to-key lookups |
-| [Still-corridor objects](firmware/STILL_OBJECTS.md) | Singleton dispatch, list population, separate object tables, [native still-request](firmware/STILL_OBJECTS.md#native-still-request) and [still-take](firmware/STILL_OBJECTS.md#native-still-take) boundaries, and field getter/setter relationships |
-| [Live view and ThroughImage](firmware/LIVE_VIEW.md) | Object lifecycle, collection operations, and a selector returning a scalar through a record lookup |
-| [PTP-adjacent records and dispatch](firmware/PTP.md) | Registration callers, FIFO mechanics, selectors, callbacks, descriptors, queued storage, a [qualified USB-state reporting wrapper](firmware/PTP.md#usb-state-wrapper), [conditional connection-candidate byte stores and consumer](firmware/PTP.md#usb-connect-stores), a [PC/USB state-transition policy whose conditional checks reach a dynamic four-record provider frontier](firmware/PTP.md#pc-usb-transition), a separate [communication disconnect/connect state machine with a bounded receiver-chain rejection](firmware/PTP.md#communication-cycle), [USB-labelled name maps that do not establish a disconnect owner](firmware/PTP.md#usb-disconnect-name-maps), and a [named MTP lifecycle with range-only aggregate/selector and receive-record/consumer candidates](firmware/PTP.md#mtp-communication-lifecycle) |
+| [Startup](firmware/STARTUP.md) | Local state and overlay handoff; reset ownership remains unresolved |
+| [Release control](firmware/RELEASE_CONTROL.md) | Guards, callers, record writes, and frontend inputs; capture effects remain unresolved |
+| [Constructed release service](firmware/RELEASE_SERVICE.md) | Construction, receiver selection, and conditional endpoint contracts |
+| [Still-object methods](firmware/STILL_OBJECTS.md) | Distinct object families, native request/take boundaries, and shared record methods |
+| [Live view and ThroughImage](firmware/LIVE_VIEW.md) | Object lifecycle and scalar-record lookup; frame ownership remains unresolved |
+| [USB state](firmware/USB_STATE.md) | Reporting and candidate byte-state consumers; live meaning remains unresolved |
+| [USB transition policy](firmware/USB_POLICY.md) | Conditional checks and dynamic provider queries; physical event ownership remains unresolved |
+| [Communication lifecycle](firmware/USB_LIFECYCLE.md) | Local state transitions and bounded event-name lookups; close/start effects remain unresolved |
+| [MTP lifecycle](firmware/MTP_LIFECYCLE.md) | Named callers, candidate aggregate selection, and receive-record processing |
+| [PTP records and dispatch](firmware/PTP.md) | Selectors, callbacks, FIFO, descriptors, and queued storage; transport connections remain unresolved |
 | [Decoded blocks and integrity](firmware/BLOCKS.md) | Data layouts, materialization requests, and the host parser's checksum boundary |
-| [Unassigned source anchors](firmware/UNASSIGNED.md) | A complete caller slice and a receiver prologue without established subsystem ownership |
+| [Unassigned source anchors](firmware/UNASSIGNED.md) | A caller slice and receiver prologue without established subsystem ownership |
 
 These are research-area names. For example, the release-control and live-view
 labels do not establish capture or frame ownership. Each topic records the
@@ -76,7 +81,7 @@ it does not mean that basic USB communication or downloading is unproved.
 | Required connection | Available static starting point | What remains to be proved |
 |---|---|---|
 | Receive a host request | [Registration callers and record handling](firmware/PTP.md#registration) | An authenticated transport receive path and selected request owner |
-| Select a controllable handler | [Release frontend and callers](firmware/RELEASE_CONTROL.md), [constructed service dispatch](firmware/RELEASE_CONTROL.md#constructed-service) | The applicable receiver, method, input contract, preservation, and host connection |
+| Select a controllable handler | [Release frontend and callers](firmware/RELEASE_CONTROL.md), [constructed service dispatch](firmware/RELEASE_SERVICE.md#constructed-service) | The applicable receiver, method, input contract, preservation, and host connection |
 | Initiate a still capture | [Release body](firmware/RELEASE_CONTROL.md#release-body), [guarded action](firmware/RELEASE_CONTROL.md#guarded-action), and [native still-take boundary](firmware/STILL_OBJECTS.md#native-still-take) | A source-supported capture effect beyond checks, labels, and direct or indirect calls |
 | Identify the resulting image | [Caller-record writes](firmware/RELEASE_CONTROL.md#caller-record), [object consumers](firmware/STILL_OBJECTS.md#field-100), and [owner fields](firmware/PTP.md#descriptor-owner) | A concrete image/payload, its owner, and lifetime; record writes alone do not identify it |
 | Transfer it to the host | [Reply packing and queued storage](firmware/PTP.md#reply-storage) | The image-to-transport connection and host completion |
@@ -107,6 +112,7 @@ are not certified by today's [contextual decode gate](DECODING.md).
 - [Obtain and verify Body 1.6](OBTAINING_FIRMWARE.md), then follow the [analysis workflow](ANALYSIS.md).
 - Read [evidence formats](EVIDENCE.md) and [instruction verification](DECODING.md) to interpret a finding's support.
 - Choose an [open question](RESEARCH.md) and follow [the contributor workflow](../CONTRIBUTING.md).
+- Report a camera or host result through the [observation workflow](observations/README.md).
 - Maintainers use [the acceptance and documentation rules](MAINTAINING.md).
 
 <details>

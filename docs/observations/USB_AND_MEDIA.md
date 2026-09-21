@@ -28,7 +28,7 @@ provide separate candidate and official-parent identities.
 Historical macOS observations distinguish Storage (`07b4:012c`, mass storage)
 from MTP/Print (`07b4:0113`, still-imaging/PTP). The shared USB identity does
 not make MTP and Print interchangeable. The retained summary and Storage import
-report identify the personalities; the EXP-007 outcome records their different
+report identify the personalities; the [marked redirect trial](DEPLOYMENT.md#redirects) records their different
 DeviceInfo payload lengths and session behavior (U1, U3, and
 [D4](DEPLOYMENT.md#sources)).
 
@@ -75,8 +75,10 @@ three JPEGs, with no movie objects and no fallback metadata (U4). A later
 Storage-mode import obtained a user-confirmed playable AVCHD movie from the
 card. The import manifest records a 14,389,248-byte original with SHA-256
 `d2f7e843f166e9f5fa40114b66a67ae9744ddfed685b0dda86b400c0ed3d7db7` (U3, U5).
-Saved media-validation output reports a 6.528-second H.264/AC-3 stream and no
-original-decode errors (U6–U7).
+Saved stream metadata reports a 6.528-second H.264/AC-3 stream (U6). The retained
+decode log is empty (U7): it contains no diagnostic text. An empty log alone
+does not establish that decoding ran or completed successfully; the separate
+user confirmation above records playability.
 
 This establishes a Storage/card route for that movie and the narrower contents
 of the tested MTP view. It does not establish that every movie format is
@@ -92,9 +94,9 @@ establish failure of the tested host-tool route. In particular, a host error
 does not prove that an exact PTP capture request reached the camera.
 
 A stronger, separately identified observation is the later
-[EXP-008 capture test](DEPLOYMENT.md#advertisement): on a known modified image,
+[advertised capture-request trial](DEPLOYMENT.md#advertisement): on a known modified image,
 one `InitiateCapture(0,0)` request received camera response `0x2005`. It must
-not be relabeled as a test of stock firmware. EXP-009's distinct proxy failure
+not be relabeled as a test of stock firmware. The separate object-handle proxy failure
 also does not prove that all possible capture routes are unavailable.
 
 The July 9 video scout found no real video input in the host's AVFoundation
@@ -154,7 +156,7 @@ The observation classes and verification limits also apply to
 | U4 | MTP media scout report | `5b882bf7af38de125623c23b77a7c0609cc69057c01d7e04541b51fb3ed27e23` |
 | U5 | Storage import manifest | `1fa4b0b67c744d28adef4690112ec701672697b3dbf61c58d3745304ae2468a9` |
 | U6 | Movie stream metadata | `f11c6b13d1663c34256352673f56d8e76e4abcc1c02017870f4002ae58b42da5` |
-| U7 | Original movie decode log | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` |
+| U7 | Original movie decode log (empty file; no diagnostic text) | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` |
 | U8 | Host trigger-capture error | `220b2a4ac24ab4264936e3e90000b57078b169011ba40533a026d45db0b6d139` |
 | U9 | Host capture-image error | `a99d86bb7edd64021e0c0195cc13c8ac7c903e4149492385a3c71d03d88e383e` |
 | U10 | Host capture-preview error | `df618d7e17f3ae8a4f0dec812414d7ca3a6a0ee8288c2b91ffe407ddfe216930` |

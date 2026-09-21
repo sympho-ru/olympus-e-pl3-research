@@ -1,4 +1,14 @@
-# Contributing firmware evidence
+# Contributing evidence and observations
+
+<a id="contributing-firmware-evidence"></a>
+
+Choose the route that matches what you can contribute. Both are open to any
+contributor and receive maintainer review.
+
+| Contribution | Submission route |
+|---|---|
+| Authenticated firmware ranges or decoded instructions | Incoming JSONL files, following the steps below |
+| A camera/host observation, bounded failure, or independent reproduction | [Observation guide and report template](docs/observations/README.md#submit-an-observation); an issue or documentation-only PR |
 
 The maintainer owns the two canonical files under `evidence/`. Contributors
 submit temporary, content-addressed JSONL files under `incoming/` using the
@@ -73,8 +83,9 @@ for that procedure. Contributors do not update canonical files or the reviewed
 topic references as part of an incoming-evidence PR.
 
 For a historical finding or hardware observation that cannot be represented by
-source rows, provide the maintainer a sanitized description of the conditions,
-result, evidence availability, and limitations. It receives a separate
+source rows, use the [observation reporting workflow](docs/observations/README.md).
+It records conditions, result, evidence availability, and limitations, with the
+same criteria for maintainer and external reports. It receives a separate
 [documentation review](docs/MAINTAINING.md#retain-knowledge-that-does-not-add-source-rows).
 Do not put raw captures, personal media, private identifiers, or experimental
 metadata into an incoming-evidence PR. Maintainer review can retain useful
