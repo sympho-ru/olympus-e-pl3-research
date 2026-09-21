@@ -9,7 +9,7 @@ review responsibilities.
 
 Treat every PR as untrusted. Pin its base and head commits, create an isolated
 checkout, and inspect the complete diff before running anything from it. A
-normal contribution changes only content-addressed `incoming/*.jsonl` files.
+source contribution changes only content-addressed `incoming/*.jsonl` files.
 Run tests in the trusted target checkout, then use the trusted target-branch
 installation to inspect the isolated PR checkout without importing or executing
 code from the PR:
@@ -110,6 +110,8 @@ For each accepted result:
 4. Update the linked research question when the missing evidence changes.
    Consolidate duplicate questions. Close an answered question with a link to
    the finding while retaining its ID; partial evidence only narrows it.
+   Use Open, Narrowed (still open), or Answered for its current evidence scope.
+   A contribution count or a successful decode is not a reason to mark it answered.
 5. Update the overview only when its summary or coverage changes. Add a glossary
    explanation for a new research label; use coordinates when its meaning is
    unknown. Keep old links working when moving or renaming a section.
@@ -120,11 +122,17 @@ keep replacement counts and correction chronology in the PR. The common static
 evidence limit is explained once in the reading guide, but specific missing
 joins and preservation/mapping uncertainties must stay beside their claims.
 
+Give each detailed explanation one home. A research question starts with the
+missing connection, links to the established finding, and says what evidence
+would answer it; it does not retell that finding. Split a question when its
+parts can be answered independently. Split a topic when distinct mechanisms
+need separate reading paths, not when it reaches an arbitrary size.
+
 An entry should answer these questions in this order:
 
 ```text
-Plain-language result and role of this area
-Source anchors: block, offset, length; local addresses where supported
+Plain-language result and its decisive limitation
+Source anchors and support type: exact ranges, instruction spans, or context
 Established relationships: operations, conditions, and object identities
 Unresolved boundary or interpretation pitfall specific to this result
 Link to the stable research question
@@ -143,8 +151,15 @@ its lasting knowledge and destination, or explain why existing documentation
 already covers it. Record that disposition in the reviewing PR. Do not require
 a duplicate or artificial incoming row to justify a documentation update.
 
+<a id="observation-review"></a>
+### Review an observation submission
+
 Historical and empirical reports receive maintainer review separately from
-normal incoming-only contributions. Before admitting an observation:
+incoming static evidence. Use the [reporting guide and template](observations/README.md)
+for both maintainer and external submissions. A sanitized issue can begin the
+review; a contributor can also propose a report in a documentation-only PR.
+Neither route admits observation metadata through `incoming/` or the evidence
+acceptance commands. Before admitting an observation:
 
 1. Inspect its primary outcome and available supporting artifacts. Bind the
    retained source files by SHA-256 and keep the private path/field mapping.
@@ -166,6 +181,27 @@ normal incoming-only contributions. Before admitting an observation:
    research question. Preserve the distinction between demonstrated capability
    and an unidentified static implementation or missing end-to-end connection.
 
+Record the reviewer, support inspected, and disposition in the reviewing issue
+or PR: accepted conclusion (including qualifications), already covered with a
+link, or insufficient support with a reason. Identify observer, author, and
+reviewer; identify self-review instead of claiming independent confirmation.
+An unavailable primary record can support only the explicitly reported or
+attested scope that survives review, not an independently verified measurement.
+
+For a new standalone report, retain a descriptive path under
+`docs/observations/reports/` and a link to its review. Existing observation pages
+can be updated in place when they already own the finding. Use a readable result
+name in the reference; an author's local experiment label is optional, explained
+provenance. Do not assign a global `EXP-*` sequence. Credit the reporter and
+preserve contributor commit authorship when merging a documentation PR. A
+maintainer-originated report meets the same criteria.
+
+On the committed documentation revision, run the tests and structural, source,
+and release gates listed above before publication. Merge reviewed documentation
+through a PR and then close the reporting issue with the result link. Mechanical
+checks do not authenticate the observation. Preserve report links when correcting
+or superseding a finding, and retain separate provenance for independent repeats.
+
 Do not add observation fields or files under `evidence/`, change the registered
 official image to accommodate candidates, or weaken the incoming/contextual
 gates. New static support still follows ordinary evidence admission. Track
@@ -175,8 +211,11 @@ remaining gaps rather than asserting that an unchecked archive is complete.
 ## Verify documentation changes
 
 Run `pytest` and `epl3-research check` after editing. Documentation tests check
-relative Markdown links and fragment targets, exact canonical range anchors in
-source tables, and the map's per-block counts. They require no firmware.
+relative Markdown links and fragment targets, typed source references in
+coordinate tables, and the map's per-block counts. Exact range references must
+match canonical range rows. Instruction spans require their recorded address
+view and full coverage of the stated extent; contextual or sparse support must
+not be presented as a complete instruction span. They require no firmware.
 They do not prove prose semantics or runtime placement.
 
 For a reorganization, compare the moved findings with the previous revision:

@@ -13,6 +13,8 @@ Use [README.md](README.md) for setup and publication boundaries.
 - `docs/observations/` holds reviewed historical hardware and host results.
   Check these before describing a capability as unproved. Preserve exact
   image/session scope and distinguish measurements, attestations, and rehearsals.
+  Its [reporting guide](docs/observations/README.md) separates submissions from
+  accepted observations; explain local experiment labels in plain language.
 - [RESEARCH.md](docs/RESEARCH.md) holds open questions with stable IDs. It is
   not a live campaign queue and does not repeat the detailed findings.
 - [CONTRIBUTING.md](CONTRIBUTING.md) governs incoming-only evidence submissions.
@@ -24,6 +26,7 @@ Use [README.md](README.md) for setup and publication boundaries.
 ## Editing and verification
 
 Update an existing finding in place and narrow or close its linked question.
+Give each detailed explanation one home; use links from summaries and questions.
 Preserve exact source anchors, conditional address views, branch outcomes,
 register preservation boundaries, and distinct object identities. Put acceptance
 deltas in the PR description. Use plain language before technical detail.
@@ -41,6 +44,6 @@ incoming-only evidence workflow or turning open questions into campaign jobs.
 
 Run `pytest` and `epl3-research check` for changes here. Follow the source and
 committed-release gates in the maintainer guide for publication. Documentation
-tests check navigation, canonical range references, and coverage counts; review
+tests check navigation, typed source references, and coverage counts; review
 the meaning of rewritten claims separately. Follow the user's authorized scope
 for commits, PRs, acceptance, and merges.

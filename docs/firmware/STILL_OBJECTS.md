@@ -101,6 +101,8 @@ Both spans have canonical instruction support. At source `0x0081be61`
 (local `0x6ee1d281`), the two-byte `mov d3,a0` supplies the local record
 address to the initializer.
 
+### Native argument and record formation
+
 Name this native profile's entering `a0/a1/d0` as `E/Q/B`, without implying
 recovered types. Slot `+64` saves `E` in `a2` and `Q` in `a3`.
 Source `0x0081be4a` compares `0,d0`; `beq` at `0x0081be4c` takes `B=0` to
@@ -161,7 +163,7 @@ relevant storage through intervening methods. Neither leaf gives those
 fields opcode, capture, or completion semantics.
 
 These native input profiles are also nominated by the separately conditional
-[E-table slots](RELEASE_CONTROL.md#conditional-receiver-endpoint), without
+[E-table slots](RELEASE_SERVICE.md#conditional-receiver-endpoint), without
 establishing shared object identity. Native `+64/+76` directly call
 `0x0081c73b`, not endpoint `0x0081c0ec`; their direct calls do not test
 global `0x6035b1ac`. Passing an equivalent record to that endpoint is a
@@ -170,9 +172,11 @@ Stack validity during initialization and the call does not prove safe
 retention after return, live table validity,
 capture, image ownership, or completion.
 
+### Shared continuation and its receiver contracts
+
 The direct successor `0x6ee1db5b` (offset `0x0081c73b`, 103 bytes) also has
 canonical coverage and is shared by the [conditional receiver-table
-endpoint](RELEASE_CONTROL.md#conditional-receiver-endpoint). The source
+endpoint](RELEASE_SERVICE.md#conditional-receiver-endpoint). The source
 coordinates below identify its replay without implying a global address view
 or shared object/table identity.
 
@@ -202,8 +206,10 @@ entering object against zero; equality branches to `0x0081c79e`. A separate
 `cmp 0,a0` / `beq` at `0x0081c765` / `0x0081c767` takes null to that
 same current-`d2` return-copy arm.
 
+### Qualified gate-clear object join
+
 For the gate-clear arm, the separately conditional
-[E-table slot +52](RELEASE_CONTROL.md#conditional-receiver-endpoint)
+[E-table slot +52](RELEASE_SERVICE.md#conditional-receiver-endpoint)
 nominates the complete [field +100 getter](#field-100). That leaf writes only
 `a0`, loading current `E+100`. Given valid entering objects and this selected
 table, the early checks therefore have `a2=E,d3=Q,d2=0,a3=R`, where `R`
@@ -242,14 +248,14 @@ indirect receiver call associated with a still-request diagnostic. The source
 relationship establishes argument formation and the first dynamic-effect
 boundary, not request publication, capture, or a resulting image.
 
-| Role | Block | Offset | Length | Support |
-|---|---:|---|---:|---|
-| Typed-argument constructor | 0 | `0x0059b994` | 21 | Canonical instructions |
-| Conditional caller | 0 | `0x006a257e` | 78 | Canonical instructions |
-| Native request body | 0 | `0x006a8ec3` | 96 | Canonical instructions, including one earlier row |
-| Separate direct-call anchor | 0 | `0x007bddd9` | 7 | One canonical instruction |
+| Role | Block | Offset | Length | Reference | Recorded address |
+|---|---:|---|---:|---|---|
+| Typed-argument constructor | 0 | `0x0059b994` | 21 | Instruction span | `0x4085b994` |
+| Conditional caller | 0 | `0x006a257e` | 78 | Instruction span | `0x4096257e` |
+| Native request body | 0 | `0x006a8ec3` | 96 | Instruction span | `0x40968ec3` |
+| Separate direct-call anchor | 0 | `0x007bddd9` | 7 | Instruction span | `0x40a7ddd9` |
 
-The 68 canonical instructions use CODE-local view `source + 0x402c0000`.
+These instruction spans use CODE-local view `source + 0x402c0000`.
 The caller saves current `a0` in `a2`, reads field `+236`, and returns when
 that value is nonzero. The zero arm crosses three direct helper calls before
 restoring current `a2` to `a0` and calling source `0x006a8ec3`. Their listed
@@ -279,8 +285,7 @@ new-image identity, and host retrieval remain unresolved. The body is not a
 safe patch or host-control interface merely because it constructs a typed
 argument and reaches a named diagnostic.
 
-**Next evidence:** [Resolve the release-control and native request
-consumers](../RESEARCH.md#r-release-contract).
+**Next evidence:** [Native request effect](../RESEARCH.md#r-native-still-request).
 
 <a id="native-still-take"></a>
 ## Native still-take command boundary
@@ -321,8 +326,7 @@ sensor exposure, file creation, new-image ownership, transfer, or completion
 occurs. Establish those effects at a bounded selected call before treating the
 body as a controllable capture interface.
 
-**Next evidence:** [Resolve the release-control and native request
-consumers](../RESEARCH.md#r-release-contract).
+**Next evidence:** [Native still-take effect](../RESEARCH.md#r-native-still-take).
 
 <a id="field-100"></a>
 ## Field +100 getter and writer

@@ -31,6 +31,9 @@ These files are updated by the maintainer. Refer to
   follow the [analysis workflow](docs/ANALYSIS.md).
 - To extend the research, choose an open question in
   [RESEARCH.md](docs/RESEARCH.md) and follow [CONTRIBUTING.md](CONTRIBUTING.md).
+- To report a camera or host result, use the
+  [observation guide and template](docs/observations/README.md). Positive results,
+  bounded failures, and independent reproductions are welcome.
 - For the exact canonical and incoming row formats, see
   [EVIDENCE.md](docs/EVIDENCE.md).
 - To interpret addresses and the strength of a finding, read the

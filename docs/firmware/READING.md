@@ -99,15 +99,24 @@ unknown.
 ## Finding format and evidence lookup
 
 A topic page starts with a plain-language result and a local contents list.
-Each stable section gives its source anchors, established relationships, local
-limitations, and a link to the next evidence sought in `RESEARCH.md`. Use
-tables for mappings and object fields, and prose for control/data-flow
-reasoning.
+Each stable section states its result and decisive limitation before the exact
+support. Define object-role names within the finding; the same letter or field
+offset in another finding does not establish identity. Use subheadings for
+distinct mechanisms, tables for mappings/fields/branch outcomes, and prose for
+control/data-flow reasoning. Link to the specific question in `RESEARCH.md`
+instead of duplicating its investigation instructions.
 
-Anchor tables use separate **Block**, **Offset**, and **Length** columns where
-an exact canonical range is available. An anchor table is a selected entry
-point, not an assertion that every instruction within the range is canonical.
-The canonical row supplies its hash. For ambiguous instructions, also identify
+Coordinate tables use separate **Block**, **Offset**, and **Length** columns.
+By default these name exact canonical ranges; an explicit **Reference** value
+of **Range** means the same thing. The canonical row supplies its hash. A range
+is a selected entry point, not an assertion that all its instructions are canonical.
+
+Use **Reference: Instruction span** with **Recorded address** for an extent
+fully covered by canonical instruction rows in that address view, including a
+single-instruction anchor. This does not require an artificial enclosing range
+row. The check establishes coverage, not a callable function or execution path.
+Describe sparse islands, contextual lookahead, and range-only interpretations
+explicitly outside those complete-span assertions. For ambiguous instructions, also identify
 the recorded address and exact decode or row digest; an address alone is not a
 unique evidence key. See [the row formats](../EVIDENCE.md).
 

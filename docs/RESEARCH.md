@@ -17,6 +17,10 @@ specific modified-image deployment and existing-JPEG retrieval. The remaining
 target is a new host-initiated capture connected to that retrieval capability,
 not rediscovery of basic download or proof that any modified image can boot.
 
+**Status:** Open means the question is unresolved; Narrowed means reviewed
+findings settle part of its scope; Answered requires a linked result that
+settles its stated scope. These labels do not measure capture-path completion.
+
 ## Choose a starting point
 
 | Interest | Questions |
@@ -25,8 +29,9 @@ not rediscovery of basic download or proof that any modified image can boot.
 | Release interface and inputs | [Release and guarded action](#r-release-contract), [caller record](#r-caller-record), [frontend inputs](#r-release-inputs), [key owner](#r-key-owner) |
 | Still-object ownership | [List consumer](#r-still-list), [nested receiver](#r-still-receiver), [field +100](#r-still-field-100) |
 | Live view and scalar records | [Frame owner](#r-live-view-owner), [ThroughImage record](#r-throughimage-record) |
-| PTP-adjacent ingress and dispatch | [Registration](#r-ptp-registration), [request owner and MTP lifecycle](#r-ptp-ingress), [vectors](#r-ptp-vectors), [status callbacks](#r-ptp-status), [handler banks](#r-ptp-handler-banks) |
+| PTP-adjacent ingress and dispatch | [Registration](#r-ptp-registration), [request owner](#r-ptp-ingress), [vectors](#r-ptp-vectors), [status callbacks](#r-ptp-status), [handler banks](#r-ptp-handler-banks) |
 | Storage and unjoined objects | [Queued storage](#r-ptp-storage), [descriptor consumer](#r-descriptor-consumer), [callback provider](#r-callback-provider), [descriptor tables](#r-ptp-descriptor-tables), [entry edges](#r-ptp-entry-edges) |
+| USB state and lifecycle | [State owner](#r-usb-state-owner), [policy provider](#r-usb-policy-provider), [event owner](#r-usb-event-owner), [communication receivers](#r-usb-communication-receiver), [MTP selection](#r-mtp-selection), [record owner](#r-mtp-record-owner) |
 | Hardware integration | [USB shooting state](#r-usb-shooting-state), [new-image retrieval](#r-capture-retrieval) |
 | Layout and startup | [Address mappings](#r-address-mapping), [boot chain](#r-startup), [block 1](#r-block-1), [block 2](#r-block-2), [block 3](#r-block-3), [block 4](#r-block-4), [integrity](#r-integrity) |
 | Unassigned anchors | [Caller context](#r-unassigned-caller), [receiver prologue](#r-unassigned-receiver) |
@@ -46,82 +51,121 @@ does not resolve its owner or execution path.
 <a id="r-release-contract"></a>
 ## Resolve the release-control body's indirect consumers
 
-**Start from:** the [release body and caller profiles](firmware/RELEASE_CONTROL.md#release-body),
-[guarded action and carrier calls](firmware/RELEASE_CONTROL.md#guarded-action),
-the separate [native still-request receiver boundary](firmware/STILL_OBJECTS.md#native-still-request),
-the [native still-take command boundary](firmware/STILL_OBJECTS.md#native-still-take),
-and the distinct [constructed service dispatch](firmware/RELEASE_CONTROL.md#constructed-service).
+**Status:** Narrowed.
+
+**Question:** which of the separate candidate entry points reaches an actual
+capture or image-producing effect with established receiver and input contracts?
+
+**Established:** reviewed guards, construction joins, and native argument
+formation narrow individual boundaries. Their detailed contracts live in
+[release control](firmware/RELEASE_CONTROL.md), the
+[constructed service](firmware/RELEASE_SERVICE.md), and
+[still-object methods](firmware/STILL_OBJECTS.md).
+
+Choose the [release-body](#r-release-body-effect), [action/carrier](#r-action-carrier),
+[service receiver](#r-release-service), [conditional endpoint](#r-release-endpoint),
+[native request](#r-native-still-request), or [native still-take](#r-native-still-take) question.
+
+**Useful result:** answer one of these independent questions and connect its
+effect to the relevant capture or payload observation. A scalar return or
+diagnostic label alone does not identify that effect. This umbrella remains open
+until the required connection is established; it is not a shared object identity.
+
+<a id="r-release-body-effect"></a>
+## Identify the release body's selected consumers
+
+**Status:** Open.
 
 **Question:** which concrete receivers and input profiles reach the conditional
-lookups, the helper at `0x6ebd9652`, and the action's dynamic methods reached
-through source `0x0059a13c`?
+lookups and helper `0x6ebd9652`, and what effect follows?
 
-**Useful result:** trace arguments and register preservation through the selected
-calls to a bounded consumer or a capture/payload effect. Preserve the distinction
-between range coverage and the sparsely recorded caller instructions. A status
-return alone does not identify an image-producing operation. For the guarded
-action, resolve preservation and object identity across slots `+16`, `+140`,
-`+144`, `+20`, and `+148`; keep the saved carrier distinct from the receiver
-returned by slot `+16`. Establish the pointer contract at writer source
-`0x0059a7a1`: the construction branch guards an earlier call, not this writer.
-The two action guards test bits 0 and 5 of a word at the field-`+4`
-pointee's `+16`; set bits select their respective error returns. Identify that
-pointee's owner and validity, the bit producers and meanings, and the conditions
-under which both bits are clear. The Boolean leaf alone does not establish
-image readiness or capture initiation.
-For the constructed service, establish the cached root's validity and lifetime,
-the concrete receiver selected from the `+1868` subobject's current field `+140`,
-and its table's `+4` consumer. Verify `d2` preservation through selector slot
-`+156` before equating the forwarded scalar with the incoming request. Resolve
-the field's later value through helper and indirect storage effects: on the
-qualified construction path, the initial `+140`/`+144` zero-write owner is
-joined to the outer-base return and the `0x6eef8af8` installation, but zero is
-not proved to survive those effects or live invocation. The root-return/cache
-STORE identity is established only on the qualified valid nonzero normally
-returning path; relate the later cache reload to that stored root through the
-aggregate's global-state effects and establish validity/lifetime. The final
-`+1868` constructor return and remaining pointed-storage/register contracts
-are separate from those partial joins.
-Root wiring's `+272`/`+276`/`+160` writes are distinct from that field. The
-selected bodies do not establish an exhaustive producer census. Keep this
-service distinct from the guarded action's carrier until a source-supported
-join is established.
+**Start from:** [release body and direct callers](firmware/RELEASE_CONTROL.md#release-body).
 
-For the [conditional table endpoint](firmware/RELEASE_CONTROL.md#conditional-receiver-endpoint),
-establish runtime placement/selection and valid entering `E/P/Q` objects, not
-merely the DATA-local pointer arithmetic. Distinguish the first loaded-global
-zero/nonzero branch from pointer-used `P` and its table-`+12` return. Verify
-preservation and actual indirect effects on the exclusive `+76` versus
-`P+4`/`E+72` paths and in the shared continuation, whose later global compare
-uses current `d2`. A zero P or numeric opcode alone does not establish a safe
-input contract or capture effect. The conditional table `+64/+72/+76` targets
-and their native argument/record formation narrow the input-layout question;
-establish actual live E/Q, the fixed literal owner's validity, record table
-validity and retention/lifetime. The direct predicate and conditional E-table
-getter establish the gate-clear arguments up to Q-table `+40` at source
-`0x0081c771`; establish that method's effects and preservation from
-`a0=Q,a1=E`. Gate-set instead needs the earlier Q-table `+8` contract.
-Keep native `+64/+76` direct continuation calls separate from the endpoint's
-global-dependent dispatch; no native-producer call to `0x0081c0ec` is proved.
-Relate current P-table field reads to initialization only with relevant storage
-preservation. A native stack record and returned scalar are not capture or
-completion proofs, and do not justify bypassing those obligations with a patch.
+**Useful result:** follow an authenticated entry through argument definitions
+and call preservation to a selected consumer and its effect. Distinguish complete
+range coverage from the sparsely recorded caller instructions.
 
-For the distinct native still-request body at source `0x006a8ec3`, establish
-the current field-`+140` receiver, its table slot `+4`, and the indirect
-method's effect. Preserve the immediate-return predicate arm and the uncertain
-constructor-return identity through opaque helpers. The post-call shooting
-diagnostic does not prove request publication, exposure, or image creation.
+<a id="r-action-carrier"></a>
+## Resolve the guarded action's state and carrier methods
 
-For the native still-take body at source `0x00220368`, the direct caller-to-
-callee scalar handoff is established, but the complete authenticated body has
-only sparse canonical instruction anchors. Select a bounded downstream call
-with complete argument and preservation support and establish its concrete
-capture or object effect. The `Still Take Start` identifier and normal return
-do not supply that effect.
+**Status:** Open.
+
+**Question:** who owns the tested bit-state object and the dynamic receivers
+used after the two guards permit continuation?
+
+**Start from:** [guard outcomes and carrier calls](firmware/RELEASE_CONTROL.md#guarded-action).
+
+**Useful result:** establish the bit producers, valid pointee and clear-bit
+conditions, then resolve the carrier/returned-receiver contracts through the
+dynamic methods. Preserve the writer's separate null-safety boundary and the
+distinction between the saved carrier and the slot-`+16` result.
+
+<a id="r-release-service"></a>
+## Establish the service's live receiver and method
+
+**Status:** Open.
+
+**Question:** which valid, live receiver does the cached service select, and
+what does its table slot `+4` do?
+
+**Start from:** [constructed service and receiver selection](firmware/RELEASE_SERVICE.md#constructed-service).
+
+**Useful result:** connect the qualified construction/cache-store identity to
+the later cache reload, current field `+140`, and selected method. Resolve
+pointed-storage effects and scalar preservation through slot `+156`.
+Initial zero writes and the root's distinct wiring fields do not settle those
+later values or equate the service with the action's carrier.
+
+<a id="r-release-endpoint"></a>
+## Establish the conditional endpoint's objects and effects
+
+**Status:** Open.
+
+**Question:** are the nominated endpoint and table selected with valid live
+objects, and what do the first unresolved methods do?
+
+**Start from:** [endpoint branches](firmware/RELEASE_SERVICE.md#conditional-receiver-endpoint)
+and [shared continuation](firmware/STILL_OBJECTS.md#continuations).
+
+**Useful result:** bind entering E/P/Q and the conditional table, then establish
+method effects, storage lifetime, and preservation on the selected arm. Keep
+the loaded-global branch separate from pointer P and its method return.
+The qualified gate-clear join stops at Q-table `+40`; gate-set also needs
+Q-table `+8`. Native record formation does not prove a call to this endpoint,
+safe record retention, or capture completion.
+
+<a id="r-native-still-request"></a>
+## Identify the native still-request method's effect
+
+**Status:** Open.
+
+**Question:** what receives the native request body's indirect call, and does
+that method actually publish a request or initiate capture?
+
+**Start from:** [native still-request boundary](firmware/STILL_OBJECTS.md#native-still-request).
+
+**Useful result:** bind the current field-`+140` receiver, slot `+4`, and
+constructed argument through intervening helpers. Preserve the immediate-return
+predicate arm. The diagnostic after the call does not establish its effect.
+
+<a id="r-native-still-take"></a>
+## Identify a capture effect in the native still-take body
+
+**Status:** Open.
+
+**Question:** what downstream effect follows the established scalar handoff?
+
+**Start from:** [native still-take boundary](firmware/STILL_OBJECTS.md#native-still-take).
+
+**Useful result:** select a bounded call with complete argument and preservation
+support and identify its capture or object effect. The authenticated full-body
+range has sparse canonical instruction anchors; the phase name and normal
+return are insufficient.
 
 <a id="r-caller-record"></a>
 ## Identify the caller record's owner and consumers
+
+**Status:** Open.
 
 **Start from:** the [caller and record-writing body](firmware/RELEASE_CONTROL.md#caller-record)
 at sources `0x0058d8b3` and `0x005cbbe6`.
@@ -139,6 +183,8 @@ identifies a captured image or a host-transfer path.
 <a id="r-release-inputs"></a>
 ## Establish frontend input and receiver contracts
 
+**Status:** Open.
+
 **Start from:** the [six-input frontend](firmware/RELEASE_CONTROL.md#six-input-frontend).
 
 **Question:** what is written on conversion failure, and which concrete method
@@ -151,6 +197,8 @@ frontend's normal zero return is not a capture-success result.
 
 <a id="r-key-owner"></a>
 ## Connect the candidate key-conversion owner
+
+**Status:** Open.
 
 **Start from:** the [owner candidate](firmware/RELEASE_CONTROL.md#key-conversion-owner)
 and [bounded selector-to-key lookups](firmware/RELEASE_CONTROL.md#key-lookup).
@@ -168,6 +216,8 @@ placement.
 <a id="r-still-list"></a>
 ## Identify the still-corridor list consumer
 
+**Status:** Open.
+
 **Start from:** [singleton dispatch and population](firmware/STILL_OBJECTS.md#singleton).
 
 **Question:** what is the list's runtime class, and which object receives the
@@ -180,6 +230,8 @@ or image production.
 <a id="r-still-receiver"></a>
 ## Identify the nested receiver of the +2216 object
 
+**Status:** Open.
+
 **Start from:** the [separate object path](firmware/STILL_OBJECTS.md#owner-2216),
 especially the nested call at `0x6ee1d52a`.
 
@@ -189,6 +241,8 @@ the getter's distinct local and canonical load-address anchors.
 
 <a id="r-still-field-100"></a>
 ## Trace the pointer stored in field +100
+
+**Status:** Narrowed.
 
 **Start from:** the [getter, writer, and separate table candidate](firmware/STILL_OBJECTS.md#field-100)
 and their [dispatch continuations](firmware/STILL_OBJECTS.md#continuations).
@@ -208,6 +262,8 @@ slot-`+40` no-op does not resolve Q's call at local `0x6ee1db91`.
 <a id="r-live-view-owner"></a>
 ## Identify the live-view frame owner
 
+**Status:** Open.
+
 **Start from:** the [collection and copy paths](firmware/LIVE_VIEW.md#collections).
 
 **Useful result:** identify the helper's caller-supplied object or the destination
@@ -218,6 +274,8 @@ to answer the question.
 
 <a id="r-throughimage-record"></a>
 ## Find the producer of the ThroughImage record
+
+**Status:** Open.
 
 **Start from:** the [scalar lookup](firmware/LIVE_VIEW.md#throughimage) and
 [separate initializer](firmware/LIVE_VIEW.md#record-initializer).
@@ -234,6 +292,8 @@ return does not identify an image pointer.
 <a id="r-ptp-registration"></a>
 ## Place the registration callbacks
 
+**Status:** Open.
+
 **Start from:** the [registration callers and builder](firmware/PTP.md#registration).
 
 **Useful result:** establish this module's source-to-runtime placement and bind
@@ -244,167 +304,154 @@ caller metadata 2 survives the allocator's transitive calls in `d3` to node
 <a id="r-ptp-ingress"></a>
 ## Connect the primary request owner to ingress
 
-**Start from:** the [primary selector's caller](firmware/PTP.md#request-selector)
-and [FIFO](firmware/PTP.md#fifo), plus the [named MTP lifecycle and
-receive-record/pump join](firmware/PTP.md#mtp-event-pump) and the
-[adjacent submitted-record consumer candidate](firmware/PTP.md#submitted-record-consumer).
-The [range-only aggregate and state-selector candidates](firmware/PTP.md#mtp-lifecycle-owner)
-are a separate construction and selector starting point.
+**Status:** Narrowed.
 
-**Useful result:** identify the stack-record owner's relationship to a transport
-receive boundary and the known FIFO. The `0x6e6860f7` contract on the bit-1-set
-path is a bounded subquestion. Record layout and the shared descriptor handoff
-alone do not establish live admission or wire completion.
+**Question:** what authenticated transport input selects the reviewed request
+owner and supplies its records?
 
-The lifecycle-called wrapper supplies a direct static edge to a bounded
-receive-record submitter, record processor, and pump-shaped calls. Establish
-the submitter's runtime task and record producer, resolve its uncovered exits
-and processor address-view gap, and connect its input to a transport receive
-boundary before treating it as host ingress. Names, stack fields, and pump-like
-control flow are insufficient.
+**Start from:** [primary selector and caller](firmware/PTP.md#request-selector),
+[initializer and callbacks](firmware/PTP.md#status-callbacks), and the separate
+[submitted-record consumer candidate](firmware/PTP.md#submitted-record-consumer).
 
-The adjacent consumer candidate adds a mask-32-selected polling/dispatch loop
-through `0x6e61fd33` and `0x6f3311e7`. Establish the missing middle and exit,
-its runtime task/owner, and the identity of the stack record before joining it
-to the MTP submitter or known FIFO. A shared halfword/helper is insufficient.
+**Useful result:** establish the runtime owner, scheduling/entry, and preserved
+record identity from a transport receive operation into the selected body.
+Known working reads and [scoped operation-rejection observations](observations/DEPLOYMENT.md#advertisement)
+provide controls. Distinguish the installed callback from its skipped interior
+entry and preserve the consumer's uncovered instruction spans.
 
-The aggregate candidate supplies construction and field-372/field-8 dispatch
-geometry around a singleton-style 208-byte object. The state-7 selector arm
-reaches a helper that loads its current receiver's field `+372` and calls
-virtual slot `+24`, but intervening calls do not preserve proof that this
-receiver is the aggregate-relative object `+112`. Establish that receiver and
-preservation join, its runtime root, and the retained identities returned by
-opaque factories before treating the slot as the MTP start wrapper. Range-only
-proximity and compatible object shape do not establish wrapper ownership.
-
-Use [known working USB reads and the failed handler experiments](observations/USB_AND_MEDIA.md)
-as empirical controls. Repeating an advertisement-only patch or a host-tool
-error does not identify the firmware's actual operation-acceptance boundary.
+The [MTP selection](#r-mtp-selection) and [receive-record ownership](#r-mtp-record-owner)
+questions cover separate candidate connections. Shared helpers, names, and
+source adjacency do not establish that their records are the primary owner's
+records. This question remains about ingress, not a complete USB implementation.
 
 <a id="r-usb-shooting-state"></a>
 ## Distinguish USB mode from shooting-state restrictions
 
-**Start from:** the [session and capture observations](observations/USB_AND_MEDIA.md#remaining-validation)
-and the [named USB-state reporting wrapper](firmware/PTP.md#usb-state-wrapper)
-and [candidate connection callback stores and consumer](firmware/PTP.md#usb-connect-stores),
-plus the [named MTP communication lifecycle callers](firmware/PTP.md#mtp-communication-lifecycle)
-and their [range-only aggregate and state-selector candidates](firmware/PTP.md#mtp-lifecycle-owner),
-the [PC/USB state-transition policy and callers](firmware/PTP.md#pc-usb-transition),
-and the separate [communication disconnect/connect state machine](firmware/PTP.md#communication-cycle).
+**Status:** Open.
 
-The wrapper clears `d0` on normal return and branches on current `d2` to two
-labels. Its accessor and slot `+40` are now source-joined to a lazy singleton,
-one installed table, and a normalized lower predicate. This does not settle
-live USB state: runtime object selection, lower-provider ownership, value
-production, and preservation across this wrapper's reporting calls remain
-unresolved. The conditional DATA-local mapping does not establish runtime
-placement.
+**Question:** is ordinary shooting suppressed by USB personality, an open PTP
+session, host interface ownership, or another camera state?
 
-The source `0x00acfa9b` candidate supplies explicit conditional byte writes to
-`0x60353190..0x60353193`. A separate selected consumer directly reads
-`0x60353192`, branches on current post-helper state/scalar values, performs
-additional explicit stores, and forwards the current stack bytes to the
-`0x60353190/91` setters. This establishes a bounded state-consumer relationship,
-but not live registration, numeric meanings, or shooting consequences. Both
-bodies test current registers after intervening calls, not proved preserved
-entry or getter values; opaque calls also prevent unconditional final-value or
-unchanged-state claims. The next useful static result would establish the
-consumer's live owner/input contract or a concrete downstream shooting effect.
-Neither the store constants nor a join inferred from naming establishes
-shooting permission or the wrapper's slot-40 producer.
+**Start from:** [historical session and capture observations](observations/USB_AND_MEDIA.md#remaining-validation).
+Existing-image retrieval is demonstrated within its recorded scope. The static
+[state](firmware/USB_STATE.md), [policy](firmware/USB_POLICY.md), and
+[lifecycle](firmware/USB_LIFECYCLE.md) findings do not identify an active shooting
+restriction; their independent questions follow below.
 
-The named MTP start/end bodies add direct calls to shared status,
-mount-status-shaped, and [receive-record/pump-shaped helpers](firmware/PTP.md#mtp-event-pump),
-but they do not establish live session selection. The candidate status writer
-uses current `d2` after an opaque call, and the two outer wrappers use current
-`a2` after their lifecycle calls. Establish those preservation contracts and
-the wrappers' runtime owner before treating the family as a producer of a
-shooting-relevant state. The pump-shaped path also tests bit 1 of
-`0x605fc9dc`, but its writer, lifetime, and shooting meaning remain unresolved.
-The aggregate candidate adds field links and indirect slots. A state-7 arm
-reaches the field-372 / virtual-slot-24 helper, but its current receiver is not
-proved to be the aggregate-relative object whose field would select the MTP
-start wrapper. Values 6 and 7 have no established USB, session, or shooting
-meaning, and the separate Boolean-shaped leaf remains unjoined.
+**Useful result:** first check retained records for a controlled comparison of
+actual new-image production. A separately authorized hardware observation could
+compare MTP with no open session, an open session, a closed session with the
+host interface released but cable attached, and a disconnected shooting control.
+Bind image and session conditions. Button or LCD response alone is insufficient.
+Such an observation would constrain lifecycle work without identifying a firmware
+global or proving host-triggered capture.
 
-The PC/USB state family establishes a 23-state destination/current transition
-policy, diagnostic labels, record fields, and bounded direct callers. Its
-conditional values join one lazy singleton and installed table to exact
-slot-`+40` and slot-`+48` wrappers. Each wrapper returns its lower predicate's
-normalized 0/1 result. Source `0x00272e62` calls the shared provider at
-`0x0025f743` after the query supplied literal `0x02020400` or `0x02020501`.
-The provider passes the query through an unresolved callback, compares the
-post-callback low halfword with a dynamic four-record list, and copies matched
-record byte `+4` to the caller output. A bounded owner clears and populates the
-first three list words through a complete mapper: inputs 15, 16, and 11 return
-`0x0000000b`, `0x0000120a`, and `0x00001209`, while all other inputs return
-zero. The no-mask clear call leaves the current inputs and populated slots
-dynamic, and no accepted writer or lifetime resolves the possible fourth word.
-The selected queries' high word `0x0202` also has no source-proven record-status
-write.
+<a id="r-usb-state-owner"></a>
+## Identify the candidate state bytes' live owner and meaning
 
-Validator values 2 and 3 require result 0; later state 17 requires slot `+48`
-result 1, and states 18 through 23 require slot `+40` result 1. The first static
-frontier is now the transform callback and fourth-word provenance, not the
-provider ABI or the three explicit value mappings. The failure labels do not
-define physical USB meaning.
+**Status:** Open.
 
-State 19 maps record fields `+4=243` and `+20=277`; the disconnect-labelled
-caller can request states 11, 17, 15, or 6 under separate conditions, while
-another caller can request state 21. None of the accepted callers binds its
-receiver or condition to a physical USB/interface-release input, and the
-selected handler bodies do not directly perform teardown or MTP re-entry. An
-adjacent dispatcher reads and clears current receiver field `+4`, maps internal
-values 240 through 245, and adds exact flag and mode-state leaves. Its
-conditional interior call into the disconnect-labelled body depends on a
-separate slot-40 result, not on event 243 alone. Entry-receiver preservation
-and a common identity with the state-19 record remain unproved. A useful static
-result now needs an independent owner for the transform callback or fourth
-word; otherwise the decisive missing evidence is the concrete physical input
-and event-object owner, including preservation through the intervening calls,
-joined to an accepted `PC_RETURN` or `PC_CAM_SHOOTING` transition.
+**Question:** what selects the byte-writing callback and consumer, and how do
+their current values relate to shooting?
 
-The separate communication state family adds local disconnect/connect bodies,
-numeric state writes, a conditional disconnect producer, and an exact MTP
-diagnostic-selection condition. It still stops before the needed effects: the
-end-communication slot `+36`, connecting-start slots, and MTP-arm calls remain
-unresolved, with no direct call to the reviewed MTP start/end bodies or
-wrappers. A nearby helper reads object field `+180`, contains a possible
-field-`+392` source for that location, and later calls virtual slot `+80`, but
-the accepted rows omit the controlling branch. A complete adjacent callee now
-proves local `a2` preservation into the field helper, but the dispatcher's
-owner-candidate body crosses empty-mask calls before an unresolved virtual
-slot `+8`; its current result, table, and receiver are not bound to the
-dispatcher entry object. The evidence therefore does not join the dispatcher,
-end-communication, and field-helper receivers. Establish the state input's
-host/USB owner and that receiver identity, then resolve slot `+36` before
-treating the family as a logical or physical USB cycle. Diagnostic names,
-numeric states, and the separate slot `+80` alone do not establish
-communication close/start, detach, enumeration, or shooting availability.
+**Start from:** [candidate state stores and consumer](firmware/USB_STATE.md#usb-connect-stores)
+and the separate [reporting wrapper](firmware/USB_STATE.md#usb-state-wrapper).
 
-Three separate USB-labelled name maps add exact connected/disconnected pairs
-for `EV_*` values 9/10 and OLY values 8/9 and 77/78. Their complete accepted
-lookup paths use the selected names as resource or formatting data and do not
-reach either release dispatcher. The only direct caller of the OLY 77/78
-lookup loses its incoming numeric value through a helper and forwards only 0
-or 1, so the labelled rows are not a physical disconnect ingress. Do not spend
-another route on these maps alone. The smallest useful static result is an
-independently authenticated physical/interface producer with a preserved event
-object and value into source `0x009d39ee` or `0x006cfbd2`.
+**Useful result:** establish live registration/input ownership, preservation
+through opaque calls, and a concrete downstream effect. Current post-helper
+values and explicit conditional stores do not define persistent globals,
+numeric USB states, or the reporting wrapper's value source.
 
-**Question:** is ordinary shooting suppressed by the selected USB personality,
-an open PTP session, host interface ownership, or another camera state?
+<a id="r-usb-policy-provider"></a>
+## Resolve the policy query's dynamic inputs
 
-**Useful result:** first inspect retained session/media records for a controlled
-comparison. A separately authorized hardware observation could compare MTP
-with no open session, an open session, a closed session with the host interface
-released but cable attached, and a disconnected shooting control. Observe
-whether a new photograph was actually produced. Button or LCD response alone
-does not settle the question. This would constrain the necessary mode/lifecycle
-work; it would not identify a firmware global or prove host-triggered capture.
+**Status:** Narrowed.
+
+**Question:** what callback result, list contents, and record status supply
+the conditional policy checks at runtime?
+
+**Established:** the [singleton and selected slots](firmware/USB_POLICY.md#singleton-and-selected-query-slots)
+and [finite list-value mapper](firmware/USB_POLICY.md#dynamic-list-production-and-the-fourth-word)
+are source-joined within their stated address views.
+
+**Useful result:** independently identify the transform callback, the fourth
+word's writer/lifetime, or the status source for the selected queries. Preserve
+the distinction between literal query inputs and post-callback keys, and between
+the first three words' possible values and their current values after the clear
+call. Validator polarity depends on context; labels do not give physical meaning.
+
+<a id="r-usb-event-owner"></a>
+## Connect a physical input to the USB-labelled event dispatchers
+
+**Status:** Open.
+
+**Question:** what physical USB or interface event supplies a preserved event
+object and value to a reviewed dispatcher?
+
+**Start from:** [PC/USB event dispatch](firmware/USB_POLICY.md#state-records-and-event-dispatch)
+and the separate [communication-state input](firmware/USB_LIFECYCLE.md#disconnect-input-and-receiver-boundaries).
+
+**Useful result:** authenticate the producer into source `0x009d39ee` or
+`0x006cfbd2`, its object identity and preservation, and the selected effect.
+State-19 record field `+4=243` alone does not establish the first object's
+identity or select its interior call. The reviewed
+[USB-labelled name maps](firmware/USB_LIFECYCLE.md#usb-disconnect-name-maps)
+stop in resource/formatting paths; extending that bounded negative requires
+an independent event-production connection.
+
+<a id="r-usb-communication-receiver"></a>
+## Resolve the communication state's effect-bearing receivers
+
+**Status:** Open.
+
+**Question:** which concrete objects and methods perform the candidate close
+or start operations?
+
+**Start from:** [communication-state family](firmware/USB_LIFECYCLE.md#communication-cycle).
+
+**Useful result:** bind the current result/table/receiver at the first
+owner-candidate slot `+8`, then resolve the end-communication slot `+36` and
+connecting/MTP targets. The dispatcher, end-communication, and field-helper
+receivers remain distinct. Local preservation through one callee does not
+repair the upstream identity gap; slot `+80` is not slot `+36`.
+
+<a id="r-mtp-selection"></a>
+## Establish live selection of the MTP lifecycle candidates
+
+**Status:** Open.
+
+**Question:** what live owner selects the named MTP start/end wrappers?
+
+**Start from:** [lifecycle callers](firmware/MTP_LIFECYCLE.md#mtp-communication-lifecycle)
+and [aggregate/selector candidates](firmware/MTP_LIFECYCLE.md#mtp-lifecycle-owner).
+
+**Useful result:** prove the state-7 helper's receiver identity and field/table
+selection, or an independent incoming edge to a wrapper. Resolve preservation
+of the status writer's current `d2` and wrappers' current `a2` before assigning
+their effects to entering values. States 6/7 and the separate Boolean-shaped
+leaf have no established session or shooting meaning.
+
+<a id="r-mtp-record-owner"></a>
+## Identify the MTP receive record's owner and consumer
+
+**Status:** Open.
+
+**Question:** who produces and retains the submitted record, and what consumes
+its selected pump-shaped path?
+
+**Start from:** [receive-record submission](firmware/MTP_LIFECYCLE.md#mtp-event-pump).
+
+**Useful result:** establish the record's identity, meaning, scheduling, and
+consumer across the uncovered exits and address-view gap. Identify the writer
+and lifetime of `0x605fc9dc` before interpreting its bit test. The adjacent
+[PTP consumer candidate](firmware/PTP.md#submitted-record-consumer) and
+[queued-storage path](firmware/PTP.md#reply-storage) require independent object
+connections; shared helpers do not establish delivery or wire completion.
 
 <a id="r-capture-retrieval"></a>
 ## Associate a new capture with its retrievable image
+
+**Status:** Open.
 
 **Start from:** [verified existing-object retrieval](observations/USB_AND_MEDIA.md#retrieval)
 and the [candidate capture consumers](firmware/RELEASE_CONTROL.md#release-body).
@@ -420,6 +467,8 @@ image-processing internals is not a prerequisite for a bounded observed join.
 <a id="r-ptp-vectors"></a>
 ## Establish selector-vector placement and entry
 
+**Status:** Open.
+
 **Start from:** the [neighboring vectors](firmware/PTP.md#selector-vectors).
 
 **Useful result:** establish source placement and the caller/owner supplying
@@ -428,6 +477,8 @@ targets distinct. A vector does not establish a common entry ABI.
 
 <a id="r-ptp-status"></a>
 ## Resolve status callbacks and the skipped interior entry
+
+**Status:** Open.
 
 **Start from:** [status dispatch and callback installation](firmware/PTP.md#status-callbacks).
 
@@ -444,6 +495,8 @@ predecessor selecting `0x6f33aaad`; the installed entry at `0x6f33aa63` skips it
 <a id="r-ptp-handler-banks"></a>
 ## Identify the handler-bank producer and selection
 
+**Status:** Open.
+
 **Start from:** the [paired writers and complete callers](firmware/PTP.md#handler-banks)
 and the [callback record route](firmware/PTP.md#callback-body).
 
@@ -455,9 +508,11 @@ the fixed consumer's register route are insufficient without that connection.
 <a id="r-ptp-storage"></a>
 ## Identify queued storage and its consumer
 
+**Status:** Open.
+
 **Start from:** the [reply and storage corridor](firmware/PTP.md#reply-storage).
 
-The separate [receive-record/pump join](firmware/PTP.md#mtp-event-pump) reaches
+The separate [receive-record/pump join](firmware/MTP_LIFECYCLE.md#mtp-event-pump) reaches
 two pump-shaped helpers but does not identify their queue, storage object, or
 USB consumer. Shared vocabulary or nearby source placement is not an object
 join. The adjacent submitted-record consumer similarly reuses
@@ -472,6 +527,8 @@ A copied reply buffer does not establish USB submission or wire completion.
 <a id="r-descriptor-consumer"></a>
 ## Find the descriptor owner's output consumer
 
+**Status:** Open.
+
 **Start from:** the [owner-state operations](firmware/PTP.md#descriptor-owner).
 
 **Useful result:** authenticate a consumer of owner `+112/+116/+120` and result
@@ -482,6 +539,8 @@ the result an image or file.
 
 <a id="r-callback-provider"></a>
 ## Resolve the separate callback provider
+
+**Status:** Open.
 
 **Start from:** the [callback object family](firmware/PTP.md#callback-objects).
 
@@ -494,6 +553,8 @@ owner also needs independent evidence.
 <a id="r-ptp-descriptor-tables"></a>
 ## Find consumers of the unjoined descriptor tables
 
+**Status:** Open.
+
 **Start from:** the [17-record and 66-record tables](firmware/PTP.md#descriptor-tables).
 
 **Useful result:** identify the runtime owner and selection of the 17-record
@@ -505,6 +566,8 @@ lookup families and raw alignment false positives do not supply those edges.
 <a id="r-ptp-entry-edges"></a>
 ## Establish entry edges for isolated handlers and alternate starts
 
+**Status:** Open.
+
 **Start from:** the [handler and byte-gap starts](firmware/PTP.md#unselected-entries)
 and [current decode boundaries](firmware/PTP.md#decode-boundaries).
 
@@ -515,6 +578,8 @@ widths and independently reproducible overlapping decodes do not prove entry.
 <a id="r-address-mapping"></a>
 ## Establish a local address mapping
 
+**Status:** Open.
+
 **Start from:** the [coordinate conventions and examples](firmware/READING.md#coordinates).
 
 **Useful result:** authenticate a relationship between decoded offsets, copied
@@ -524,6 +589,8 @@ is not placement evidence.
 
 <a id="r-startup"></a>
 ## Connect the startup chain to reset
+
+**Status:** Open.
 
 **Start from:** the [state accesses](firmware/STARTUP.md#state-access) and
 [local overlay handoff](firmware/STARTUP.md#overlay-handoff).
@@ -536,6 +603,8 @@ reason it would answer the missing connection.
 <a id="r-block-1"></a>
 ## Resolve block 1's delegated materializer
 
+**Status:** Open.
+
 **Start from:** [block 1's record and request layout](firmware/BLOCKS.md#block-1).
 
 **Useful result:** independently anchor the complete caller context, select the
@@ -545,6 +614,8 @@ effect that distinguishes copying, DMA, or address mapping. Preserve record 0's
 
 <a id="r-block-2"></a>
 ## Find block 2's consumer
+
+**Status:** Open.
 
 **Start from:** [block 2's boundaries and parameter path](firmware/BLOCKS.md#block-2).
 
@@ -556,6 +627,8 @@ copy, and canonical-operand searches did not identify a consumer.
 <a id="r-block-3"></a>
 ## Find the block 3 resource consumer
 
+**Status:** Open.
+
 **Start from:** the [JPEG bundle](firmware/BLOCKS.md#block-3).
 
 **Useful result:** connect an index entry or 16-byte record prefix to an
@@ -564,6 +637,8 @@ dimensions are established; visual similarity does not establish a UI role.
 
 <a id="r-block-4"></a>
 ## Resolve block 4's decoder and external owner
+
+**Status:** Open.
 
 **Start from:** the [H8-compatible image](firmware/BLOCKS.md#block-4).
 
@@ -575,6 +650,8 @@ no such connection, and no block-4 instruction row is canonical.
 
 <a id="r-integrity"></a>
 ## Establish updater or device authentication
+
+**Status:** Narrowed.
 
 **Start from:** the [host-visible container result](firmware/BLOCKS.md#container-integrity).
 
@@ -592,6 +669,8 @@ filenames, and requester-side access controls do not resolve the mechanism.
 <a id="r-unassigned-caller"></a>
 ## Establish the unassigned caller's context
 
+**Status:** Open.
+
 **Start from:** the [complete caller span](firmware/UNASSIGNED.md#complete-caller).
 
 **Useful result:** establish an authenticated entry/caller and argument
@@ -601,6 +680,8 @@ does not establish an event identity.
 
 <a id="r-unassigned-receiver"></a>
 ## Continue the unassigned receiver prologue
+
+**Status:** Open.
 
 **Start from:** the [five-byte prologue](firmware/UNASSIGNED.md#receiver-prologue).
 
@@ -613,8 +694,9 @@ decode does not establish a stock receiver or image path.
 
 Use stable descriptive IDs in links. Update the existing question when accepted
 evidence narrows it, and close it with a link to the resulting finding when it
-is answered. Keep the substantive question in this file and its established
-facts in the topic reference. Follow [the maintainer rules](MAINTAINING.md#documentation-updates).
+is answered. Keep the question and its status here, with its established facts in the topic
+reference. Use Answered only when the linked result settles the stated scope;
+retain the ID and a short answer link instead of deleting the question. Follow [the maintainer rules](MAINTAINING.md#documentation-updates).
 
 <details>
 <summary>Links from earlier versions of this page</summary>

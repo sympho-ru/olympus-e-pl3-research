@@ -85,7 +85,7 @@ dd if=.private/decoded/block-0.bin \
   bs=1 skip=$((0x0010cc15)) count=$((0x0f))
 ```
 
-Disassemble each window at its explicit reviewed runtime address:
+Disassemble each window at its explicit reviewed local address:
 
 ```sh
 MN103_OBJDUMP=.private/toolchains/binutils-2.45-build/binutils/objdump
@@ -97,9 +97,11 @@ MN103_OBJDUMP=.private/toolchains/binutils-2.45-build/binutils/objdump
   --adjust-vma=0x6e70cbf5 .private/windows/byte-fill-helper.bin
 ```
 
-The window base is an authenticated runtime-address anchor. Do not apply a
-single container-header load address to the entire decoded block: the current
-evidence includes multiple block-0 runtime-address relationships.
+The window base is a recorded local-address anchor, not proof of runtime
+placement. Do not apply a single container-header load address to the entire
+decoded block: the current
+evidence includes multiple block-0 address views. See the
+[coordinate conventions](firmware/READING.md#coordinates).
 
 Raw disassembly alone is not proof that every decoded boundary is executable
 or reachable. Start from an accepted boundary, follow direct control flow, and
@@ -113,7 +115,7 @@ Use a revision containing the E-PL3-derived decoder corrections in
 [Reko PR #1370](https://github.com/uxmal/reko/pull/1370), especially for
 full-width `(d32,SP)` operands and PC-relative d32 `CALLS`.
 
-Import the same private window as raw MN103 code and assign the same runtime
+Import the same private window as raw MN103 code and assign the same local
 base used above (`0x6f330905` or `0x6e70cbf5`). Compare instruction addresses
 and lengths before relying on higher-level control flow. This repository does
 not bundle Reko or the earlier project-specific probe, so GNU reproduction is
@@ -121,14 +123,15 @@ the command-line baseline and Reko remains an optional independent check.
 
 ## Turn analysis into a contribution
 
-For each accepted instruction boundary, record its runtime address, block,
+For each accepted instruction boundary, record its disassembly address, block,
 block offset, length, textual decode, and slice SHA-256. Generate byte-free
 range hashes with `epl3-research source-range`, then place sorted rows in
 content-addressed files under `incoming/` as documented in
 [CONTRIBUTING.md](../CONTRIBUTING.md).
 
-Temporary conclusions and unsuccessful leads stay in `.private/` or the PR
-discussion. New established subsystem meaning belongs in the topic reference linked from
-[FIRMWARE_MAP.md](FIRMWARE_MAP.md) only after the maintainer accepts the
-underlying canonical evidence. Follow the
-[documentation update rules](MAINTAINING.md#documentation-updates).
+Temporary conclusions stay in `.private/` or the PR discussion. After semantic
+review, an established relationship or bounded negative belongs in the topic
+reference linked from [FIRMWARE_MAP.md](FIRMWARE_MAP.md). New source rows require
+ordinary evidence acceptance; a reviewed result can also add knowledge without
+adding rows. Use the [documentation rules](MAINTAINING.md#documentation-updates)
+and the separate [observation workflow](observations/README.md) as appropriate.
